@@ -19,7 +19,10 @@ ENV_FILE = os.path.join(BASE_DIR, ".env")
 
 # Проверка и создание необходимых папок
 def create_required_dirs():
-    required_dirs = [DATA_DIR, RAW_DATA_DIR, PROCESSED_DATA_DIR, LOGS_DIR, TEMP_DIR]
+    required_dirs = [
+        AGENTS_DIR, PARSERS_DIR, DATA_DIR, RAW_DATA_DIR,
+        PROCESSED_DATA_DIR, LOGS_DIR, TEMP_DIR
+    ]
     for dir_path in required_dirs:
         os.makedirs(dir_path, exist_ok=True)
 
