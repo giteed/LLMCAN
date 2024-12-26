@@ -44,7 +44,7 @@ sudo alternatives --set python3 /usr/bin/python3.11 && python3 --version
 
 ```bash
 mkdir -p pyLLMCAN && cd pyLLMCAN
-wget [https://github.com/giteed/run_llmcan.sh](https://raw.githubusercontent.com/giteed/LLMCAN/refs/heads/main/run_llmcan.sh)
+wget https://raw.githubusercontent.com/giteed/LLMCAN/refs/heads/main/run_llmcan.sh
 chmod +x run_llmcan.sh
 ./run_llmcan.sh
 ```
