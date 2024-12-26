@@ -38,12 +38,16 @@ if [ -z "$PYTHON_PATH" ]; then
     echo -e "${RED} ❌ Python3 не установлен. Установите его перед продолжением.${RESET}"
     exit 1
 fi
+
+# Проверяем версию Python
 PYTHON_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-if (( $(echo "$PYTHON_VERSION < 3.8" | bc -l) )); then
-    echo -e "${RED} ❌ Требуется Python версии 3.8 или выше. Установите соответствующую версию.${RESET}"
+REQUIRED_VERSION="3.8"
+
+if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" != "$REQUIRED_VERSION" ]; then
+    echo -e "${RED} ❌ Требуется Python версии $REQUIRED_VERSION или выше. Установите соответствующую версию.${RESET}"
     exit 1
 else
-    echo " ✅ Обнаружен Python версии $PYTHON_VERSION"
+    echo -e "${GREEN} ✅ Обнаружен Python версии $PYTHON_VERSION${RESET}"
 fi
 
 # Клонируем или обновляем репозиторий
@@ -67,7 +71,7 @@ if [ ! -d "$VENV_DIR" ]; then
 fi
 
 # Активируем виртуальное окружение
-source "$VENV_DIR/bin/activate" || { echo -e "${RED} ❌ Не удалось активировать виртуальное окружение.${RESET}"; exit 1; }
+source "$VENV_DIR/bin/activate" || { echo -e "${RED} ❌ Не удалось активировать виртуальное окружение.${RESET}" ; exit 1; }
 
 # Устанавливаем зависимости
 echo " 📦 Установка зависимостей..."
