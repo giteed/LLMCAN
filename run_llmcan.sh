@@ -71,28 +71,23 @@ source "$VENV_DIR/bin/activate" || { echo -e "${RED} ❌ Не удалось а�
 
 # Устанавливаем зависимости
 echo " 📦 Установка зависимостей..."
-pip install --upgrade pip
-pip install -r "requirements.txt" || { echo -e "${RED} ❌ Ошибка при установке зависимостей.${RESET}"; exit 1; }
+pip install --upgrade pip &>/dev/null
+pip install -r "requirements.txt" &>/dev/null || { echo -e "${RED} ❌ Ошибка при установке зависимостей.${RESET}"; exit 1; }
 
-# Импортируем пути из settings.py
+# Проверяем и создаем недостающие папки
 PYTHON_IMPORT_DIRS=$(python3 -c "
 import sys
 sys.path.append('./LLMCAN')
 from core.settings import BASE_DIR, AGENTS_DIR, PARSERS_DIR, DATA_DIR, RAW_DATA_DIR, PROCESSED_DATA_DIR, LOGS_DIR, TEMP_DIR
 print('|'.join([str(BASE_DIR), AGENTS_DIR, PARSERS_DIR, DATA_DIR, RAW_DATA_DIR, PROCESSED_DATA_DIR, LOGS_DIR, TEMP_DIR]))
 ")
-
-# Разбиваем строки из Python в массив bash
 IFS='|' read -r -a REQUIRED_DIRS <<< "$PYTHON_IMPORT_DIRS"
-
-# Проверяем и создаем недостающие папки
 for dir in "${REQUIRED_DIRS[@]}"; do
   if [ ! -d "$dir" ]; then
     echo " 📂 Создание отсутствующей папки: $dir"
     mkdir -p "$dir"
   fi
 done
-
 
 # Уведомление об успешной установке
 echo -e "\n ✅ Установка завершена. Проект готов к работе."
@@ -101,4 +96,7 @@ echo -e "\n ✅ Установка завершена. Проект готов �
 echo -e "\n=== Инструкция ==="
 echo -e " 🌐 Репозиторий: ${GITHUB_REPO}"
 echo -e " 🔄 Для активации окружения используйте: source $PROJECT_DIR/$VENV_DIR/bin/activate"
-echo -e " 🛠️  Для запуска проекта используйте: python3 scripts/start.py\n"
+echo -e " 🛠️  Для запуска меню используйте: python3 menu.py\n"
+
+# Запуск меню
+python3 menu.py
