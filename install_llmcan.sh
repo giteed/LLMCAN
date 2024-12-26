@@ -1,6 +1,6 @@
 #!/bin/bash
-# install_llmcan.sh
-## Установочный скрипт для проекта LLMCAN
+# run_llmcan.sh
+## Скрипт установки и запуска для проекта LLMCAN
 
 # Название репозитория и директории
 GITHUB_REPO="https://github.com/giteed/LLMCAN.git"
