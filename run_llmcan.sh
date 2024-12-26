@@ -33,18 +33,14 @@ if ! command -v git &>/dev/null; then
 fi
 
 # Проверяем наличие Python 3.8 или выше
-PYTHON_PATH="$(command -v python3)"
-if [ -z "$PYTHON_PATH" ]; then
-    echo -e "${RED} ❌ Python3 не установлен. Установите его перед продолжением.${RESET}"
-    exit 1
-fi
-
-# Проверяем версию Python
 PYTHON_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-REQUIRED_VERSION="3.8"
+REQUIRED_MAJOR=3
+REQUIRED_MINOR=8
 
-if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" != "$REQUIRED_VERSION" ]; then
-    echo -e "${RED} ❌ Требуется Python версии $REQUIRED_VERSION или выше. Установите соответствующую версию.${RESET}"
+IFS='.' read -r MAJOR MINOR <<< "$PYTHON_VERSION"
+
+if (( MAJOR < REQUIRED_MAJOR || (MAJOR == REQUIRED_MAJOR && MINOR < REQUIRED_MINOR) )); then
+    echo -e "${RED} ❌ Требуется Python версии 3.8 или выше. Установите соответствующую версию.${RESET}"
     exit 1
 else
     echo -e "${GREEN} ✅ Обнаружен Python версии $PYTHON_VERSION${RESET}"
