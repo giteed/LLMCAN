@@ -16,6 +16,8 @@ UNDERLINE='\033[4m'
 
 # Приветствие
 echo -e "\n=== Установка проекта LLMCAN ===\n"
+echo "Using Python version:"
+python3 --version
 
 # Проверяем запуск с правами суперпользователя
 if [ "$EUID" -ne 0 ]; then
