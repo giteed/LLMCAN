@@ -1,0 +1,7 @@
+# .gitignore
+
+# Ignore environment file
+.env
+
+# Temporary files
+temp/
