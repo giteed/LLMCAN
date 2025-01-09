@@ -3,17 +3,11 @@
 # ==================================================
 # Скрипт для взаимодействия с LLM-моделью с учетом
 # сохранения контекста диалога и использования ddgr.
-# Версия: 2.1
+# Версия: 2.2
 # ==================================================
 
 import os
 import sys
-
-# Добавляем корневую директорию проекта в sys.path
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.insert(0, project_root)
-
-from LLMCAN.settings import BASE_DIR, LLM_API_URL
 import requests
 import json
 import subprocess
@@ -22,21 +16,15 @@ from datetime import datetime
 import logging
 import readline  # Для поддержки навигации и редактирования в консоли
 
-# Настройка путей
-SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(PROJECT_ROOT))
+# Добавляем корневую директорию проекта в sys.path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, project_root)
 
-# Импорт настроек проекта
-try:
-    from LLMCAN.settings import BASE_DIR, LLM_API_URL
-except ImportError as e:
-    print(f"Ошибка импорта settings: {e}")
-    sys.exit(1)
+from settings import BASE_DIR, LLM_API_URL
 
 # === Настройки ===
 MODEL = "qwen2:7b"  # Имя модели для обработки
-HISTORY_FILE = BASE_DIR / "ai_assistant/context/context_history.txt"
+HISTORY_FILE = BASE_DIR / "data" / "context_history.txt"
 MAX_HISTORY_LENGTH = 50  # Максимальное количество сообщений в истории
 
 # Цвета для чата
@@ -58,7 +46,11 @@ console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setLevel(logging.ERROR)
 console_handler.setFormatter(formatter)
 
-file_handler = logging.FileHandler(BASE_DIR / f'logs/chat_with_context_{datetime.now().strftime("%Y%m%d")}.log')
+# Создаем директорию для логов, если она не существует
+log_dir = BASE_DIR / 'logs'
+log_dir.mkdir(exist_ok=True)
+
+file_handler = logging.FileHandler(log_dir / f'chat_with_context_{datetime.now().strftime("%Y%m%d")}.log')
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(formatter)
 
@@ -73,6 +65,7 @@ dialog_history = []
 def save_dialog_history():
     """Сохраняет историю диалога в текстовый файл."""
     try:
+        HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
         with open(HISTORY_FILE, "w") as file:
             file.write("\n".join(dialog_history))
         logger.info(f"История диалога сохранена в {HISTORY_FILE}")
@@ -151,6 +144,19 @@ if __name__ == "__main__":
         while True:
             search_query = input(f"{Colors.BLUE}Введите поисковый запрос (или 'пропустить'): {Colors.WHITE}")
             if search_query.lower() == "выход":
+                print(f"{Colors.GREEN}Чат завершен. История сохранена.{Colors.RESET}")
+                break
+            
+            search_results = None
+            if search_query.lower() != "пропустить":
+                search_results = query_ddgr(search_query)
+                if search_results:
+                    print(f"{Colors.GREEN}Результаты поиска получены.{Colors.RESET}")
+                else:
+                    print(f"{Colors.RED}Не удалось получить результаты поиска.{Colors.RESET}")
+
+            user_input = input(f"{Colors.BLUE}Вы: {Colors.WHITE}")
+            if user_input.lower() == "выход":
                 print(f"{Colors.GREEN}Чат завершен. История сохранена.{Colors.RESET}")
                 break
 
