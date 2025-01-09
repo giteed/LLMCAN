@@ -14,7 +14,11 @@ from pathlib import Path
 from datetime import datetime
 import logging
 import readline  # Для поддержки навигации и редактирования в консоли
-from . import settings
+
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from myproject import settings
+
 
 
 # === Настройка путей ===
