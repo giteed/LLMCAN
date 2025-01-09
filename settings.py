@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR  # Путь к директории LLMCAN
 
 # URL для API LLM модели
-LLM_API_URL = "http://localhost:8000/v1/chat/completions"  # Замените на реальный URL вашего API
+LLM_API_URL = "http://10.67.67.2:11434/api/generate"
 
 # Другие настройки проекта
 LOG_LEVEL = "INFO"
