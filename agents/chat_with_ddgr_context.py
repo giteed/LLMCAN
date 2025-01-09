@@ -6,8 +6,15 @@
 # Версия: 2.1
 # ==================================================
 
-import requests
+import os
 import sys
+
+# Добавляем корневую директорию проекта в sys.path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, project_root)
+
+from LLMCAN.settings import BASE_DIR, LLM_API_URL
+import requests
 import json
 import subprocess
 from pathlib import Path
