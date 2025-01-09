@@ -17,7 +17,7 @@ import readline  # Для поддержки навигации и редакт�
 
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from myproject import settings
+from LLMCAN import settings
 
 
 
