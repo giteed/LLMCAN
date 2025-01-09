@@ -3,7 +3,7 @@
 # ==================================================
 # Скрипт для взаимодействия с LLM-моделью с учетом
 # сохранения контекста диалога и использования ddgr.
-# Версия: 2.2
+# Версия: 2.3
 # ==================================================
 
 import os
@@ -105,7 +105,13 @@ def query_llm_with_context(user_input, search_results=None):
 
     # Если есть результаты поиска, добавляем их в начало истории
     if search_results:
-        dialog_history.insert(0, f"Результаты поиска: {json.dumps(search_results, ensure_ascii=False)}")
+        search_instruction = (
+            "Ты LLM Ассистент который получает ответ от поисковой машины по запросу пользователя. "
+            "В соответствии с запросом пользователю нужно дать сводку по полученной информации и "
+            "дополнить ее тем что тебе известно из собственной базы знаний."
+        )
+        dialog_history.insert(0, f"Инструкция: {search_instruction}")
+        dialog_history.insert(1, f"Результаты поиска: {json.dumps(search_results, ensure_ascii=False)}")
 
     # Добавляем сообщение пользователя в историю
     dialog_history.append(f"Вы: {user_input}")
@@ -138,27 +144,28 @@ def query_llm_with_context(user_input, search_results=None):
 if __name__ == "__main__":
     load_dialog_history()
     
-    print("Добро пожаловать в чат с LLM! Введите 'выход' для завершения.")
+    print("Добро пожаловать в чат с LLM! Введите 'выход q Ctrl+c' для завершения.")
+    print("Чтобы в процессе разговора с LLM воспользоваться поиском введите")
+    print("Вы: /s \"$Поисковый_запрос\"")
+    print("Полученные результаты будут переданы LLM для анализа со следующим контекстом, который послужит LLM как инструкция к действию.")
 
     try:
         while True:
-            search_query = input(f"{Colors.BLUE}Введите поисковый запрос (или 'пропустить'): {Colors.WHITE}")
-            if search_query.lower() == "выход":
+            user_input = input(f"{Colors.BLUE}Вы: {Colors.WHITE}")
+            
+            if user_input.lower() in ['/q', 'выход']:
                 print(f"{Colors.GREEN}Чат завершен. История сохранена.{Colors.RESET}")
                 break
             
             search_results = None
-            if search_query.lower() != "пропустить":
+            if user_input.startswith('/s '):
+                search_query = user_input[3:].strip('"')
                 search_results = query_ddgr(search_query)
                 if search_results:
                     print(f"{Colors.GREEN}Результаты поиска получены.{Colors.RESET}")
                 else:
                     print(f"{Colors.RED}Не удалось получить результаты поиска.{Colors.RESET}")
-
-            user_input = input(f"{Colors.BLUE}Вы: {Colors.WHITE}")
-            if user_input.lower() == "выход":
-                print(f"{Colors.GREEN}Чат завершен. История сохранена.{Colors.RESET}")
-                break
+                user_input = f"Анализ результатов поиска по запросу: {search_query}"
 
             response = query_llm_with_context(user_input, search_results)
             if response:
