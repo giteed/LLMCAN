@@ -3,7 +3,7 @@
 # ==================================================
 # Скрипт для взаимодействия с LLM-моделью с учетом
 # сохранения контекста диалога и использования ddgr.
-# Версия: 2.4
+# Версия: 2.5
 # ==================================================
 
 import os
@@ -157,6 +157,17 @@ def print_message(role, message):
     print(f"│ {message}")
     print("└" + "─" * 50)
 
+def get_multiline_input():
+    """Получает многострочный ввод от пользователя."""
+    print(f"{Colors.BLUE}Вы (введите пустую строку для завершения ввода):{Colors.WHITE}")
+    lines = []
+    while True:
+        line = input()
+        if line.strip() == "":
+            break
+        lines.append(line)
+    return "\n".join(lines)
+
 # === Основной процесс ===
 if __name__ == "__main__":
     load_dialog_history()
@@ -166,7 +177,7 @@ if __name__ == "__main__":
 
     try:
         while True:
-            user_input = input(f"{Colors.BLUE}Вы: {Colors.WHITE}")
+            user_input = get_multiline_input()
             
             if user_input.lower() in ['/q', 'выход']:
                 print(f"{Colors.GREEN}Чат завершен. История сохранена.{Colors.RESET}")
