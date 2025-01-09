@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import datetime
 import logging
 import readline  # Для поддержки навигации и редактирования в консоли
+from . import settings
+
 
 # === Настройка путей ===
 SCRIPT_DIR = Path(__file__).resolve().parent
