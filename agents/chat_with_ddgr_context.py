@@ -3,7 +3,7 @@
 # ==================================================
 # Скрипт для взаимодействия с LLM-моделью с учетом
 # сохранения контекста диалога и использования ddgr.
-# Версия: 2.3
+# Версия: 2.4
 # ==================================================
 
 import os
@@ -15,6 +15,7 @@ from pathlib import Path
 from datetime import datetime
 import logging
 import readline  # Для поддержки навигации и редактирования в консоли
+import re
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -34,6 +35,7 @@ class Colors:
     WHITE = "\033[97m"
     GRAY = "\033[90m"
     RED = "\033[91m"
+    YELLOW = "\033[93m"
     RESET = "\033[0m"
 
 # Настройка логирования
@@ -103,26 +105,15 @@ def query_llm_with_context(user_input, search_results=None):
     """Отправляет запрос в LLM с учетом истории диалога и результатов поиска."""
     global dialog_history
 
-def query_llm_with_context(user_input, search_results=None):
-    """Отправляет запрос в LLM с учетом истории диалога и результатов поиска."""
-    global dialog_history
-
-    # Если есть результаты поиска, добавляем их в начало истории
+    # Если есть результаты поиска, добавляем их в конец истории
     if search_results:
         search_instruction = (
-            "Ты — мощная языковая модель, предназначенная для анализа и обработки информации. "
-            "Твоя задача — проанализировать предоставленные результаты поиска и выбрать наилучшую ссылку, "
-            "которая наиболее точно соответствует запросу пользователя. Затем предоставь остальные ссылки и ресурсы, "
-            "упорядоченные и оформленные в виде отчета. "
-            "Отчет должен включать: "
-            "1. Наилучшая ссылка: Укажи ссылку, которая наиболее соответствует запросу, с кратким объяснением, "
-            "почему она выбрана. "
-            "2. Остальные ссылки: Перечисли остальные ссылки, предоставив краткое описание каждой из них. "
-            "3. Ответы на вопросы: Будь готова ответить на любые вопросы, касающиеся предоставленной информации. "
-            "Формат отчета должен быть аккуратным и структурированным, чтобы пользователю было легко воспринимать и понимать информацию."
+            "Ты LLM Ассистент который получает ответ от поисковой машины по запросу пользователя. "
+            "В соответствии с запросом пользователю нужно дать сводку по полученной информации и "
+            "дополнить ее тем что тебе известно из собственной базы знаний."
         )
-        dialog_history.insert(0, f"Инструкция: {search_instruction}")
-        dialog_history.insert(1, f"Результаты поиска: {json.dumps(search_results, ensure_ascii=False)}")
+        dialog_history.append(f"Инструкция: {search_instruction}")
+        dialog_history.append(f"Результаты поиска: {json.dumps(search_results, ensure_ascii=False)}")
 
     # Добавляем сообщение пользователя в историю
     dialog_history.append(f"Вы: {user_input}")
@@ -150,14 +141,28 @@ def query_llm_with_context(user_input, search_results=None):
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
+
+def is_search_query(user_input):
+    """Проверяет, является ли ввод пользователя поисковым запросом."""
+    search_keywords = ["поищи", "найди", "search", "find", "look up", "google"]
+    return any(keyword in user_input.lower() for keyword in search_keywords)
+
+def print_message(role, message):
+    """Красиво выводит сообщение в консоль."""
+    if role == "Вы":
+        print(f"\n{Colors.BLUE}┌─ {role}:{Colors.RESET}")
+    else:
+        print(f"\n{Colors.GREEN}┌─ {role}:{Colors.RESET}")
+    
+    print(f"│ {message}")
+    print("└" + "─" * 50)
+
 # === Основной процесс ===
 if __name__ == "__main__":
     load_dialog_history()
     
-    print("Добро пожаловать в чат с LLM! Введите 'выход q Ctrl+c' для завершения.")
-    print("Чтобы в процессе разговора с LLM воспользоваться поиском введите")
-    print("Вы: /s \"$Поисковый_запрос\"")
-    print("Полученные результаты будут переданы LLM для анализа со следующим контекстом, который послужит LLM как инструкция к действию.")
+    print(f"{Colors.YELLOW}Добро пожаловать в чат с LLM! Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
+    print(f"{Colors.YELLOW}Чтобы воспользоваться поиском, введите '/s \"$Поисковый_запрос\"' или просто задайте вопрос со словами 'поищи' или 'найди'.{Colors.RESET}")
 
     try:
         while True:
@@ -171,17 +176,23 @@ if __name__ == "__main__":
             if user_input.startswith('/s '):
                 search_query = user_input[3:].strip('"')
                 search_results = query_ddgr(search_query)
-                if search_results:
-                    print(f"{Colors.GREEN}Результаты поиска получены.{Colors.RESET}")
-                else:
-                    print(f"{Colors.RED}Не удалось получить результаты поиска.{Colors.RESET}")
+            elif is_search_query(user_input):
+                search_query = re.sub(r'^(поищи|найди|search|find|look up|google)\s*', '', user_input, flags=re.IGNORECASE)
+                search_results = query_ddgr(search_query)
+            
+            if search_results:
+                print(f"{Colors.GREEN}Результаты поиска получены.{Colors.RESET}")
                 user_input = f"Анализ результатов поиска по запросу: {search_query}"
+            elif search_results is not None:
+                print(f"{Colors.RED}Не удалось получить результаты поиска.{Colors.RESET}")
+
+            print_message("Вы", user_input)
 
             response = query_llm_with_context(user_input, search_results)
             if response:
-                print(f"{Colors.GREEN}Ассистент:{Colors.GRAY} {response}{Colors.RESET}")
+                print_message("Ассистент", response)
             else:
-                print(f"{Colors.GREEN}Ассистент:{Colors.GRAY} Ошибка: ответ от модели отсутствует.{Colors.RESET}")
+                print_message("Ассистент", "Ошибка: ответ от модели отсутствует.")
     except KeyboardInterrupt:
         print(f"\n{Colors.RED}Чат прерван пользователем. История сохранена.{Colors.RESET}")
         save_dialog_history()
