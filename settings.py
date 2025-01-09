@@ -17,16 +17,13 @@
 # - ERROR: Только ошибки.
 # Логи записываются как в консоль, так и в файл, путь к которому указан в LOG_FILE_PATH.
 #
-# Версия: 1.1 (2023-01-09)
-
-#!/usr/bin/env python3
-# LLMCAN/settings.py
+# Версия: 1.2 (2025-01-09)
 
 from pathlib import Path
 
 # Определяем базовый путь к корню проекта LLMCAN
 BASE_DIR = Path(__file__).resolve().parent
-PROJECT_DIR = BASE_DIR.parent  # Путь к директории pyLLMCAN
+PROJECT_DIR = BASE_DIR  # Путь к директории LLMCAN
 
 # URL для API LLM модели
 LLM_API_URL = "http://localhost:8000/v1/chat/completions"  # Замените на реальный URL вашего API
@@ -36,4 +33,3 @@ LOG_LEVEL = "INFO"
 LOG_FILE_PATH = PROJECT_DIR / "logs" / "llmcan.log"
 
 # Добавьте здесь другие необходимые настройки вашего проекта
-
