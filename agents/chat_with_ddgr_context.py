@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# ai_assistant/scripts/chat_with_ddgr_context.py
+# LLMCAN/agents/chat_with_ddgr_context.py
 # ==================================================
 # Скрипт для взаимодействия с LLM-моделью с учетом
 # сохранения контекста диалога и использования ddgr.
-# Версия: 2.0
+# Версия: 2.1
 # ==================================================
 
 import requests
@@ -15,21 +15,14 @@ from datetime import datetime
 import logging
 import readline  # Для поддержки навигации и редактирования в консоли
 
-import os
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.insert(0, project_root)
-
-
-
-
-# === Настройка путей ===
+# Настройка путей
 SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent.parent
-sys.path.append(str(PROJECT_ROOT))
+PROJECT_ROOT = SCRIPT_DIR.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 # Импорт настроек проекта
 try:
-    from settings import BASE_DIR, LLM_API_URL
+    from LLMCAN.settings import BASE_DIR, LLM_API_URL
 except ImportError as e:
     print(f"Ошибка импорта settings: {e}")
     sys.exit(1)
@@ -144,26 +137,13 @@ def query_llm_with_context(user_input, search_results=None):
 # === Основной процесс ===
 if __name__ == "__main__":
     load_dialog_history()
-
+    
     print("Добро пожаловать в чат с LLM! Введите 'выход' для завершения.")
 
     try:
         while True:
             search_query = input(f"{Colors.BLUE}Введите поисковый запрос (или 'пропустить'): {Colors.WHITE}")
             if search_query.lower() == "выход":
-                print(f"{Colors.GREEN}Чат завершен. История сохранена.{Colors.RESET}")
-                break
-            
-            search_results = None
-            if search_query.lower() != "пропустить":
-                search_results = query_ddgr(search_query)
-                if search_results:
-                    print(f"{Colors.GREEN}Результаты поиска получены.{Colors.RESET}")
-                else:
-                    print(f"{Colors.RED}Не удалось получить результаты поиска.{Colors.RESET}")
-
-            user_input = input(f"{Colors.BLUE}Вы: {Colors.WHITE}")
-            if user_input.lower() == "выход":
                 print(f"{Colors.GREEN}Чат завершен. История сохранена.{Colors.RESET}")
                 break
 
