@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# wg_qr_generator/settings.py
+# LLMCAN/settings.py
 # ===========================================
-# Настройки проекта wg_qr_generator
+# Настройки проекта LLMCAN
 # ===========================================
 # Этот файл содержит основные настройки проекта, включая пути к файлам,
 # директориям, конфигурациям, а также глобальные параметры.
@@ -17,8 +17,23 @@
 # - ERROR: Только ошибки.
 # Логи записываются как в консоль, так и в файл, путь к которому указан в LOG_FILE_PATH.
 #
-# Версия: 1.0 (2025-01-09)
+# Версия: 1.1 (2023-01-09)
 
-# Определяем базовый путь к корню проекта
-BASE_DIR = Path(__file__).resolve().parent  # Путь к корневой директории LLMCAN
-PROJECT_DIR = BASE_DIR  # Для совместимости, PROJECT_DIR равен BASE_DIR
+#!/usr/bin/env python3
+# LLMCAN/settings.py
+
+from pathlib import Path
+
+# Определяем базовый путь к корню проекта LLMCAN
+BASE_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = BASE_DIR.parent  # Путь к директории pyLLMCAN
+
+# URL для API LLM модели
+LLM_API_URL = "http://localhost:8000/v1/chat/completions"  # Замените на реальный URL вашего API
+
+# Другие настройки проекта
+LOG_LEVEL = "INFO"
+LOG_FILE_PATH = PROJECT_DIR / "logs" / "llmcan.log"
+
+# Добавьте здесь другие необходимые настройки вашего проекта
+
