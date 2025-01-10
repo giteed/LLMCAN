@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 1.0
+# Версия: 1.1
 # ==================================================
 
 import os
@@ -93,18 +93,26 @@ def query_ddgr(search_query):
         return None
 
 def generate_system_instruction(context):
-    # TODO: Реализовать генерацию динамических инструкций на основе контекста
-    return "Ты когнитивный агент, способный анализировать информацию и отвечать на вопросы пользователя."
+    return ("Ты когнитивный агент, способный анализировать информацию и отвечать на вопросы пользователя. "
+            "Всегда учитывай текущую дату и время при анализе информации. "
+            "Если ты чувствуешь, что информация может быть устаревшей, рассмотри необходимость ее обновления через поиск.")
+
+def get_current_datetime():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 def query_llm_with_context(user_input, search_results=None):
     global dialog_history
     
+    current_datetime = get_current_datetime()
     system_instruction = generate_system_instruction(dialog_history)
     
+    context = f"Текущая дата и время: {current_datetime}\n"
+    context += f"Инструкция: {system_instruction}\n"
+    
     if search_results:
-        context = f"Инструкция: {system_instruction}\nРезультаты поиска: {json.dumps(search_results, ensure_ascii=False)}\nЗапрос пользователя: {user_input}"
-    else:
-        context = f"Инструкция: {system_instruction}\nЗапрос пользователя: {user_input}"
+        context += f"Результаты поиска: {json.dumps(search_results, ensure_ascii=False)}\n"
+    
+    context += f"Запрос пользователя: {user_input}"
     
     dialog_history.append({"role": "user", "content": user_input})
     
@@ -145,6 +153,10 @@ def get_multiline_input():
         lines.append(line)
     return "\n".join(lines)
 
+def needs_update(response):
+    update_keywords = ["устарело", "неактуально", "нужно обновить", "требует проверки"]
+    return any(keyword in response.lower() for keyword in update_keywords)
+
 # === Основной процесс ===
 def main():
     load_dialog_history()
@@ -175,6 +187,14 @@ def main():
             response = query_llm_with_context(user_input, search_results)
             if response:
                 print_message("Агент", response)
+                
+                if needs_update(response):
+                    print(f"{Colors.YELLOW}Агент инициирует обновление информации...{Colors.RESET}")
+                    search_results = query_ddgr(user_input)
+                    if search_results:
+                        print(f"{Colors.GREEN}Получена обновленная информация.{Colors.RESET}")
+                        response = query_llm_with_context(user_input, search_results)
+                        print_message("Агент (обновлено)", response)
             else:
                 print_message("Агент", "Извините, произошла ошибка при обработке запроса.")
     except KeyboardInterrupt:
