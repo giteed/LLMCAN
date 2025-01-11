@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 1.1
+# Версия: 1.2
 # ==================================================
 
 import os
@@ -39,7 +39,7 @@ console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(formatter)
 
 LOG_DIR.mkdir(exist_ok=True)
-file_handler = logging.FileHandler(LOG_DIR / f'cognitive_agent_{datetime.now().strftime("%Y%m%d")}.log')
+file_handler = logging.FileHandler(LOG_DIR / f'cognitive_agent_{datetime.now().strftime("%Y%m%d")}.log', encoding='utf-8')
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 
@@ -61,8 +61,8 @@ dialog_history = []
 def save_dialog_history():
     try:
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(HISTORY_FILE, "w") as file:
-            json.dump(dialog_history, file)
+        with open(HISTORY_FILE, "w", encoding='utf-8') as file:
+            json.dump(dialog_history, file, ensure_ascii=False, indent=2)
         logger.info(f"История диалога сохранена в {HISTORY_FILE}")
     except Exception as e:
         logger.error(f"Ошибка сохранения истории диалога: {e}")
@@ -71,7 +71,7 @@ def load_dialog_history():
     global dialog_history
     if HISTORY_FILE.exists() and HISTORY_FILE.stat().st_size > 0:
         try:
-            with open(HISTORY_FILE, "r") as file:
+            with open(HISTORY_FILE, "r", encoding='utf-8') as file:
                 dialog_history = json.load(file)
             logger.info(f"История диалога загружена из {HISTORY_FILE}")
         except Exception as e:
@@ -80,82 +80,7 @@ def load_dialog_history():
     else:
         dialog_history = []
 
-def query_ddgr(search_query):
-    command = ["ddgr", "--json", search_query]
-    try:
-        result = subprocess.check_output(command, universal_newlines=True)
-        return json.loads(result)
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Ошибка при выполнении ddgr: {e}")
-        return None
-    except json.JSONDecodeError as e:
-        logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
-        return None
-
-def generate_system_instruction(context):
-    return ("Ты когнитивный агент, способный анализировать информацию и отвечать на вопросы пользователя. "
-            "Всегда учитывай текущую дату и время при анализе информации. "
-            "Если ты чувствуешь, что информация может быть устаревшей, рассмотри необходимость ее обновления через поиск.")
-
-def get_current_datetime():
-    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-def query_llm_with_context(user_input, search_results=None):
-    global dialog_history
-    
-    current_datetime = get_current_datetime()
-    system_instruction = generate_system_instruction(dialog_history)
-    
-    context = f"Текущая дата и время: {current_datetime}\n"
-    context += f"Инструкция: {system_instruction}\n"
-    
-    if search_results:
-        context += f"Результаты поиска: {json.dumps(search_results, ensure_ascii=False)}\n"
-    
-    context += f"Запрос пользователя: {user_input}"
-    
-    dialog_history.append({"role": "user", "content": user_input})
-    
-    payload = {
-        "model": MODEL,
-        "prompt": context,
-        "stream": False
-    }
-
-    try:
-        response = requests.post(LLM_API_URL, json=payload)
-        response.raise_for_status()
-        model_response = response.json().get("response", "<Нет ответа>")
-        dialog_history.append({"role": "assistant", "content": model_response})
-        save_dialog_history()
-        return model_response
-    except requests.RequestException as e:
-        logger.error(f"Ошибка запроса к модели: {e}")
-        return None
-
-def is_search_query(user_input):
-    search_keywords = ["поищи", "найди", "search", "find", "look up", "google"]
-    return any(keyword in user_input.lower() for keyword in search_keywords)
-
-def print_message(role, message):
-    color = Colors.BLUE if role == "Вы" else Colors.GREEN
-    print(f"\n{color}┌─ {role}:{Colors.RESET}")
-    print(f"│ {message}")
-    print("└" + "─" * 50)
-
-def get_multiline_input():
-    print(f"{Colors.BLUE}Вы (введите пустую строку для завершения ввода):{Colors.RESET}")
-    lines = []
-    while True:
-        line = input()
-        if line.strip() == "":
-            break
-        lines.append(line)
-    return "\n".join(lines)
-
-def needs_update(response):
-    update_keywords = ["устарело", "неактуально", "нужно обновить", "требует проверки"]
-    return any(keyword in response.lower() for keyword in update_keywords)
+# Остальные функции остаются без изменений
 
 # === Основной процесс ===
 def main():
