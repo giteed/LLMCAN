@@ -133,6 +133,11 @@ def enable_tor():
         socket.socket = socks.socksocket
         USE_TOR = True
         print("TOR включен.")
+        if check_tor_connection():
+            print("TOR соединение успешно установлено.")
+        else:
+            print("Не удалось установить TOR соединение.")
+
 
 def disable_tor():
     global USE_TOR, original_socket
@@ -158,7 +163,10 @@ def check_tor_settings():
 
 
 def query_ddgr(search_query):
-    global USE_TOR
+    if USE_TOR and not check_tor_connection():
+        print(f"{Colors.RED}TOR соединение не активно. Запрос будет выполнен без TOR.{Colors.RESET}")
+        USE_TOR = False
+    
     command = ["torsocks", "ddgr", "--json", search_query] if USE_TOR else ["ddgr", "--json", search_query]
     
     print(f"{Colors.YELLOW}Отладка: Использование TOR: {'Да' if USE_TOR else 'Нет'}{Colors.RESET}")
