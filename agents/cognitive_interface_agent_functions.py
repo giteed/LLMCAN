@@ -16,6 +16,7 @@ import time
 import uuid
 import socket
 import socks
+import readline
 
 from settings import BASE_DIR, LLM_API_URL
 
