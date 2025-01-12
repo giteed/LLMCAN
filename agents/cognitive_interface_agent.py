@@ -1,8 +1,11 @@
+Вот полный код скрипта cognitive_interface_agent.py с учетом предыдущего варианта и внесенных изменений:
+
+```python
 #!/usr/bin/env python3
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.0
+# Версия: 2.1
 # ==================================================
 
 import os
@@ -17,6 +20,11 @@ import readline
 import re
 import time
 import uuid
+import stem
+import stem.connection
+from stem import Signal
+from stem.control import Controller
+import socks
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -61,6 +69,7 @@ class Colors:
 
 # === Глобальные переменные ===
 dialog_history = []
+USE_TOR = False
 
 # === Функции ===
 def save_dialog_history():
@@ -85,17 +94,42 @@ def load_dialog_history():
     else:
         dialog_history = []
 
-def query_ddgr(search_query):
-    command = ["ddgr", "--json", search_query]
+def setup_tor_session():
+    session = requests.session()
+    session.proxies = {
+        'http': 'socks5h://localhost:9050',
+        'https': 'socks5h://localhost:9050'
+    }
+    return session
+
+def renew_tor_ip():
+    with Controller.from_port(port=9051) as controller:
+        controller.authenticate()
+        controller.signal(Signal.NEWNYM)
+
+def query_ddgr_tor(search_query):
+    session = setup_tor_session()
     try:
-        result = subprocess.check_output(command, universal_newlines=True)
-        return json.loads(result)
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Ошибка при выполнении ddgr: {e}")
+        response = session.get(f"https://ddg-api.herokuapp.com/search?q={search_query}")
+        return response.json()
+    except Exception as e:
+        logger.error(f"Ошибка при выполнении запроса через TOR: {e}")
         return None
-    except json.JSONDecodeError as e:
-        logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
-        return None
+
+def query_ddgr(search_query):
+    if USE_TOR:
+        return query_ddgr_tor(search_query)
+    else:
+        command = ["ddgr", "--json", search_query]
+        try:
+            result = subprocess.check_output(command, universal_newlines=True)
+            return json.loads(result)
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Ошибка при выполнении ddgr: {e}")
+            return None
+        except json.JSONDecodeError as e:
+            logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
+            return None
 
 def generate_system_instruction(context):
     current_datetime = get_current_datetime()
@@ -255,13 +289,21 @@ def save_report(preprocessed, response):
         file.write(f"Ответ модели:\n{response}\n")
         file.write("-" * 50 + "\n")
 
+def detect_language(text):
+    if re.search('[а-яА-Я]', text):
+        return 'ru'
+    else:
+        return 'en'
+
 # === Основной процесс ===
 def main():
+    global USE_TOR
     load_dialog_history()
     
     print(f"{Colors.YELLOW}Добро пожаловать в Когнитивный Интерфейсный Агент!{Colors.RESET}")
     print(f"{Colors.YELLOW}Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
     print(f"{Colors.YELLOW}Для поиска используйте ключевые слова 'поищи' или 'найди'.{Colors.RESET}")
+    print(f"{Colors.YELLOW}Используйте /toron для включения TOR и /toroff для выключения.{Colors.RESET}")
 
     try:
         while True:
@@ -270,36 +312,19 @@ def main():
             if user_input.lower() in ['/q', 'выход']:
                 print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
                 break
+            elif user_input.lower() == '/toron':
+                USE_TOR = True
+                print(f"{Colors.GREEN}TOR включен.{Colors.RESET}")
+                continue
+            elif user_input.lower() == '/toroff':
+                USE_TOR = False
+                print(f"{Colors.GREEN}TOR выключен.{Colors.RESET}")
+                continue
             
             print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
             preprocessed = preprocess_query(user_input)
-            search_results = perform_search(preprocessed['queries'])
-            
-            if search_results:
-                user_language = detect_language(user_input)
-                response = process_search_results(search_results, preprocessed['instruction'], user_language)
-                references = [result['url'] for result in search_results[0] if 'url' in result]
-                formatted_response = format_response_with_references(response, references)
-                print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
-                print_message("Агент", formatted_response)
-                
-                dialog_history.append({"role": "user", "content": user_input})
-                dialog_history.append({"role": "assistant", "content": formatted_response})
-                save_dialog_history()
-                save_report(preprocessed, formatted_response)
-            else:
-                print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
-    except KeyboardInterrupt:
-        print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
-    finally:
-        save_dialog_history()
 
-def detect_language(text):
-    # Простая функция определения языка (можно заменить на более сложную библиотеку)
-    if re.search('[а-яА-Я]', text):
-        return 'ru'
-    else:
-        return 'en'
-
-if __name__ == "__main__":
-    main()
+Citations:
+[1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/45218807/79479645-1870-4208-b17b-a7c7a41bd8a8/paste.txt
+[2] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/45218807/3ecd27c9-966a-4339-8cdc-b9577c1dc8e1/paste-2.txt
+[3] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/45218807/e3853535-0d6c-40ac-913d-40def3e91e43/paste-3.txt
