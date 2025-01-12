@@ -17,7 +17,8 @@ import uuid
 import socket
 import socks
 import readline
-
+global USE_TOR
+USE_TOR = False
 from settings import BASE_DIR, LLM_API_URL
 
 # === Настройки ===
@@ -159,6 +160,7 @@ def check_tor_settings():
         print(f"Не удалось проверить настройки TOR: {e}")
 
 def query_ddgr(search_query):
+    global USE_TOR
     if USE_TOR and not check_tor_connection():
         print(f"{Colors.RED}TOR соединение не активно. Запрос будет выполнен без TOR.{Colors.RESET}")
         USE_TOR = False
