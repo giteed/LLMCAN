@@ -30,11 +30,8 @@ def main():
             if user_input.lower() in ['/q', 'выход']:
                 print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
                 break
-            elif user_input.lower() == '/toron':
-                enable_tor()
-                continue
-            elif user_input.lower() == '/toroff':
-                disable_tor()
+            elif user_input.startswith('/'):
+                handle_command(user_input.lower())
                 continue
             
             print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
