@@ -61,6 +61,19 @@ USE_TOR = False
 original_socket = None
 
 # === Функции ===
+def check_tor_connection():
+    try:
+        result = subprocess.run(["torsocks", "curl", "https://check.torproject.org/api/ip"], capture_output=True, text=True, timeout=10)
+        if "IsTor\":true" in result.stdout:
+            print(f"{Colors.GREEN}Отладка: TOR соединение активно{Colors.RESET}")
+            return True
+        else:
+            print(f"{Colors.RED}Отладка: TOR соединение неактивно{Colors.RESET}")
+            return False
+    except subprocess.CalledProcessError as e:
+        print(f"{Colors.RED}Отладка: Ошибка проверки TOR соединения: {e}{Colors.RESET}")
+        return False
+
 def handle_command(command):
     global USE_TOR
     if command.lower() == '/tor':
