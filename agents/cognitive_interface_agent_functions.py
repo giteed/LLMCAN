@@ -248,4 +248,55 @@ def save_report(preprocessed, response):
     with open(REPORT_FILE, "a", encoding='utf-8') as file:
         file.write(f"Дата и время: {get_current_datetime()}\n")
         file.write(f"Запросы:\n{json.dumps(preprocessed['queries'], ensure_ascii=False, indent=2)}\n")
-        file.write(f"Инструкция:\n{preprocessed['instruction
+        file.write(f"Инструкция:\n{preprocessed['instruction']}\n")
+        file.write(f"Ответ модели:\n{response}\n")
+        file.write("-" * 50 + "\n")
+
+# === Основной процесс ===
+def main():
+    load_dialog_history()
+    
+    print(f"{Colors.YELLOW}Добро пожаловать в Когнитивный Интерфейсный Агент!{Colors.RESET}")
+    print(f"{Colors.YELLOW}Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
+    print(f"{Colors.YELLOW}Для поиска используйте ключевые слова 'поищи' или 'найди'.{Colors.RESET}")
+
+    try:
+        while True:
+            user_input = get_multiline_input()
+            
+            if user_input.lower() in ['/q', 'выход']:
+                print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
+                break
+            
+            print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
+            preprocessed = preprocess_query(user_input)
+            search_results = perform_search(preprocessed['queries'])
+            
+            if search_results:
+                user_language = detect_language(user_input)
+                response = process_search_results(search_results, preprocessed['instruction'], user_language)
+                references = [result['url'] for result in search_results[0] if 'url' in result]
+                formatted_response = format_response_with_references(response, references)
+                print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
+                print_message("Агент", formatted_response)
+                
+                dialog_history.append({"role": "user", "content": user_input})
+                dialog_history.append({"role": "assistant", "content": formatted_response})
+                save_dialog_history()
+                save_report(preprocessed, formatted_response)
+            else:
+                print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
+    except KeyboardInterrupt:
+        print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
+    finally:
+        save_dialog_history()
+
+def detect_language(text):
+    # Простая функция определения языка (можно заменить на более сложную библиотеку)
+    if re.search('[а-яА-Я]', text):
+        return 'ru'
+    else:
+        return 'en'
+
+if __name__ == "__main__":
+    main()
