@@ -65,13 +65,16 @@ def handle_command(command):
     global USE_TOR
     if command.lower() == '/tor':
         status = "включен" if USE_TOR else "выключен"
-        print(f"TOR в данный момент {status}.")
+        print(f"Режим опроса через TOR: {status}")
     elif command.lower() == '/toron':
-        enable_tor()
+        USE_TOR = True
+        print("Режим опроса через TOR включен.")
     elif command.lower() == '/toroff':
-        disable_tor()
+        USE_TOR = False
+        print("Режим опроса через TOR выключен.")
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
+
 
 
 def save_dialog_history():
@@ -153,8 +156,6 @@ def query_ddgr(search_query):
     except json.JSONDecodeError as e:
         logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
         return None
-
-
 
 def generate_system_instruction(context):
     current_datetime = get_current_datetime()
@@ -295,7 +296,8 @@ def process_search_results(results, instruction, user_language):
     return response
 
 def get_multiline_input():
-    print(f"{Colors.BLUE}Вы:{Colors.RESET}", end="")
+    prefix = "Вы(tor): " if USE_TOR else "Вы: "
+    print(f"{Colors.BLUE}{prefix}{Colors.RESET}", end="")
     lines = []
     while True:
         line = input()
@@ -303,8 +305,6 @@ def get_multiline_input():
             break
         lines.append(line)
     return "\n".join(lines)
-
-
 
 def format_response_with_references(response, references):
     formatted_response = response
