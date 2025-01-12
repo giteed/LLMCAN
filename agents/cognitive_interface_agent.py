@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 1.5
+# Версия: 2.0
 # ==================================================
 
 import os
@@ -15,6 +15,8 @@ from datetime import datetime
 import logging
 import readline
 import re
+import time
+import uuid
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -25,8 +27,11 @@ from settings import BASE_DIR, LLM_API_URL
 # === Настройки ===
 MODEL = "qwen2:7b"
 HISTORY_FILE = BASE_DIR / "data" / "cognitive_agent_history.txt"
+TEMP_DIR = BASE_DIR / "temp"
+REPORT_FILE = BASE_DIR / "data" / "cognitive_agent_reports.txt"
 MAX_HISTORY_LENGTH = 50
 LOG_DIR = BASE_DIR / 'logs'
+DELAY_BETWEEN_REQUESTS = 5  # секунды
 
 # === Настройка логирования ===
 logger = logging.getLogger(__name__)
@@ -93,21 +98,27 @@ def query_ddgr(search_query):
         return None
 
 def generate_system_instruction(context):
-    return ("Ты когнитивный агент, способный анализировать информацию и отвечать на вопросы пользователя. "
-            "Всегда учитывай текущую дату и время при анализе информации. "
-            "Если ты чувствуешь, что информация может быть устаревшей, рассмотри необходимость ее обновления через поиск.")
+    current_datetime = get_current_datetime()
+    return (f"Ты когнитивный агент, работающий в режиме реального времени. "
+            f"Текущая дата и время: {current_datetime}. "
+            f"Всегда используй эту информацию при ответах на вопросы, связанные с временем. "
+            f"Если тебе нужно уточнить время, ты можешь запросить его у системы. "
+            f"Анализируй информацию и отвечай на вопросы пользователя. "
+            f"Если ты чувствуешь, что информация может быть устаревшей, рассмотри необходимость ее обновления через поиск.")
 
 def get_current_datetime():
-    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')
 
 def query_llm(prompt, include_history=True):
     global dialog_history
     
+    current_datetime = get_current_datetime()
+    
     if include_history:
-        context = "\n".join([f"{entry['role']}: {entry['content']}" for entry in dialog_history[-5:]])  # Используем последние 5 сообщений
-        full_prompt = f"{context}\n\nСистемная инструкция: {generate_system_instruction(dialog_history)}\n\nТекущий запрос: {prompt}"
+        context = "\n".join([f"{entry['role']}: {entry['content']}" for entry in dialog_history[-5:]])
+        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{context}\n\nСистемная инструкция: {generate_system_instruction(dialog_history)}\n\nТекущий запрос: {prompt}"
     else:
-        full_prompt = prompt
+        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{prompt}"
 
     payload = {
         "model": MODEL,
@@ -132,7 +143,7 @@ def preprocess_query(user_input):
 Дополнительные запросы:
 1. [запрос 1]
 2. [запрос 2]
-3. [запрос 3]
+3. [запрос 3] (если необходимо)
 
 Инструкция для обработки результатов:
 [Детальная инструкция по обработке и форматированию результатов поиска]"""
@@ -147,7 +158,6 @@ def preprocess_query(user_input):
     return preprocessed
 
 def parse_preprocessing_response(response):
-    # Парсинг ответа модели и возврат структурированных данных
     lines = response.split('\n')
     queries = []
     instruction = ""
@@ -166,7 +176,7 @@ def parse_preprocessing_response(response):
             instruction += line + "\n"
 
     return {
-        "queries": queries,
+        "queries": queries[:3],  # Ограничиваем количество запросов до 3
         "instruction": instruction.strip()
     }
 
@@ -178,18 +188,33 @@ def perform_search(queries):
         if result:
             print(f"{Colors.GREEN}Ответ на запрос {i} получен. Обрабатываю...{Colors.RESET}")
             results.append(result)
+            save_temp_result(result, i)
+            process_intermediate_result(result, i)
         else:
             print(f"{Colors.RED}Не удалось получить результаты для запроса {i}{Colors.RESET}")
+        if i < len(queries):
+            time.sleep(DELAY_BETWEEN_REQUESTS)
     return results
 
-def process_search_results(results, instruction):
+def save_temp_result(result, query_number):
+    TEMP_DIR.mkdir(exist_ok=True)
+    file_path = TEMP_DIR / f"result_{query_number}_{uuid.uuid4()}.json"
+    with open(file_path, "w", encoding='utf-8') as file:
+        json.dump(result, file, ensure_ascii=False, indent=2)
+
+def process_intermediate_result(result, query_number):
+    print(f"{Colors.GREEN}Промежуточный результат для запроса {query_number}:{Colors.RESET}")
+    # Здесь можно добавить логику обработки промежуточных результатов
+    # Например, вывести краткую сводку или наиболее релевантные данные
+
+def process_search_results(results, instruction, user_language):
     print(f"{Colors.YELLOW}Начинаю обобщение и конечный анализ данных...{Colors.RESET}")
     context = f"""Инструкция: {instruction}
 
 Результаты поиска:
 {json.dumps(results, ensure_ascii=False, indent=2)}
 
-Обработай результаты согласно инструкции и сформируй ответ в формате Markdown."""
+Обработай результаты согласно инструкции и сформируй ответ в формате Markdown на языке пользователя: {user_language}."""
 
     response = query_llm(context, include_history=True)
     print(f"{Colors.GREEN}Анализ завершен. Формирую ответ...{Colors.RESET}")
@@ -222,6 +247,14 @@ def get_multiline_input():
         lines.append(line)
     return "\n".join(lines)
 
+def save_report(preprocessed, response):
+    with open(REPORT_FILE, "a", encoding='utf-8') as file:
+        file.write(f"Дата и время: {get_current_datetime()}\n")
+        file.write(f"Запросы:\n{json.dumps(preprocessed['queries'], ensure_ascii=False, indent=2)}\n")
+        file.write(f"Инструкция:\n{preprocessed['instruction']}\n")
+        file.write(f"Ответ модели:\n{response}\n")
+        file.write("-" * 50 + "\n")
+
 # === Основной процесс ===
 def main():
     load_dialog_history()
@@ -243,7 +276,8 @@ def main():
             search_results = perform_search(preprocessed['queries'])
             
             if search_results:
-                response = process_search_results(search_results, preprocessed['instruction'])
+                user_language = detect_language(user_input)
+                response = process_search_results(search_results, preprocessed['instruction'], user_language)
                 references = [result['url'] for result in search_results[0] if 'url' in result]
                 formatted_response = format_response_with_references(response, references)
                 print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
@@ -252,12 +286,20 @@ def main():
                 dialog_history.append({"role": "user", "content": user_input})
                 dialog_history.append({"role": "assistant", "content": formatted_response})
                 save_dialog_history()
+                save_report(preprocessed, formatted_response)
             else:
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
         print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
     finally:
         save_dialog_history()
+
+def detect_language(text):
+    # Простая функция определения языка (можно заменить на более сложную библиотеку)
+    if re.search('[а-яА-Я]', text):
+        return 'ru'
+    else:
+        return 'en'
 
 if __name__ == "__main__":
     main()
