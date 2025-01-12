@@ -8,8 +8,6 @@
 import sys
 from pathlib import Path
 import readline
-global USE_TOR
-
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
@@ -18,16 +16,17 @@ sys.path.insert(0, str(project_root))
 from settings import BASE_DIR, LLM_API_URL
 from cognitive_interface_agent_functions import *
 
-
 def main():
+    global USE_TOR
     load_dialog_history()
     
-    if USE_TOR:
-        if check_tor_connection():
-            print(f"{Colors.GREEN}TOR соединение активно.{Colors.RESET}")
-        else:
-            print(f"{Colors.RED}TOR соединение неактивно. Работа будет выполняться без TOR.{Colors.RESET}")
-            USE_TOR = False
+    if check_tor_connection():
+        print(f"{Colors.GREEN}TOR соединение активно.{Colors.RESET}")
+        USE_TOR = True
+    else:
+        print(f"{Colors.RED}TOR соединение неактивно. Работа будет выполняться без TOR.{Colors.RESET}")
+        USE_TOR = False
+
     check_tor_settings()
     print(f"{Colors.YELLOW}Добро пожаловать в Когнитивный Интерфейсный Агент!{Colors.RESET}")
     print(f"{Colors.YELLOW}Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
