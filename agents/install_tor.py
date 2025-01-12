@@ -12,7 +12,7 @@ def install_tor():
     print("Начинаю установку Tor...")
     try:
         subprocess.run(["dnf", "install", "-y", "epel-release"], check=True)
-        subprocess.run(["apt-get", "update"], check=True)
+        subprocess.run(["dnf", "update", "-y"], check=True)
         subprocess.run(["dnf", "install", "-y", "tor"], check=True)
         print("Tor успешно установлен.")
         subprocess.run(["firewall-cmd", "--add-service=tor", "--permanent"], check=True)
