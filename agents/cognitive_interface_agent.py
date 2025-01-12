@@ -16,6 +16,19 @@ sys.path.insert(0, str(project_root))
 from settings import BASE_DIR, LLM_API_URL
 from cognitive_interface_agent_functions import *
 
+def check_tor_connection():
+    try:
+        result = subprocess.run(["torsocks", "curl", "https://check.torproject.org/api/ip"], capture_output=True, text=True, timeout=10)
+        if "IsTor\":true" in result.stdout:
+            print(f"{Colors.GREEN}Отладка: TOR соединение активно{Colors.RESET}")
+            return True
+        else:
+            print(f"{Colors.RED}Отладка: TOR соединение неактивно{Colors.RESET}")
+            return False
+    except subprocess.CalledProcessError as e:
+        print(f"{Colors.RED}Отладка: Ошибка проверки TOR соединения: {e}{Colors.RESET}")
+        return False
+
 def main():
     load_dialog_history()
     check_tor_settings()
