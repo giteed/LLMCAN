@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.2
+# Версия: 2.1
 # ==================================================
 
 import sys
@@ -18,7 +18,11 @@ from cognitive_interface_agent_functions import *
 def main():
     load_dialog_history()
     
+    global USE_TOR
+    USE_TOR = check_tor_status()
+    
     print(f"{Colors.YELLOW}Добро пожаловать в Когнитивный Интерфейсный Агент!{Colors.RESET}")
+    print(f"{Colors.YELLOW}TOR {'включен' if USE_TOR else 'выключен'}.{Colors.RESET}")
     print(f"{Colors.YELLOW}Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
     print(f"{Colors.YELLOW}Для поиска используйте ключевые слова 'поищи' или 'найди'.{Colors.RESET}")
     print(f"{Colors.YELLOW}Используйте /toron для включения TOR и /toroff для выключения.{Colors.RESET}")
