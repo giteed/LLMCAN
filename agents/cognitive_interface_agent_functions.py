@@ -126,6 +126,20 @@ def disable_tor():
     else:
         print("TOR уже выключен или не был включен.")
 
+def check_tor_settings():
+    try:
+        with open('/etc/tor/torrc', 'r') as f:
+            content = f.read()
+            if 'ExcludeExitNodes' in content:
+                print("TOR настроен для исключения определенных выходных узлов.")
+        # Проверка настроек torsocks
+        torsocks_output = subprocess.check_output(['torsocks', 'show_conf'], universal_newlines=True)
+        if 'local = 127.0.0.0/255.0.0.0' in torsocks_output:
+            print("torsocks настроен для пропуска локальных адресов.")
+    except Exception as e:
+        print(f"Не удалось проверить настройки TOR: {e}")
+
+
 def query_ddgr(search_query):
     command = ["torsocks", "ddgr", "--json", search_query] if USE_TOR else ["ddgr", "--json", search_query]
     try:
