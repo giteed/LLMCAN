@@ -165,33 +165,24 @@ def generate_system_instruction(context):
 def get_current_datetime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')
 
-def query_llm(prompt, include_history=True):
-    global dialog_history
-    
-    current_datetime = get_current_datetime()
-    
-    if include_history:
-        context = "\n".join([f"{entry['role']}: {entry['content']}" for entry in dialog_history[-5:]])
-        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{context}\n\nСистемная инструкция: {generate_system_instruction(dialog_history)}\n\nТекущий запрос: {prompt}"
-    else:
-        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{prompt}"
-
+def query_llm(prompt):
     payload = {
-        "model": MODEL,
-        "prompt": full_prompt,
+        "model": "qwen2:7b",
+        "prompt": prompt,
         "stream": False
     }
 
     try:
+        # Всегда используем прямое соединение для LLM API
         with requests.Session() as session:
-            if USE_TOR:
-                session.proxies = {}  # Отключаем использование TOR для этого запроса
-            response = session.post(LLM_API_URL, json=payload)
+            session.proxies = {}  # Отключаем все прокси
+            response = session.post(LLM_API_URL, json=payload, timeout=10)
         response.raise_for_status()
-        return response.json().get("response", "<Нет ответа>")
+        return response.json()
     except requests.RequestException as e:
-        logger.error(f"Ошибка запроса к модели: {e}")
+        logger.error(f"Ошибка при отправке запроса: {e}")
         return None
+
 
 
 def preprocess_query(user_input):
