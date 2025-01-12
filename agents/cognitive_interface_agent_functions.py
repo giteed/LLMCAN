@@ -61,12 +61,17 @@ original_socket = None
 
 # === Функции ===
 def handle_command(command):
-    if command == '/toron':
+    global USE_TOR
+    if command.lower() == '/tor':
+        status = "включен" if USE_TOR else "выключен"
+        print(f"TOR в данный момент {status}.")
+    elif command.lower() == '/toron':
         enable_tor()
-    elif command == '/toroff':
+    elif command.lower() == '/toroff':
         disable_tor()
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
+
 
 def save_dialog_history():
     try:
