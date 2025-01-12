@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 1.3
+# Версия: 1.4
 # ==================================================
 
 import os
@@ -23,7 +23,7 @@ sys.path.insert(0, project_root)
 from settings import BASE_DIR, LLM_API_URL
 
 # === Настройки ===
-MODEL = "llama3:latest"
+MODEL = "qwen2:7b"
 HISTORY_FILE = BASE_DIR / "data" / "cognitive_agent_history.txt"
 MAX_HISTORY_LENGTH = 50
 LOG_DIR = BASE_DIR / 'logs'
@@ -100,47 +100,108 @@ def generate_system_instruction(context):
 def get_current_datetime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-def query_llm_with_context(user_input, search_results=None):
-    global dialog_history
-    
-    current_datetime = get_current_datetime()
-    system_instruction = generate_system_instruction(dialog_history)
-    
-    context = f"Текущая дата и время: {current_datetime}\n"
-    context += f"Инструкция: {system_instruction}\n"
-    
-    if search_results:
-        context += f"Результаты поиска: {json.dumps(search_results, ensure_ascii=False)}\n"
-    
-    context += f"Запрос пользователя: {user_input}"
-    
-    dialog_history.append({"role": "user", "content": user_input})
-    
+def query_llm(prompt):
     payload = {
         "model": MODEL,
-        "prompt": context,
+        "prompt": prompt,
         "stream": False
     }
 
     try:
         response = requests.post(LLM_API_URL, json=payload)
         response.raise_for_status()
-        model_response = response.json().get("response", "<Нет ответа>")
-        dialog_history.append({"role": "assistant", "content": model_response})
-        save_dialog_history()
-        return model_response
+        return response.json().get("response", "<Нет ответа>")
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
 
-def is_search_query(user_input):
-    search_keywords = ["поищи", "найди", "search", "find", "look up", "google"]
-    return any(keyword in user_input.lower() for keyword in search_keywords)
+def preprocess_query(user_input):
+    print(f"{Colors.YELLOW}Запрос пользователя получен. Начинаю анализ и формирование поисковых запросов...{Colors.RESET}")
+    system_prompt = """Проанализируй запрос пользователя, исправь возможные ошибки и сформулируй до трех связанных поисковых запросов для расширения контекста. Также создай инструкцию для обработки результатов поиска.
+
+Формат ответа:
+Основной запрос: [исправленный запрос пользователя]
+Дополнительные запросы:
+1. [запрос 1]
+2. [запрос 2]
+3. [запрос 3]
+
+Инструкция для обработки результатов:
+[Детальная инструкция по обработке и форматированию результатов поиска]"""
+
+    context = f"Запрос пользователя: {user_input}\n\n{system_prompt}"
+    response = query_llm(context)
+    preprocessed = parse_preprocessing_response(response)
+    
+    print(f"{Colors.YELLOW}Анализ завершен. Сформированы следующие запросы:{Colors.RESET}")
+    for i, query in enumerate(preprocessed['queries'], 1):
+        print(f"{Colors.YELLOW}{i}. {query}{Colors.RESET}")
+    return preprocessed
+
+def parse_preprocessing_response(response):
+    # Парсинг ответа модели и возврат структурированных данных
+    lines = response.split('\n')
+    queries = []
+    instruction = ""
+    parsing_instruction = False
+
+    for line in lines:
+        if line.startswith("Основной запрос:"):
+            queries.append(line.split(": ", 1)[1].strip())
+        elif line.startswith("Дополнительные запросы:"):
+            continue
+        elif line.startswith(("1. ", "2. ", "3. ")):
+            queries.append(line.split(". ", 1)[1].strip())
+        elif line.startswith("Инструкция для обработки результатов:"):
+            parsing_instruction = True
+        elif parsing_instruction:
+            instruction += line + "\n"
+
+    return {
+        "queries": queries,
+        "instruction": instruction.strip()
+    }
+
+def perform_search(queries):
+    results = []
+    for i, query in enumerate(queries, 1):
+        print(f"{Colors.YELLOW}Отправляю запрос {i}: {query}{Colors.RESET}")
+        result = query_ddgr(query)
+        if result:
+            print(f"{Colors.GREEN}Ответ на запрос {i} получен. Обрабатываю...{Colors.RESET}")
+            results.append(result)
+        else:
+            print(f"{Colors.RED}Не удалось получить результаты для запроса {i}{Colors.RESET}")
+    return results
+
+def process_search_results(results, instruction):
+    print(f"{Colors.YELLOW}Начинаю обобщение и конечный анализ данных...{Colors.RESET}")
+    context = f"""Инструкция: {instruction}
+
+Результаты поиска:
+{json.dumps(results, ensure_ascii=False, indent=2)}
+
+Обработай результаты согласно инструкции и сформируй ответ в формате Markdown."""
+
+    response = query_llm(context)
+    print(f"{Colors.GREEN}Анализ завершен. Формирую ответ...{Colors.RESET}")
+    return response
+
+def format_response_with_references(response, references):
+    formatted_response = response
+    for i, ref in enumerate(references, 1):
+        formatted_response = formatted_response.replace(f'[{i}]', f'[{i}]({ref})')
+    
+    formatted_response += "\n\n**Источники:**\n"
+    for i, ref in enumerate(references, 1):
+        formatted_response += f"{i}. {ref}\n"
+    
+    return formatted_response
 
 def print_message(role, message):
     color = Colors.BLUE if role == "Вы" else Colors.GREEN
     print(f"\n{color}┌─ {role}:{Colors.RESET}")
-    print(f"│ {message}")
+    print(f"│ {message.replace('  ', '  │ ')}")
     print("└" + "─" * 50)
 
 def get_multiline_input():
@@ -152,10 +213,6 @@ def get_multiline_input():
             break
         lines.append(line)
     return "\n".join(lines)
-
-def needs_update(response):
-    update_keywords = ["устарело", "неактуально", "нужно обновить", "требует проверки"]
-    return any(keyword in response.lower() for keyword in update_keywords)
 
 # === Основной процесс ===
 def main():
@@ -173,30 +230,22 @@ def main():
                 print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
                 break
             
-            search_results = None
-            if is_search_query(user_input):
-                search_query = re.sub(r'^(поищи|найди|search|find|look up|google)\s*', '', user_input, flags=re.IGNORECASE)
-                search_results = query_ddgr(search_query)
-                if search_results:
-                    print(f"{Colors.GREEN}Результаты поиска получены.{Colors.RESET}")
-                else:
-                    print(f"{Colors.RED}Не удалось получить результаты поиска.{Colors.RESET}")
-
-            print_message("Вы", user_input)
-
-            response = query_llm_with_context(user_input, search_results)
-            if response:
-                print_message("Агент", response)
+            print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
+            preprocessed = preprocess_query(user_input)
+            search_results = perform_search(preprocessed['queries'])
+            
+            if search_results:
+                response = process_search_results(search_results, preprocessed['instruction'])
+                references = [result['url'] for result in search_results[0] if 'url' in result]
+                formatted_response = format_response_with_references(response, references)
+                print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
+                print_message("Агент", formatted_response)
                 
-                if needs_update(response):
-                    print(f"{Colors.YELLOW}Агент инициирует обновление информации...{Colors.RESET}")
-                    search_results = query_ddgr(user_input)
-                    if search_results:
-                        print(f"{Colors.GREEN}Получена обновленная информация.{Colors.RESET}")
-                        response = query_llm_with_context(user_input, search_results)
-                        print_message("Агент (обновлено)", response)
+                dialog_history.append({"role": "user", "content": user_input})
+                dialog_history.append({"role": "assistant", "content": formatted_response})
+                save_dialog_history()
             else:
-                print_message("Агент", "Извините, произошла ошибка при обработке запроса.")
+                print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
         print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
     finally:
