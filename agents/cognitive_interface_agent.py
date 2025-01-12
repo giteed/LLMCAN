@@ -280,16 +280,13 @@ def process_local_command(command):
 
 # === Основной процесс ===
 def main():
-    global USE_TOR
     load_dialog_history()
     
     print(f"{Colors.YELLOW}Добро пожаловать в Когнитивный Интерфейсный Агент!{Colors.RESET}")
     print(f"{Colors.YELLOW}Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
     print(f"{Colors.YELLOW}Для поиска используйте ключевые слова 'поищи' или 'найди'.{Colors.RESET}")
-    print(f"{Colors.YELLOW}Используйте /toron для включения TOR и /toroff для выключения.{Colors.RESET}")
 
     try:
-        previous_query = None
         while True:
             user_input = get_multiline_input()
             
@@ -298,19 +295,34 @@ def main():
                 break
             
             print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
-            preprocessed = preprocess_query(user_input, previous_query)
+            preprocessed = preprocess_query(user_input)
+            search_results = perform_search(preprocessed['queries'])
             
-            if preprocessed["type"] == "локальная команда":
-                response = process_local_command(preprocessed["query"])
-                print_message("Агент", response)
-            elif preprocessed["type"] == "интернет-поиск":
-                search_results = perform_search([preprocessed["query"]] + preprocessed["additional_queries"])
-                if search_results:
-                    user_language = detect_language(user_input)
-                    response = process_search_results(search_results, preprocessed["instruction"], user_language)
-                    references = [result['url'] for result in search_results[0] if 'url' in result]
-                    formatted_response = format_response_with_references(response, references)
-                    print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
-                    print_message("Агент", formatted_response)
-                    
-                    dialog_history.append({"role": "user", "content
+            if search_results:
+                user_language = detect_language(user_input)
+                response = process_search_results(search_results, preprocessed['instruction'], user_language)
+                references = [result['url'] for result in search_results[0] if 'url' in result]
+                formatted_response = format_response_with_references(response, references)
+                print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
+                print_message("Агент", formatted_response)
+                
+                dialog_history.append({"role": "user", "content": user_input})
+                dialog_history.append({"role": "assistant", "content": formatted_response})
+                save_dialog_history()
+                save_report(preprocessed, formatted_response)
+            else:
+                print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
+    except KeyboardInterrupt:
+        print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
+    finally:
+        save_dialog_history()
+
+def detect_language(text):
+    # Простая функция определения языка (можно заменить на более сложную библиотеку)
+    if re.search('[а-яА-Я]', text):
+        return 'ru'
+    else:
+        return 'en'
+
+if __name__ == "__main__":
+    main()
