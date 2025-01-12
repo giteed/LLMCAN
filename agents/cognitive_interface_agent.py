@@ -23,7 +23,7 @@ sys.path.insert(0, project_root)
 from settings import BASE_DIR, LLM_API_URL
 
 # === Настройки ===
-MODEL = "qwen2:7b"
+MODEL = "gemma:7b"
 HISTORY_FILE = BASE_DIR / "data" / "cognitive_agent_history.txt"
 MAX_HISTORY_LENGTH = 50
 LOG_DIR = BASE_DIR / 'logs'
