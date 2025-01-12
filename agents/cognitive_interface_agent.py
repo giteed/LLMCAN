@@ -18,11 +18,7 @@ from cognitive_interface_agent_functions import *
 def main():
     load_dialog_history()
     
-    global USE_TOR
-    USE_TOR = check_tor_status()
-    
     print(f"{Colors.YELLOW}Добро пожаловать в Когнитивный Интерфейсный Агент!{Colors.RESET}")
-    print(f"{Colors.YELLOW}TOR {'включен' if USE_TOR else 'выключен'}.{Colors.RESET}")
     print(f"{Colors.YELLOW}Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
     print(f"{Colors.YELLOW}Для поиска используйте ключевые слова 'поищи' или 'найди'.{Colors.RESET}")
     print(f"{Colors.YELLOW}Используйте /toron для включения TOR и /toroff для выключения.{Colors.RESET}")
@@ -34,9 +30,11 @@ def main():
             if user_input.lower() in ['/q', 'выход']:
                 print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
                 break
-            
-            if user_input.startswith('/'):
-                handle_command(user_input)
+            elif user_input.lower() == '/toron':
+                enable_tor()
+                continue
+            elif user_input.lower() == '/toroff':
+                disable_tor()
                 continue
             
             print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
