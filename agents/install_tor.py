@@ -11,9 +11,13 @@ def check_root():
 def install_tor():
     print("Начинаю установку Tor...")
     try:
+        subprocess.run(["dnf", "install", "-y", "epel-release"], check=True)
         subprocess.run(["apt-get", "update"], check=True)
-        subprocess.run(["apt-get", "install", "-y", "tor"], check=True)
+        subprocess.run(["dnf", "install", "-y", "tor"], check=True)
         print("Tor успешно установлен.")
+        subprocess.run(["firewall-cmd", "--add-service=tor", "--permanent"], check=True)
+        subprocess.run(["firewall-cmd", "--reload"], check=True)
+
     except subprocess.CalledProcessError as e:
         print(f"Ошибка при установке Tor: {e}")
         sys.exit(1)
@@ -21,7 +25,7 @@ def install_tor():
 def start_tor_service():
     print("Запускаю сервис Tor...")
     try:
-        subprocess.run(["systemctl", "start", "tor"], check=True)
+        subprocess.run(["systemctl", "enable", "--now", "tor"], check=True)
         print("Сервис Tor запущен.")
     except subprocess.CalledProcessError as e:
         print(f"Ошибка при запуске сервиса Tor: {e}")
