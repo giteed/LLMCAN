@@ -28,6 +28,8 @@ def check_tor_connection():
     except subprocess.CalledProcessError as e:
         print(f"{Colors.RED}Отладка: Ошибка проверки TOR соединения: {e}{Colors.RESET}")
         return False
+        
+check_tor_connection() 
 
 def main():
     load_dialog_history()
