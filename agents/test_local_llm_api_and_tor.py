@@ -29,26 +29,21 @@ def toggle_tor(enable=True):
             USE_TOR = False
             logger.info("TOR выключен")
 
-def test_llm_connection():
-    logger.info("Начало теста подключения к LLM API")
-    
+def test_llm_connection(prompt):
     payload = {
         "model": "qwen2:7b",
-        "prompt": "Тестовый запрос",
+        "prompt": prompt,
         "stream": False
     }
 
     try:
-        logger.info(f"Отправка запроса к {LLM_API_URL}")
+        # Всегда используем прямое соединение для LLM API
         with requests.Session() as session:
-            if USE_TOR:
-                session.proxies = {}  # Отключаем использование TOR для этого запроса
+            session.proxies = {}  # Отключаем все прокси
             response = session.post(LLM_API_URL, json=payload, timeout=10)
-        logger.info(f"Статус ответа: {response.status_code}")
-        logger.info(f"Содержимое ответа: {response.text[:100]}...")
         response.raise_for_status()
         return response.json()
-    except requests.exceptions.RequestException as e:
+    except requests.RequestException as e:
         logger.error(f"Ошибка при отправке запроса: {e}")
         return None
 
