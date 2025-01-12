@@ -4,14 +4,20 @@
 # ==================================================
 
 import os
+import sys
 import requests
 import json
 import subprocess
+from pathlib import Path
 from datetime import datetime
 import logging
 import re
 import time
 import uuid
+
+# Добавляем корневую директорию проекта в sys.path
+project_root = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(project_root))
 
 from settings import BASE_DIR, LLM_API_URL
 
@@ -52,7 +58,6 @@ class Colors:
 
 # === Глобальные переменные ===
 dialog_history = []
-USE_TOR = False
 
 # === Функции ===
 def save_dialog_history():
@@ -127,51 +132,50 @@ def query_llm(prompt, include_history=True):
         return None
 
 def preprocess_query(user_input):
-    print(f"{Colors.YELLOW}Запрос пользователя получен. Начинаю анализ...{Colors.RESET}")
-    system_prompt = """Проанализируй запрос пользователя и определи, требуется ли для ответа поиск в интернете.
-Если запрос начинается с '/', это команда, которую нужно выполнить локально.
-Если явно указано "поищи" или "найди", выполни поиск в интернете.
-В остальных случаях попробуй ответить, используя свои знания.
+    print(f"{Colors.YELLOW}Запрос пользователя получен. Начинаю анализ и формирование поисковых запросов...{Colors.RESET}")
+    system_prompt = """Проанализируй запрос пользователя, исправь возможные ошибки и сформулируй до трех связанных поисковых запросов для расширения контекста. Также создай инструкцию для обработки результатов поиска.
 
 Формат ответа:
-Тип запроса: [локальная команда/интернет-поиск/локальный ответ]
-Обработанный запрос: [обработанный текст запроса]
-Дополнительные запросы для поиска (если применимо):
+Основной запрос: [исправленный запрос пользователя]
+Дополнительные запросы:
 1. [запрос 1]
 2. [запрос 2]
-3. [запрос 3]
+3. [запрос 3] (если необходимо)
 
 Инструкция для обработки результатов:
-[Детальная инструкция по обработке и форматированию результатов]"""
+[Детальная инструкция по обработке и форматированию результатов поиска]"""
 
     context = f"Запрос пользователя: {user_input}\n\n{system_prompt}"
     response = query_llm(context, include_history=False)
-    return parse_preprocessing_response(response)
+    preprocessed = parse_preprocessing_response(response)
+    
+    print(f"{Colors.YELLOW}Анализ завершен. Сформированы следующие запросы:{Colors.RESET}")
+    for i, query in enumerate(preprocessed['queries'], 1):
+        print(f"{Colors.YELLOW}{i}. {query}{Colors.RESET}")
+    return preprocessed
 
 def parse_preprocessing_response(response):
     lines = response.split('\n')
-    result = {
-        "type": "",
-        "query": "",
-        "queries": [],
-        "instruction": ""
-    }
+    queries = []
+    instruction = ""
     parsing_instruction = False
 
     for line in lines:
-        if line.startswith("Тип запроса:"):
-            result["type"] = line.split(": ", 1)[1].strip().lower()
-        elif line.startswith("Обработанный запрос:"):
-            result["query"] = line.split(": ", 1)[1].strip()
+        if line.startswith("Основной запрос:"):
+            queries.append(line.split(": ", 1)[1].strip())
+        elif line.startswith("Дополнительные запросы:"):
+            continue
         elif line.startswith(("1. ", "2. ", "3. ")):
-            result["queries"].append(line.split(". ", 1)[1].strip())
+            queries.append(line.split(". ", 1)[1].strip())
         elif line.startswith("Инструкция для обработки результатов:"):
             parsing_instruction = True
         elif parsing_instruction:
-            result["instruction"] += line + "\n"
+            instruction += line + "\n"
 
-    result["instruction"] = result["instruction"].strip()
-    return result
+    return {
+        "queries": queries[:3],  # Ограничиваем количество запросов до 3
+        "instruction": instruction.strip()
+    }
 
 def perform_search(queries):
     results = []
@@ -225,4 +229,23 @@ def format_response_with_references(response, references):
     return formatted_response
 
 def print_message(role, message):
-    color = Colors.BLUE if role == "Вы" else Colors
+    color = Colors.BLUE if role == "Вы" else Colors.GREEN
+    print(f"\n{color}┌─ {role}:{Colors.RESET}")
+    print(f"│ {message.replace('  ', '  │ ')}")
+    print("└" + "─" * 50)
+
+def get_multiline_input():
+    print(f"{Colors.BLUE}Вы (введите пустую строку для завершения ввода):{Colors.RESET}")
+    lines = []
+    while True:
+        line = input()
+        if line.strip() == "":
+            break
+        lines.append(line)
+    return "\n".join(lines)
+
+def save_report(preprocessed, response):
+    with open(REPORT_FILE, "a", encoding='utf-8') as file:
+        file.write(f"Дата и время: {get_current_datetime()}\n")
+        file.write(f"Запросы:\n{json.dumps(preprocessed['queries'], ensure_ascii=False, indent=2)}\n")
+        file.write(f"Инструкция:\n{preprocessed['instruction
