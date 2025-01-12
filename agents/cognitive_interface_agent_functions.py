@@ -189,6 +189,9 @@ def preprocess_query(user_input):
 
     context = f"Запрос пользователя: {user_input}\n\n{system_prompt}"
     response = query_llm(context, include_history=False)
+    if response is None:
+        print(f"{Colors.RED}Не удалось получить ответ от LLM. Использую исходный запрос пользователя.{Colors.RESET}")
+        return {"queries": [user_input], "instruction": "Обработайте результаты поиска и предоставьте краткий ответ."}
     preprocessed = parse_preprocessing_response(response)
     
     print(f"{Colors.YELLOW}Анализ завершен. Сформированы следующие запросы:{Colors.RESET}")
