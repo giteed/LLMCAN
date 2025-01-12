@@ -143,9 +143,8 @@ def check_tor_settings():
 
 def query_ddgr(search_query):
     global USE_TOR
+    command = ["torsocks", "ddgr", "--json", search_query] if USE_TOR else ["ddgr", "--json", search_query]
     try:
-        enable_tor()
-        command = ["torsocks", "ddgr", "--json", search_query]
         result = subprocess.check_output(command, universal_newlines=True)
         return json.loads(result)
     except subprocess.CalledProcessError as e:
@@ -154,8 +153,7 @@ def query_ddgr(search_query):
     except json.JSONDecodeError as e:
         logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
         return None
-    finally:
-        disable_tor()
+
 
 
 def generate_system_instruction(context):
