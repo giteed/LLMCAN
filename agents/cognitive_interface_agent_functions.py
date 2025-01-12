@@ -95,25 +95,22 @@ def check_tor_status():
         return False
 
 def enable_tor():
-    global USE_TOR
-    if check_tor_status():
-        print("TOR уже включен.")
+    global USE_TOR, original_socket
+    if not USE_TOR:
+        original_socket = socket.socket
+        socks.set_default_proxy(socks.SOCKS5, "localhost", 9050)
+        socket.socket = socks.socksocket
         USE_TOR = True
-        return
-
-    try:
-        subprocess.run(["systemctl", "start", "tor"], check=True)
-        print("TOR успешно включен.")
-        USE_TOR = True
-    except subprocess.CalledProcessError:
-        print("Не удалось включить TOR.")
-        USE_TOR = False
+        print("TOR включен.")
 
 def disable_tor():
-    global USE_TOR
-    USE_TOR = False
-    socket.socket = socket._real_socket
-    print("TOR выключен.")
+    global USE_TOR, original_socket
+    if USE_TOR and original_socket:
+        socket.socket = original_socket
+        USE_TOR = False
+        print("TOR выключен.")
+    else:
+        print("TOR уже выключен или не был включен.")
 
 def handle_command(command):
     if command.lower() == '/toron':
