@@ -183,8 +183,10 @@ def query_llm(prompt, include_history=True):
     }
 
     try:
-        # Всегда используем прямое соединение для LLM API
-        response = requests.post(LLM_API_URL, json=payload)
+        with requests.Session() as session:
+            if USE_TOR:
+                session.proxies = {}  # Отключаем использование TOR для этого запроса
+            response = session.post(LLM_API_URL, json=payload)
         response.raise_for_status()
         return response.json().get("response", "<Нет ответа>")
     except requests.RequestException as e:
