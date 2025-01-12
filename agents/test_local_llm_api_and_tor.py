@@ -42,12 +42,7 @@ def test_llm_connection():
         logger.info(f"Отправка запроса к {LLM_API_URL}")
         with requests.Session() as session:
             if USE_TOR:
-                session.proxies = {
-                    'http': 'socks5h://localhost:9050',
-                    'https': 'socks5h://localhost:9050'
-                }
-            else:
-                session.proxies = {}
+                session.proxies = {}  # Отключаем использование TOR для этого запроса
             response = session.post(LLM_API_URL, json=payload, timeout=10)
         logger.info(f"Статус ответа: {response.status_code}")
         logger.info(f"Содержимое ответа: {response.text[:100]}...")
