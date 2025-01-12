@@ -142,8 +142,10 @@ def check_tor_settings():
 
 
 def query_ddgr(search_query):
-    command = ["torsocks", "ddgr", "--json", search_query] if USE_TOR else ["ddgr", "--json", search_query]
+    global USE_TOR
     try:
+        enable_tor()
+        command = ["torsocks", "ddgr", "--json", search_query]
         result = subprocess.check_output(command, universal_newlines=True)
         return json.loads(result)
     except subprocess.CalledProcessError as e:
@@ -152,6 +154,9 @@ def query_ddgr(search_query):
     except json.JSONDecodeError as e:
         logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
         return None
+    finally:
+        disable_tor()
+
 
 def generate_system_instruction(context):
     current_datetime = get_current_datetime()
@@ -257,6 +262,7 @@ def perform_search(queries):
             time.sleep(DELAY_BETWEEN_REQUESTS)
     return results
 
+
 def save_temp_result(result, query_number):
     TEMP_DIR.mkdir(exist_ok=True)
     file_path = TEMP_DIR / f"result_{query_number}_{uuid.uuid4()}.json"
@@ -291,8 +297,7 @@ def process_search_results(results, instruction, user_language):
     return response
 
 def get_multiline_input():
-    prefix = "Вы(tor): " if USE_TOR else "Вы: "
-    print(f"{Colors.BLUE}{prefix}{Colors.RESET}", end="")
+    print(f"{Colors.BLUE}Вы:{Colors.RESET}", end="")
     lines = []
     while True:
         line = input()
@@ -300,6 +305,7 @@ def get_multiline_input():
             break
         lines.append(line)
     return "\n".join(lines)
+
 
 
 def format_response_with_references(response, references):
