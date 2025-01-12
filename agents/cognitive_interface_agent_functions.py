@@ -14,10 +14,8 @@ import logging
 import re
 import time
 import uuid
-
-# Добавляем корневую директорию проекта в sys.path
-project_root = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(project_root))
+import socket
+import socks
 
 from settings import BASE_DIR, LLM_API_URL
 
@@ -58,6 +56,7 @@ class Colors:
 
 # === Глобальные переменные ===
 dialog_history = []
+USE_TOR = False
 
 # === Функции ===
 def save_dialog_history():
@@ -81,6 +80,66 @@ def load_dialog_history():
             dialog_history = []
     else:
         dialog_history = []
+
+def get_ip_address():
+    try:
+        return requests.get('https://api.ipify.org').text
+    except requests.RequestException:
+        return "Не удалось получить IP-адрес"
+
+def enable_tor():
+    global USE_TOR
+    USE_TOR = True
+    socks.set_default_proxy(socks.SOCKS5, "localhost", 9050)
+    socket.socket = socks.socksocket
+    
+    real_ip = get_ip_address()
+    print(f"Реальный адрес: {real_ip}")
+    
+    # Включаем TOR
+    socks.set_default_proxy(socks.SOCKS5, "localhost", 9050)
+    socket.socket = socks.socksocket
+    
+    tor_ip = get_ip_address()
+    print(f"TOR адрес: {tor_ip}")
+    
+    if real_ip != tor_ip:
+        print("TOR успешно включен.")
+        test_ddgr_query()
+    else:
+        print("Ошибка: TOR не работает. IP-адрес не изменился.")
+        USE_TOR = False
+
+def disable_tor():
+    global USE_TOR
+    USE_TOR = False
+    socket.socket = socket._real_socket
+    print("TOR выключен.")
+
+def test_ddgr_query():
+    print("Тестовый запрос к ddgr: \"Свежие актуальные новости\".")
+    results = query_ddgr("Свежие актуальные новости")
+    if results:
+        print("Получен ответ от ddgr.")
+        process_news_results(results)
+    else:
+        print("Не удалось получить ответ от ddgr.")
+
+def process_news_results(results):
+    print("\n=== Сводка последних новостей ===")
+    for i, result in enumerate(results[:5], 1):
+        print(f"{i}. {result['title']}")
+        print(f"   {result['abstract']}")
+        print(f"   Источник: {result['url']}\n")
+    print("==================================")
+
+def handle_command(command):
+    if command.lower() == '/toron':
+        enable_tor()
+    elif command.lower() == '/toroff':
+        disable_tor()
+    else:
+        print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
 def query_ddgr(search_query):
     command = ["ddgr", "--json", search_query]
@@ -199,10 +258,18 @@ def save_temp_result(result, query_number):
     with open(file_path, "w", encoding='utf-8') as file:
         json.dump(result, file, ensure_ascii=False, indent=2)
 
+
 def process_intermediate_result(result, query_number):
     print(f"{Colors.GREEN}Промежуточный результат для запроса {query_number}:{Colors.RESET}")
-    # Здесь можно добавить логику обработки промежуточных результатов
-    # Например, вывести краткую сводку или наиболее релевантные данные
+        # Здесь можно добавить логику обработки промежуточных результатов
+    if result and isinstance(result, list) and len(result) > 0:
+        print(f"Найдено {len(result)} результатов:")
+        for i, item in enumerate(result[:3], 1):  # Выводим первые 3 результата
+            title = item.get('title', 'Без названия')
+            url = item.get('url', 'URL отсутствует')
+            print(f"{i}. {title}\n   {url}\n")
+    else:
+        print("Нет доступных промежуточных результатов для отображения.")
 
 def process_search_results(results, instruction, user_language):
     print(f"{Colors.YELLOW}Начинаю обобщение и конечный анализ данных...{Colors.RESET}")
@@ -211,7 +278,8 @@ def process_search_results(results, instruction, user_language):
 Результаты поиска:
 {json.dumps(results, ensure_ascii=False, indent=2)}
 
-Обработай результаты согласно инструкции и сформируй ответ в формате Markdown на языке пользователя: {user_language}."""
+Обработай результаты согласно инструкции и сформируй ответ в формате Markdown на языке пользователя: {user_language}. 
+Используй текущую дату и время: {get_current_datetime()} при формировании ответа."""
 
     response = query_llm(context, include_history=True)
     print(f"{Colors.GREEN}Анализ завершен. Формирую ответ...{Colors.RESET}")
@@ -252,6 +320,12 @@ def save_report(preprocessed, response):
         file.write(f"Ответ модели:\n{response}\n")
         file.write("-" * 50 + "\n")
 
+def detect_language(text):
+    if re.search('[а-яА-Я]', text):
+        return 'ru'
+    else:
+        return 'en'
+
 # === Основной процесс ===
 def main():
     load_dialog_history()
@@ -291,12 +365,7 @@ def main():
     finally:
         save_dialog_history()
 
-def detect_language(text):
-    # Простая функция определения языка (можно заменить на более сложную библиотеку)
-    if re.search('[а-яА-Я]', text):
-        return 'ru'
-    else:
-        return 'en'
-
 if __name__ == "__main__":
     main()
+
+
