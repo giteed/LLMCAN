@@ -60,6 +60,14 @@ USE_TOR = False
 original_socket = None
 
 # === Функции ===
+def handle_command(command):
+    if command == '/toron':
+        enable_tor()
+    elif command == '/toroff':
+        disable_tor()
+    else:
+        print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
+
 def save_dialog_history():
     try:
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
