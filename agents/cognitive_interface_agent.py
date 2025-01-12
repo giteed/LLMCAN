@@ -19,6 +19,13 @@ from cognitive_interface_agent_functions import *
 
 def main():
     load_dialog_history()
+    
+    if USE_TOR:
+        if check_tor_connection():
+            print(f"{Colors.GREEN}TOR соединение активно.{Colors.RESET}")
+        else:
+            print(f"{Colors.RED}TOR соединение неактивно. Работа будет выполняться без TOR.{Colors.RESET}")
+            USE_TOR = False
     check_tor_settings()
     print(f"{Colors.YELLOW}Добро пожаловать в Когнитивный Интерфейсный Агент!{Colors.RESET}")
     print(f"{Colors.YELLOW}Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
