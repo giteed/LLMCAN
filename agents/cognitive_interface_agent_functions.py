@@ -147,15 +147,23 @@ def check_tor_settings():
 def query_ddgr(search_query):
     global USE_TOR
     command = ["torsocks", "ddgr", "--json", search_query] if USE_TOR else ["ddgr", "--json", search_query]
+    
+    print(f"{Colors.YELLOW}Отладка: Использование TOR: {'Да' if USE_TOR else 'Нет'}{Colors.RESET}")
+    print(f"{Colors.YELLOW}Отладка: Выполняемая команда: {' '.join(command)}{Colors.RESET}")
+    
     try:
         result = subprocess.check_output(command, universal_newlines=True)
+        print(f"{Colors.GREEN}Отладка: Запрос успешно выполнен{Colors.RESET}")
         return json.loads(result)
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при выполнении ddgr: {e}")
+        print(f"{Colors.RED}Отладка: Ошибка выполнения команды: {e}{Colors.RESET}")
         return None
     except json.JSONDecodeError as e:
         logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
+        print(f"{Colors.RED}Отладка: Ошибка разбора JSON: {e}{Colors.RESET}")
         return None
+
 
 def generate_system_instruction(context):
     current_datetime = get_current_datetime()
