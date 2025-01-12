@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 1.4
+# Версия: 1.5
 # ==================================================
 
 import os
@@ -100,10 +100,18 @@ def generate_system_instruction(context):
 def get_current_datetime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-def query_llm(prompt):
+def query_llm(prompt, include_history=True):
+    global dialog_history
+    
+    if include_history:
+        context = "\n".join([f"{entry['role']}: {entry['content']}" for entry in dialog_history[-5:]])  # Используем последние 5 сообщений
+        full_prompt = f"{context}\n\nСистемная инструкция: {generate_system_instruction(dialog_history)}\n\nТекущий запрос: {prompt}"
+    else:
+        full_prompt = prompt
+
     payload = {
         "model": MODEL,
-        "prompt": prompt,
+        "prompt": full_prompt,
         "stream": False
     }
 
@@ -130,7 +138,7 @@ def preprocess_query(user_input):
 [Детальная инструкция по обработке и форматированию результатов поиска]"""
 
     context = f"Запрос пользователя: {user_input}\n\n{system_prompt}"
-    response = query_llm(context)
+    response = query_llm(context, include_history=False)
     preprocessed = parse_preprocessing_response(response)
     
     print(f"{Colors.YELLOW}Анализ завершен. Сформированы следующие запросы:{Colors.RESET}")
@@ -183,7 +191,7 @@ def process_search_results(results, instruction):
 
 Обработай результаты согласно инструкции и сформируй ответ в формате Markdown."""
 
-    response = query_llm(context)
+    response = query_llm(context, include_history=True)
     print(f"{Colors.GREEN}Анализ завершен. Формирую ответ...{Colors.RESET}")
     return response
 
