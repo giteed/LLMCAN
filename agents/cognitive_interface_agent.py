@@ -8,6 +8,8 @@
 import sys
 from pathlib import Path
 import readline
+global USE_TOR
+
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
