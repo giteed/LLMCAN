@@ -114,12 +114,9 @@ def disable_tor():
         print("TOR уже выключен или не был включен.")
 
 def query_ddgr(search_query):
-    command = ["ddgr", "--json", search_query]
+    command = ["torsocks", "ddgr", "--json", search_query] if USE_TOR else ["ddgr", "--json", search_query]
     try:
-        if USE_TOR:
-            result = subprocess.check_output(["torsocks"] + command, universal_newlines=True)
-        else:
-            result = subprocess.check_output(command, universal_newlines=True)
+        result = subprocess.check_output(command, universal_newlines=True)
         return json.loads(result)
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при выполнении ddgr: {e}")
@@ -158,10 +155,8 @@ def query_llm(prompt, include_history=True):
     }
 
     try:
-        # Используем отдельную сессию без прокси для запросов к LLM API
-        with requests.Session() as session:
-            session.proxies = {}  # Сбрасываем все прокси
-            response = session.post(LLM_API_URL, json=payload)
+        # Всегда используем прямое соединение для LLM API
+        response = requests.post(LLM_API_URL, json=payload)
         response.raise_for_status()
         return response.json().get("response", "<Нет ответа>")
     except requests.RequestException as e:
@@ -260,6 +255,9 @@ def process_search_results(results, instruction, user_language):
 Обработай результаты согласно инструкции и сформируй ответ в формате Markdown на языке пользователя: {user_language}."""
 
     response = query_llm(context, include_history=True)
+    if response is None:
+        print(f"{Colors.RED}Не удалось получить ответ от LLM. Возвращаю необработанные результаты поиска.{Colors.RESET}")
+        return json.dumps(results, ensure_ascii=False, indent=2)
     print(f"{Colors.GREEN}Анализ завершен. Формирую ответ...{Colors.RESET}")
     return response
 
