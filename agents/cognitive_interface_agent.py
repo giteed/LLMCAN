@@ -44,15 +44,18 @@ def main():
             if search_results:
                 user_language = detect_language(user_input)
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
-                references = [result['url'] for result in search_results[0] if 'url' in result]
-                formatted_response = format_response_with_references(response, references)
-                print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
-                print_message("Агент", formatted_response)
-                
-                dialog_history.append({"role": "user", "content": user_input})
-                dialog_history.append({"role": "assistant", "content": formatted_response})
-                save_dialog_history()
-                save_report(preprocessed, formatted_response)
+                if response:
+                    references = [result['url'] for result in search_results[0] if 'url' in result]
+                    formatted_response = format_response_with_references(response, references)
+                    print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
+                    print_message("Агент", formatted_response)
+                    
+                    dialog_history.append({"role": "user", "content": user_input})
+                    dialog_history.append({"role": "assistant", "content": formatted_response})
+                    save_dialog_history()
+                    save_report(preprocessed, formatted_response)
+                else:
+                    print_message("Агент", "Не удалось обработать результаты поиска. Пожалуйста, попробуйте еще раз.")
             else:
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
