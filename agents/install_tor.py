@@ -10,9 +10,11 @@ def check_root():
 
 def run_command(command):
     try:
-        subprocess.run(command, check=True)
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
+        return result.stdout.strip()
     except subprocess.CalledProcessError as e:
         print(f"Ошибка при выполнении команды {' '.join(command)}: {e}")
+        print(f"Вывод ошибки: {e.stderr}")
         sys.exit(1)
 
 def install_tor():
@@ -31,7 +33,15 @@ def install_tor():
         run_command(["dnf", "update", "-y", "--refresh"])
         run_command(["dnf", "install", "-y", "tor"])
         print("Tor успешно установлен.")
-        run_command(["firewall-cmd", "--add-service=tor", "--permanent"])
+        
+        # Проверяем, существует ли сервис tor в firewalld
+        firewall_services = run_command(["firewall-cmd", "--get-services"])
+        if "tor" in firewall_services:
+            run_command(["firewall-cmd", "--add-service=tor", "--permanent"])
+        else:
+            print("Сервис 'tor' не найден в firewalld. Открываем порт 9050/tcp.")
+            run_command(["firewall-cmd", "--add-port=9050/tcp", "--permanent"])
+        
         run_command(["firewall-cmd", "--reload"])
     except Exception as e:
         print(f"Ошибка при установке Tor: {e}")
@@ -44,11 +54,11 @@ def start_tor_service():
 
 def check_tor_status():
     try:
-        result = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True)
-        if result.stdout.strip() == "active":
+        status = run_command(["systemctl", "is-active", "tor"])
+        if status == "active":
             print("Сервис Tor активен.")
         else:
-            print("Сервис Tor не активен.")
+            print(f"Сервис Tor не активен. Статус: {status}")
     except subprocess.CalledProcessError as e:
         print(f"Ошибка при проверке статуса Tor: {e}")
 
