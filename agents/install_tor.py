@@ -16,8 +16,21 @@ def run_command(command):
         print(f"Ошибка при выполнении команды {' '.join(command)}: {e}")
         print(f"Вывод ошибки: {e.stderr}")
         sys.exit(1)
+def check_tor_installed():
+    try:
+        result = subprocess.run(["rpm", "-q", "tor"], capture_output=True, text=True)
+        return result.returncode == 0
+    except subprocess.CalledProcessError:
+        return False
 
 def install_tor():
+    print("Проверяю, установлен ли Tor...")
+    if check_tor_installed():
+        choice = input("Tor уже установлен. Хотите переустановить? (yes/enter для пропуска): ")
+        if choice.lower() != 'yes':
+            print("Пропускаю установку Tor.")
+            return
+    
     print("Начинаю установку Tor...")
     try:
         # Удаляем старый ключ и репозиторий ELRepo
