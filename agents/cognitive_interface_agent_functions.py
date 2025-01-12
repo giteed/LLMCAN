@@ -81,33 +81,32 @@ def load_dialog_history():
     else:
         dialog_history = []
 
-def get_ip_address():
+def get_local_ip():
     try:
-        return requests.get('https://api.ipify.org').text
-    except requests.RequestException:
-        return "Не удалось получить IP-адрес"
+        return subprocess.check_output("hostname -I | awk '{print $1}'", shell=True).decode().strip()
+    except subprocess.CalledProcessError:
+        return "Не удалось получить локальный IP"
+
+def check_tor_status():
+    try:
+        result = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True)
+        return result.stdout.strip() == "active"
+    except subprocess.CalledProcessError:
+        return False
 
 def enable_tor():
     global USE_TOR
-    USE_TOR = True
-    socks.set_default_proxy(socks.SOCKS5, "localhost", 9050)
-    socket.socket = socks.socksocket
-    
-    real_ip = get_ip_address()
-    print(f"Реальный адрес: {real_ip}")
-    
-    # Включаем TOR
-    socks.set_default_proxy(socks.SOCKS5, "localhost", 9050)
-    socket.socket = socks.socksocket
-    
-    tor_ip = get_ip_address()
-    print(f"TOR адрес: {tor_ip}")
-    
-    if real_ip != tor_ip:
+    if check_tor_status():
+        print("TOR уже включен.")
+        USE_TOR = True
+        return
+
+    try:
+        subprocess.run(["systemctl", "start", "tor"], check=True)
         print("TOR успешно включен.")
-        test_ddgr_query()
-    else:
-        print("Ошибка: TOR не работает. IP-адрес не изменился.")
+        USE_TOR = True
+    except subprocess.CalledProcessError:
+        print("Не удалось включить TOR.")
         USE_TOR = False
 
 def disable_tor():
@@ -115,23 +114,6 @@ def disable_tor():
     USE_TOR = False
     socket.socket = socket._real_socket
     print("TOR выключен.")
-
-def test_ddgr_query():
-    print("Тестовый запрос к ddgr: \"Свежие актуальные новости\".")
-    results = query_ddgr("Свежие актуальные новости")
-    if results:
-        print("Получен ответ от ddgr.")
-        process_news_results(results)
-    else:
-        print("Не удалось получить ответ от ddgr.")
-
-def process_news_results(results):
-    print("\n=== Сводка последних новостей ===")
-    for i, result in enumerate(results[:5], 1):
-        print(f"{i}. {result['title']}")
-        print(f"   {result['abstract']}")
-        print(f"   Источник: {result['url']}\n")
-    print("==================================")
 
 def handle_command(command):
     if command.lower() == '/toron':
@@ -183,9 +165,9 @@ def query_llm(prompt, include_history=True):
     }
 
     try:
-        # Используем обычное соединение для LLM API, даже если TOR включен
         with requests.Session() as session:
-            session.proxies = {}  # Сбрасываем прокси для этого запроса
+            if USE_TOR:
+                session.proxies = {}  # Отключаем использование TOR для этого запроса
             response = session.post(LLM_API_URL, json=payload)
         response.raise_for_status()
         return response.json().get("response", "<Нет ответа>")
@@ -261,10 +243,8 @@ def save_temp_result(result, query_number):
     with open(file_path, "w", encoding='utf-8') as file:
         json.dump(result, file, ensure_ascii=False, indent=2)
 
-
 def process_intermediate_result(result, query_number):
     print(f"{Colors.GREEN}Промежуточный результат для запроса {query_number}:{Colors.RESET}")
-        # Здесь можно добавить логику обработки промежуточных результатов
     if result and isinstance(result, list) and len(result) > 0:
         print(f"Найдено {len(result)} результатов:")
         for i, item in enumerate(result[:3], 1):  # Выводим первые 3 результата
@@ -281,8 +261,7 @@ def process_search_results(results, instruction, user_language):
 Результаты поиска:
 {json.dumps(results, ensure_ascii=False, indent=2)}
 
-Обработай результаты согласно инструкции и сформируй ответ в формате Markdown на языке пользователя: {user_language}. 
-Используй текущую дату и время: {get_current_datetime()} при формировании ответа."""
+Обработай результаты согласно инструкции и сформируй ответ в формате Markdown на языке пользователя: {user_language}."""
 
     response = query_llm(context, include_history=True)
     print(f"{Colors.GREEN}Анализ завершен. Формирую ответ...{Colors.RESET}")
@@ -329,46 +308,5 @@ def detect_language(text):
     else:
         return 'en'
 
-# === Основной процесс ===
-def main():
-    load_dialog_history()
-    
-    print(f"{Colors.YELLOW}Добро пожаловать в Когнитивный Интерфейсный Агент!{Colors.RESET}")
-    print(f"{Colors.YELLOW}Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
-    print(f"{Colors.YELLOW}Для поиска используйте ключевые слова 'поищи' или 'найди'.{Colors.RESET}")
-
-    try:
-        while True:
-            user_input = get_multiline_input()
-            
-            if user_input.lower() in ['/q', 'выход']:
-                print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
-                break
-            
-            print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
-            preprocessed = preprocess_query(user_input)
-            search_results = perform_search(preprocessed['queries'])
-            
-            if search_results:
-                user_language = detect_language(user_input)
-                response = process_search_results(search_results, preprocessed['instruction'], user_language)
-                references = [result['url'] for result in search_results[0] if 'url' in result]
-                formatted_response = format_response_with_references(response, references)
-                print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
-                print_message("Агент", formatted_response)
-                
-                dialog_history.append({"role": "user", "content": user_input})
-                dialog_history.append({"role": "assistant", "content": formatted_response})
-                save_dialog_history()
-                save_report(preprocessed, formatted_response)
-            else:
-                print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
-    except KeyboardInterrupt:
-        print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
-    finally:
-        save_dialog_history()
-
 if __name__ == "__main__":
     main()
-
-
