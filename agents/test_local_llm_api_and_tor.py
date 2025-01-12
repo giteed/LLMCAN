@@ -14,11 +14,6 @@ USE_TOR = True
 def test_llm_connection():
     logger.info("Начало теста подключения к LLM API")
     
-    if USE_TOR:
-        logger.info("Настройка TOR соединения")
-        socks.set_default_proxy(socks.SOCKS5, "localhost", 9050)
-        socket.socket = socks.socksocket
-    
     payload = {
         "model": "qwen2:7b",
         "prompt": "Тестовый запрос",
@@ -27,7 +22,10 @@ def test_llm_connection():
 
     try:
         logger.info(f"Отправка запроса к {LLM_API_URL}")
-        response = requests.post(LLM_API_URL, json=payload, timeout=10)
+        # Используем отдельную сессию без прокси для запросов к LLM API
+        with requests.Session() as session:
+            session.proxies = {}  # Сбрасываем все прокси
+            response = session.post(LLM_API_URL, json=payload, timeout=10)
         logger.info(f"Статус ответа: {response.status_code}")
         logger.info(f"Содержимое ответа: {response.text[:100]}...")  # Выводим первые 100 символов ответа
         response.raise_for_status()
@@ -35,6 +33,7 @@ def test_llm_connection():
     except requests.exceptions.RequestException as e:
         logger.error(f"Ошибка при отправке запроса: {e}")
         return None
+
 
 if __name__ == "__main__":
     result = test_llm_connection()
