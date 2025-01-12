@@ -61,6 +61,7 @@ class Colors:
 
 # === Глобальные переменные ===
 dialog_history = []
+USE_TOR = False
 
 # === Функции ===
 def save_dialog_history():
@@ -134,51 +135,57 @@ def query_llm(prompt, include_history=True):
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
 
-def preprocess_query(user_input):
-    print(f"{Colors.YELLOW}Запрос пользователя получен. Начинаю анализ и формирование поисковых запросов...{Colors.RESET}")
-    system_prompt = """Проанализируй запрос пользователя, исправь возможные ошибки и сформулируй до трех связанных поисковых запросов для расширения контекста. Также создай инструкцию для обработки результатов поиска.
+def preprocess_query(user_input, previous_query=None):
+    print(f"{Colors.YELLOW}Запрос пользователя получен. Начинаю анализ...{Colors.RESET}")
+    system_prompt = f"""Проанализируй запрос пользователя и определи, требуется ли для ответа поиск в интернете.
+Если запрос начинается с '/', это команда, которую нужно выполнить локально.
+Если явно указано "поищи" или "найди", выполни поиск в интернете.
+В остальных случаях попробуй ответить, используя свои знания.
+
+Предыдущий запрос пользователя (если есть):
+{previous_query}
+
+Текущий запрос пользователя:
+{user_input}
 
 Формат ответа:
-Основной запрос: [исправленный запрос пользователя]
-Дополнительные запросы:
+Тип запроса: [локальная команда/интернет-поиск/локальный ответ]
+Обработанный запрос: [обработанный текст запроса]
+Дополнительные запросы для поиска (если применимо):
 1. [запрос 1]
 2. [запрос 2]
-3. [запрос 3] (если необходимо)
+3. [запрос 3]
 
 Инструкция для обработки результатов:
-[Детальная инструкция по обработке и форматированию результатов поиска]"""
+[Детальная инструкция по обработке и форматированию результатов]"""
 
-    context = f"Запрос пользователя: {user_input}\n\n{system_prompt}"
-    response = query_llm(context, include_history=False)
-    preprocessed = parse_preprocessing_response(response)
-    
-    print(f"{Colors.YELLOW}Анализ завершен. Сформированы следующие запросы:{Colors.RESET}")
-    for i, query in enumerate(preprocessed['queries'], 1):
-        print(f"{Colors.YELLOW}{i}. {query}{Colors.RESET}")
-    return preprocessed
+    response = query_llm(system_prompt, include_history=False)
+    return parse_preprocessing_response(response)
 
 def parse_preprocessing_response(response):
     lines = response.split('\n')
-    queries = []
-    instruction = ""
+    result = {
+        "type": "",
+        "query": "",
+        "additional_queries": [],
+        "instruction": ""
+    }
     parsing_instruction = False
 
     for line in lines:
-        if line.startswith("Основной запрос:"):
-            queries.append(line.split(": ", 1)[1].strip())
-        elif line.startswith("Дополнительные запросы:"):
-            continue
+        if line.startswith("Тип запроса:"):
+            result["type"] = line.split(": ", 1)[1].strip().lower()
+        elif line.startswith("Обработанный запрос:"):
+            result["query"] = line.split(": ", 1)[1].strip()
         elif line.startswith(("1. ", "2. ", "3. ")):
-            queries.append(line.split(". ", 1)[1].strip())
+            result["additional_queries"].append(line.split(". ", 1)[1].strip())
         elif line.startswith("Инструкция для обработки результатов:"):
             parsing_instruction = True
         elif parsing_instruction:
-            instruction += line + "\n"
+            result["instruction"] += line + "\n"
 
-    return {
-        "queries": queries[:3],  # Ограничиваем количество запросов до 3
-        "instruction": instruction.strip()
-    }
+    result["instruction"] = result["instruction"].strip()
+    return result
 
 def perform_search(queries):
     results = []
@@ -250,8 +257,7 @@ def get_multiline_input():
 def save_report(preprocessed, response):
     with open(REPORT_FILE, "a", encoding='utf-8') as file:
         file.write(f"Дата и время: {get_current_datetime()}\n")
-        file.write(f"Запросы:\n{json.dumps(preprocessed['queries'], ensure_ascii=False, indent=2)}\n")
-        file.write(f"Инструкция:\n{preprocessed['instruction']}\n")
+        file.write(f"Запросы:\n{json.dumps(preprocessed, ensure_ascii=False, indent=2)}\n")
         file.write(f"Ответ модели:\n{response}\n")
         file.write("-" * 50 + "\n")
 
@@ -261,15 +267,29 @@ def detect_language(text):
     else:
         return 'en'
 
+def process_local_command(command):
+    global USE_TOR
+    if command == "/toron":
+        USE_TOR = True
+        return "TOR включен."
+    elif command == "/toroff":
+        USE_TOR = False
+        return "TOR выключен."
+    else:
+        return f"Неизвестная команда: {command}"
+
 # === Основной процесс ===
 def main():
+    global USE_TOR
     load_dialog_history()
     
     print(f"{Colors.YELLOW}Добро пожаловать в Когнитивный Интерфейсный Агент!{Colors.RESET}")
     print(f"{Colors.YELLOW}Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
     print(f"{Colors.YELLOW}Для поиска используйте ключевые слова 'поищи' или 'найди'.{Colors.RESET}")
+    print(f"{Colors.YELLOW}Используйте /toron для включения TOR и /toroff для выключения.{Colors.RESET}")
 
     try:
+        previous_query = None
         while True:
             user_input = get_multiline_input()
             
@@ -278,27 +298,19 @@ def main():
                 break
             
             print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
-            preprocessed = preprocess_query(user_input)
-            search_results = perform_search(preprocessed['queries'])
+            preprocessed = preprocess_query(user_input, previous_query)
             
-            if search_results:
-                user_language = detect_language(user_input)
-                response = process_search_results(search_results, preprocessed['instruction'], user_language)
-                references = [result['url'] for result in search_results[0] if 'url' in result]
-                formatted_response = format_response_with_references(response, references)
-                print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
-                print_message("Агент", formatted_response)
-                
-                dialog_history.append({"role": "user", "content": user_input})
-                dialog_history.append({"role": "assistant", "content": formatted_response})
-                save_dialog_history()
-                save_report(preprocessed, formatted_response)
-            else:
-                print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
-    except KeyboardInterrupt:
-        print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
-    finally:
-        save_dialog_history()
-
-if __name__ == "__main__":
-    main()
+            if preprocessed["type"] == "локальная команда":
+                response = process_local_command(preprocessed["query"])
+                print_message("Агент", response)
+            elif preprocessed["type"] == "интернет-поиск":
+                search_results = perform_search([preprocessed["query"]] + preprocessed["additional_queries"])
+                if search_results:
+                    user_language = detect_language(user_input)
+                    response = process_search_results(search_results, preprocessed["instruction"], user_language)
+                    references = [result['url'] for result in search_results[0] if 'url' in result]
+                    formatted_response = format_response_with_references(response, references)
+                    print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
+                    print_message("Агент", formatted_response)
+                    
+                    dialog_history.append({"role": "user", "content
