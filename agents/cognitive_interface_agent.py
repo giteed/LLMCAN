@@ -1,6 +1,3 @@
-Вот полный код скрипта cognitive_interface_agent.py с учетом предыдущего варианта и внесенных изменений:
-
-```python
 #!/usr/bin/env python3
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
@@ -323,8 +320,3 @@ def main():
             
             print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
             preprocessed = preprocess_query(user_input)
-
-Citations:
-[1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/45218807/79479645-1870-4208-b17b-a7c7a41bd8a8/paste.txt
-[2] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/45218807/3ecd27c9-966a-4339-8cdc-b9577c1dc8e1/paste-2.txt
-[3] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/45218807/e3853535-0d6c-40ac-913d-40def3e91e43/paste-3.txt
