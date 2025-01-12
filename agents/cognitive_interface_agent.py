@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.1
+# Версия: 2.2
 # ==================================================
 
 import sys
@@ -14,8 +14,6 @@ sys.path.insert(0, str(project_root))
 
 from settings import BASE_DIR, LLM_API_URL
 from cognitive_interface_agent_functions import *
-
-# В файле cognitive_interface_agent.py
 
 def main():
     load_dialog_history()
@@ -34,18 +32,8 @@ def main():
                 break
             
             if user_input.startswith('/'):
-                command = user_input.lower().split()[0]
-                if command == '/toron':
-                    USE_TOR = True
-                    print(f"{Colors.GREEN}TOR включен.{Colors.RESET}")
-                    continue
-                elif command == '/toroff':
-                    USE_TOR = False
-                    print(f"{Colors.GREEN}TOR выключен.{Colors.RESET}")
-                    continue
-                else:
-                    print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
-                    continue
+                handle_command(user_input)
+                continue
             
             print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
             preprocessed = preprocess_query(user_input)
@@ -59,9 +47,7 @@ def main():
                 print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
                 print_message("Агент", formatted_response)
                 
-                dialog_history.append({"role": "user", "content": user_input})
-                dialog_history.append({"role": "assistant", "content": formatted_response})
-                save_dialog_history()
+                update_dialog_history(user_input, formatted_response)
                 save_report(preprocessed, formatted_response)
             else:
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
@@ -69,7 +55,6 @@ def main():
         print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
     finally:
         save_dialog_history()
-
 
 if __name__ == "__main__":
     main()
