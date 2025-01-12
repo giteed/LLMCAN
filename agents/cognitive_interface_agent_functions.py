@@ -16,7 +16,6 @@ import time
 import uuid
 import socket
 import socks
-import readline
 
 from settings import BASE_DIR, LLM_API_URL
 
@@ -58,6 +57,7 @@ class Colors:
 # === Глобальные переменные ===
 dialog_history = []
 USE_TOR = False
+original_socket = None
 
 # === Функции ===
 def save_dialog_history():
@@ -113,18 +113,13 @@ def disable_tor():
     else:
         print("TOR уже выключен или не был включен.")
 
-def handle_command(command):
-    if command.lower() == '/toron':
-        enable_tor()
-    elif command.lower() == '/toroff':
-        disable_tor()
-    else:
-        print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
-
 def query_ddgr(search_query):
     command = ["ddgr", "--json", search_query]
     try:
-        result = subprocess.check_output(command, universal_newlines=True)
+        if USE_TOR:
+            result = subprocess.check_output(["torsocks"] + command, universal_newlines=True)
+        else:
+            result = subprocess.check_output(command, universal_newlines=True)
         return json.loads(result)
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при выполнении ddgr: {e}")
@@ -286,7 +281,8 @@ def print_message(role, message):
     print("└" + "─" * 50)
 
 def get_multiline_input():
-    print(f"{Colors.BLUE}Вы (введите пустую строку для завершения ввода):{Colors.RESET}")
+    prefix = "Вы(tor): " if USE_TOR else "Вы: "
+    print(f"{Colors.BLUE}{prefix}{Colors.RESET}", end="")
     lines = []
     while True:
         line = input()
@@ -308,6 +304,7 @@ def detect_language(text):
         return 'ru'
     else:
         return 'en'
+
 
 if __name__ == "__main__":
     main()
