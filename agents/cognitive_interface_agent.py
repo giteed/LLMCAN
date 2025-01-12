@@ -15,12 +15,15 @@ sys.path.insert(0, str(project_root))
 from settings import BASE_DIR, LLM_API_URL
 from cognitive_interface_agent_functions import *
 
+# В файле cognitive_interface_agent.py
+
 def main():
     load_dialog_history()
     
     print(f"{Colors.YELLOW}Добро пожаловать в Когнитивный Интерфейсный Агент!{Colors.RESET}")
     print(f"{Colors.YELLOW}Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
     print(f"{Colors.YELLOW}Для поиска используйте ключевые слова 'поищи' или 'найди'.{Colors.RESET}")
+    print(f"{Colors.YELLOW}Используйте /toron для включения TOR и /toroff для выключения.{Colors.RESET}")
 
     try:
         while True:
@@ -29,6 +32,20 @@ def main():
             if user_input.lower() in ['/q', 'выход']:
                 print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
                 break
+            
+            if user_input.startswith('/'):
+                command = user_input.lower().split()[0]
+                if command == '/toron':
+                    USE_TOR = True
+                    print(f"{Colors.GREEN}TOR включен.{Colors.RESET}")
+                    continue
+                elif command == '/toroff':
+                    USE_TOR = False
+                    print(f"{Colors.GREEN}TOR выключен.{Colors.RESET}")
+                    continue
+                else:
+                    print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
+                    continue
             
             print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
             preprocessed = preprocess_query(user_input)
@@ -52,6 +69,7 @@ def main():
         print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
     finally:
         save_dialog_history()
+
 
 if __name__ == "__main__":
     main()
