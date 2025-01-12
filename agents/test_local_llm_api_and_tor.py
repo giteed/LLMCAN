@@ -29,6 +29,7 @@ def toggle_tor(enable=True):
             USE_TOR = False
             logger.info("TOR выключен")
 
+
 def test_llm_connection():
     logger.info("Начало теста подключения к LLM API")
     
