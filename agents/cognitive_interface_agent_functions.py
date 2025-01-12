@@ -171,6 +171,7 @@ def query_llm(prompt, include_history=True):
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
 
+
 def preprocess_query(user_input):
     print(f"{Colors.YELLOW}Запрос пользователя получен. Начинаю анализ и формирование поисковых запросов...{Colors.RESET}")
     system_prompt = """Проанализируй запрос пользователя, исправь возможные ошибки и сформулируй до трех связанных поисковых запросов для расширения контекста. Также создай инструкцию для обработки результатов поиска.
@@ -268,6 +269,18 @@ def process_search_results(results, instruction, user_language):
         return json.dumps(results, ensure_ascii=False, indent=2)
     print(f"{Colors.GREEN}Анализ завершен. Формирую ответ...{Colors.RESET}")
     return response
+
+def get_multiline_input():
+    prefix = "Вы(tor): " if USE_TOR else "Вы: "
+    print(f"{Colors.BLUE}{prefix}{Colors.RESET}", end="")
+    lines = []
+    while True:
+        line = input()
+        if line.strip() == "":
+            break
+        lines.append(line)
+    return "\n".join(lines)
+
 
 def format_response_with_references(response, references):
     formatted_response = response
