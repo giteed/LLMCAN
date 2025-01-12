@@ -51,7 +51,9 @@ def main():
                 print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
                 print_message("Агент", formatted_response)
                 
-                update_dialog_history(user_input, formatted_response)
+                dialog_history.append({"role": "user", "content": user_input})
+                dialog_history.append({"role": "assistant", "content": formatted_response})
+                save_dialog_history()
                 save_report(preprocessed, formatted_response)
             else:
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
