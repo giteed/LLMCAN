@@ -88,8 +88,6 @@ def handle_command(command):
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
-
-
 def save_dialog_history():
     try:
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -138,7 +136,6 @@ def enable_tor():
         else:
             print("Не удалось установить TOR соединение.")
 
-
 def disable_tor():
     global USE_TOR, original_socket
     if USE_TOR and original_socket:
@@ -160,7 +157,6 @@ def check_tor_settings():
             print("torsocks настроен для пропуска локальных адресов.")
     except Exception as e:
         print(f"Не удалось проверить настройки TOR: {e}")
-
 
 def query_ddgr(search_query):
     if USE_TOR and not check_tor_connection():
@@ -184,7 +180,6 @@ def query_ddgr(search_query):
         logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
         print(f"{Colors.RED}Отладка: Ошибка разбора JSON: {e}{Colors.RESET}")
         return None
-
 
 def generate_system_instruction(context):
     current_datetime = get_current_datetime()
@@ -223,7 +218,6 @@ def query_llm(prompt, include_history=True):
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
-
 
 def preprocess_query(user_input):
     print(f"{Colors.YELLOW}Запрос пользователя получен. Начинаю анализ и формирование поисковых запросов...{Colors.RESET}")
@@ -290,7 +284,6 @@ def perform_search(queries):
             time.sleep(DELAY_BETWEEN_REQUESTS)
     return results
 
-
 def save_temp_result(result, query_number):
     TEMP_DIR.mkdir(exist_ok=True)
     file_path = TEMP_DIR / f"result_{query_number}_{uuid.uuid4()}.json"
@@ -323,17 +316,6 @@ def process_search_results(results, instruction, user_language):
         return json.dumps(results, ensure_ascii=False, indent=2)
     print(f"{Colors.GREEN}Анализ завершен. Формирую ответ...{Colors.RESET}")
     return response
-
-def get_multiline_input():
-    prefix = "Вы(tor): " if USE_TOR else "Вы: "
-    print(f"{Colors.BLUE}{prefix}{Colors.RESET}", end="")
-    lines = []
-    while True:
-        line = input()
-        if line.strip() == "":
-            break
-        lines.append(line)
-    return "\n".join(lines)
 
 def format_response_with_references(response, references):
     formatted_response = response
@@ -376,7 +358,3 @@ def detect_language(text):
         return 'ru'
     else:
         return 'en'
-
-
-if __name__ == "__main__":
-    main()
