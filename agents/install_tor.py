@@ -11,8 +11,10 @@ def check_root():
 def install_tor():
     print("Начинаю установку Tor...")
     try:
+        subprocess.run(["rpm", "--import", "https://www.elrepo.org/RPM-GPG-KEY-elrepo.org"], check=True)
+        subprocess.run(["dnf", "clean", "all"], check=True)
         subprocess.run(["dnf", "install", "-y", "epel-release"], check=True)
-        subprocess.run(["dnf", "update", "-y"], check=True)
+        subprocess.run(["dnf", "update", "-y", "--refresh"], check=True)
         subprocess.run(["dnf", "install", "-y", "tor"], check=True)
         print("Tor успешно установлен.")
         subprocess.run(["firewall-cmd", "--add-service=tor", "--permanent"], check=True)
