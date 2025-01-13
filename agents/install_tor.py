@@ -88,8 +88,7 @@ def main():
     check_tor_status()
 
 
-import subprocess
-import time
+
 
 def restart_tor_and_check_ddgr():
     max_retries = 5
@@ -136,6 +135,7 @@ def restart_tor_and_check_ddgr():
 
     print("Не удалось настроить TOR после 5 попыток. Проверьте подключение.")
     return False
+
 
 
 if __name__ == "__main__":
