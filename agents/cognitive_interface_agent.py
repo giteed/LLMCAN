@@ -68,15 +68,19 @@ def main():
     try:
         while True:
             user_input = get_multiline_input()
+            user_input = user_input.strip().lower()
             
-            if user_input.lower() in ['/q', '/exit', 'выход']:
+            if user_input in ['/q', '/exit', 'выход']:
                 print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
                 break
-            elif user_input.lower() in ['/h', '/help']:
+            elif user_input in ['/h', '/help']:
                 show_help()
                 continue
             elif user_input.startswith('/'):
-                handle_command(user_input.lower())
+                handle_command(user_input)
+                continue
+            
+            if not user_input:
                 continue
             
             print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
@@ -104,6 +108,7 @@ def main():
         print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
     finally:
         save_dialog_history()
+
 
 if __name__ == "__main__":
     main()
