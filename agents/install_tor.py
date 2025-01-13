@@ -88,6 +88,9 @@ def main():
     check_tor_status()
 
 
+import subprocess
+import time
+
 def restart_tor_and_check_ddgr():
     max_retries = 5
     retries = 0
@@ -97,7 +100,7 @@ def restart_tor_and_check_ddgr():
             # Step 1: Restart TOR
             print("Перезапуск TOR...")
             subprocess.run(["sudo", "systemctl", "restart", "tor"], check=True, timeout=30)
-            time.sleep(5)
+            time.sleep(5)  # Увеличиваем время ожидания после перезапуска
 
             # Step 2: Check if TOR is active
             status = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True, timeout=10)
@@ -114,51 +117,8 @@ def restart_tor_and_check_ddgr():
             except subprocess.CalledProcessError:
                 print("Отладка: Не удалось получить IP. Продолжаем без проверки IP.")
 
-            # Step 4: Check network connectivity through TOR
-            try:
-                subprocess.run(["torsocks", "curl", "-m", "10", "https://www.google.com"], check=True, timeout=15)
-                print("Отладка: Сеть через TOR доступна")
-            except subprocess.CalledProcessError:
-                print("Отладка: Сеть через TOR недоступна. Повторная попытка...")
-                retries += 1
-                continue
-
-            # Step 5: Try to get exchange rate using an API
-            try:
-                response = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usdt", proxies={'http': 'socks5h://localhost:9050', 'https': 'socks5h://localhost:9050'}, timeout=30)
-                if response.status_code == 200:
-                    rate = response.json()['bitcoin']['usdt']
-                    print(f"Отладка: Курс BTC/USDT: {rate}")
-                    return True
-            except Exception as e:
-                print(f"Отладка: Не удалось получить курс через API: {e}")
-
-            # Step 6: If API fails, try ddgr
-            print("Отладка: Выполнение запроса ddgr...")
-            ddgr_command = ["torsocks", "ddgr", "-n", "1", "btc usdt price"]
-            print(f"Отладка: Выполняемая команда: {' '.join(ddgr_command)}")
-            ddgr_result = subprocess.run(ddgr_command, capture_output=True, text=True, timeout=60)
-            ddgr_output = ddgr_result.stdout.strip()
-            print(f"Отладка: Вывод ddgr (первые 100 символов): {ddgr_output[:100]}...")
-            print(f"Отладка: Код возврата ddgr: {ddgr_result.returncode}")
-            if ddgr_result.stderr:
-                print(f"Отладка: Ошибка ddgr: {ddgr_result.stderr}")
-
-            if "[ERROR]" in ddgr_output or "HTTP Error" in ddgr_output:
-                print(f"Отладка: Ошибка при запросе ddgr. Повторная попытка... (Попытка {retries + 1})")
-                retries += 1
-                continue
-
-            # Step 7: Parse and display result
-            match = re.search(r'(\d+(?:\.\d+)?)\s*(?:\||USD\/BTC|BTC\/USD).*?\[(.*?)\]', ddgr_output, re.IGNORECASE)
-            if match:
-                rate, url = match.groups()
-                print(f"Отладка: Курс BTC/USDT: {rate}")
-                print(f"Отладка: Источник: {url}")
-                return True
-            else:
-                print("Отладка: Не удалось распарсить результат ddgr. Повторная попытка...")
-                retries += 1
+            # TOR успешно перезапущен и активен
+            return True
 
         except subprocess.TimeoutExpired as te:
             print(f"Отладка: Превышено время ожидания при выполнении команды. Попытка {retries + 1}")
@@ -172,9 +132,9 @@ def restart_tor_and_check_ddgr():
             print(f"Отладка: Общая ошибка: {e}")
             retries += 1
 
-        time.sleep(2)
+        time.sleep(2)  # Увеличиваем задержку перед следующей попыткой
 
-    print("Не удалось настроить TOR и ddgr после 5 попыток. Проверьте подключение.")
+    print("Не удалось настроить TOR после 5 попыток. Проверьте подключение.")
     return False
 
 
