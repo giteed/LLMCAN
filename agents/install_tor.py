@@ -78,6 +78,14 @@ def check_tor_status():
     except subprocess.CalledProcessError as e:
         print(f"Ошибка при проверке статуса Tor: {e}")
 
+def perform_search(queries):
+    results = []
+    for query in queries:
+        result = query_ddgr(query)
+        if result:
+            results.append(result)
+    return results
+
 def main():
     if not check_root():
         print("Этот скрипт должен быть запущен с правами root.")
