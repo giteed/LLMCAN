@@ -137,28 +137,6 @@ def check_tor_status():
     except subprocess.CalledProcessError:
         return False
 
-def enable_tor():
-    global USE_TOR, original_socket
-    if not USE_TOR:
-        original_socket = socket.socket
-        socks.set_default_proxy(socks.SOCKS5, "localhost", 9050)
-        socket.socket = socks.socksocket
-        USE_TOR = True
-        print("TOR включен.")
-        if check_tor_connection():
-            print("TOR соединение успешно установлено.")
-        else:
-            print("Не удалось установить TOR соединение.")
-
-def disable_tor():
-    global USE_TOR, original_socket
-    if USE_TOR and original_socket:
-        socket.socket = original_socket
-        USE_TOR = False
-        print("TOR выключен.")
-    else:
-        print("TOR уже выключен или не был включен.")
-
 def check_tor_settings():
     try:
         with open('/etc/tor/torrc', 'r') as f:
