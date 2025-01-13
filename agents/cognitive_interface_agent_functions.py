@@ -17,11 +17,9 @@ import uuid
 import socket
 import socks
 import readline
-global USE_TOR
-USE_TOR = True
+
 from settings import BASE_DIR, LLM_API_URL
 from agents.install_tor import restart_tor_and_check_ddgr
-
 
 # === Настройки ===
 MODEL = "qwen2:7b"
@@ -91,8 +89,6 @@ def handle_command(command):
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
-
-
 def save_dialog_history():
     try:
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -147,8 +143,6 @@ def query_ddgr(search_query):
         print(f"{Colors.RED}Отладка: Ошибка разбора JSON: {e}{Colors.RESET}")
         return None
 
-
-
 def perform_search(queries):
     results = []
     for query in queries:
@@ -164,8 +158,6 @@ def perform_search(queries):
         else:
             print(f"{Colors.RED}Не удалось получить результаты для запроса после {max_retries} попыток{Colors.RESET}")
     return results
-
-
 
 
 def get_local_ip():
