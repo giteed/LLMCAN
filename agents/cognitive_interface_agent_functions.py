@@ -283,21 +283,28 @@ def parse_preprocessing_response(response):
         "instruction": instruction.strip()
     }
 
-def perform_search(queries):
-    results = []
-    for i, query in enumerate(queries, 1):
-        print(f"{Colors.YELLOW}Отправляю запрос {i}: {query}{Colors.RESET}")
-        result = query_ddgr(query)
-        if result:
-            print(f"{Colors.GREEN}Ответ на запрос {i} получен. Обрабатываю...{Colors.RESET}")
-            results.append(result)
-            save_temp_result(result, i)
-            process_intermediate_result(result, i)
-        else:
-            print(f"{Colors.RED}Не удалось получить результаты для запроса {i}{Colors.RESET}")
-        if i < len(queries):
-            time.sleep(DELAY_BETWEEN_REQUESTS)
-    return results
+def process_search_results(results, instruction, user_language):
+    context = f"""Инструкция: {instruction}
+
+Результаты поиска:
+{json.dumps(results, ensure_ascii=False, indent=2)}
+
+Текущая дата и время: {get_current_datetime()}
+
+Пожалуйста, проанализируйте предоставленные результаты поиска и сформируйте ответ на следующий вопрос пользователя:
+"{instruction}"
+
+Ваш ответ должен:
+1. Точно отвечать на вопрос пользователя, используя актуальную информацию из результатов поиска.
+2. Включать текущую дату и время, если это релевантно запросу.
+3. Быть структурированным, кратким и информативным.
+4. Использовать формат Markdown для лучшей читаемости.
+
+Ответ должен быть на языке пользователя: {user_language}."""
+
+    response = query_llm(context, include_history=True)
+    return response
+
 
 def save_temp_result(result, query_number):
     TEMP_DIR.mkdir(exist_ok=True)
