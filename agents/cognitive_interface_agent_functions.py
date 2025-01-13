@@ -133,7 +133,6 @@ def query_ddgr(search_query):
         print(f"{Colors.RED}Отладка: Ошибка разбора JSON: {e}{Colors.RESET}")
         return None
 
-
 def perform_search(queries):
     results = []
     for i, query in enumerate(queries, 1):
@@ -154,17 +153,15 @@ def perform_search(queries):
             print(f"Не удалось получить результаты для запроса {i} после 3 попыток")
     return results
 
-
 def print_intermediate_result(result):
     if isinstance(result, list) and len(result) > 0:
         print(f"Найдено {len(result)} результатов:")
-        for i, item in enumerate(result[:3], 1):  # Выводим первые 3 результата
+        for i, item in enumerate(result[:3], 1):
             title = item.get('title', 'Без названия')
             url = item.get('url', 'URL отсутствует')
             print(f"{i}. {title}\n   {url}\n")
     else:
         print("Нет доступных промежуточных результатов для отображения.")
-
 
 def get_local_ip():
     try:
@@ -185,7 +182,6 @@ def check_tor_settings():
             content = f.read()
             if 'ExcludeExitNodes' in content:
                 print("TOR настроен для исключения определенных выходных узлов.")
-        # Проверка настроек torsocks
         torsocks_output = subprocess.check_output(['torsocks', 'show_conf'], universal_newlines=True)
         if 'local = 127.0.0.0/255.0.0.0' in torsocks_output:
             print("torsocks настроен для пропуска локальных адресов.")
@@ -194,9 +190,6 @@ def check_tor_settings():
 
 def clean_query(query):
     return query.replace('"', '')
-
-
-
 
 def generate_system_instruction(context):
     current_datetime = get_current_datetime()
@@ -228,7 +221,6 @@ def query_llm(prompt, include_history=True):
     }
 
     try:
-        # Всегда используем прямое соединение для LLM API
         response = requests.post(LLM_API_URL, json=payload)
         response.raise_for_status()
         return response.json().get("response", "<Нет ответа>")
@@ -281,7 +273,7 @@ def parse_preprocessing_response(response):
             instruction += line + "\n"
 
     return {
-        "queries": queries[:3],  # Ограничиваем количество запросов до 3
+        "queries": queries[:3],
         "instruction": instruction.strip()
     }
 
@@ -305,13 +297,10 @@ def process_search_results(search_results, instruction, user_language):
 3. Быть структурированным, кратким и информативным.
 4. Использовать формат Markdown для лучшей читаемости.
 
-Ответ должен быть на языке пользователя: {user_language}.
+Ответ должен быть на языке пользователя: {user_language}."""
 
     response = query_llm(context, include_history=True)
-    if response is None:
-        return "Извините, не удалось обработать результаты поиска. Пожалуйста, попробуйте еще раз или переформулируйте запрос."
     return response
-
 
 def save_temp_result(result, query_number):
     TEMP_DIR.mkdir(exist_ok=True)
@@ -375,7 +364,6 @@ def get_multiline_input():
             break  # Завершаем ввод, если введена пустая строка после непустых строк
         lines.append(line)
     return "\n".join(lines)
-
 
 def save_report(preprocessed, response):
     with open(REPORT_FILE, "a", encoding='utf-8') as file:
