@@ -82,8 +82,6 @@ def handle_command(command):
     if command in ['/tor', '/t']:
         tor_status = "включен" if USE_TOR else "выключен"
         print(f"Режим опроса через TOR: {tor_status}")
-        if not USE_TOR:
-            print(f"{Colors.YELLOW}Включить TOR режим: /tn{Colors.RESET}")
     elif command in ['/toron', '/tn']:
         USE_TOR = True
         print(f"{Colors.GREEN}Режим опроса через TOR включен.{Colors.RESET}")
@@ -92,6 +90,7 @@ def handle_command(command):
         print(f"{Colors.YELLOW}Режим опроса через TOR выключен.{Colors.RESET}")
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
+
 
 def save_dialog_history():
     try:
