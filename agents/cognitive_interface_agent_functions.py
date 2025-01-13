@@ -146,18 +146,23 @@ def query_ddgr(search_query):
 def perform_search(queries):
     results = []
     for i, query in enumerate(queries, 1):
-        if USE_TOR:
-            print("Отладка: Проверка и перезапуск TOR перед запросом ddgr...")
-            restart_tor_and_check_ddgr()
-        result = query_ddgr(query)
-        if result:
-            results.append(result)
-            print(f"Ответ на запрос {i} получен. Обрабатываю...")
-            print("Промежуточный результат для запроса {i}:")
-            print_intermediate_result(result)
-        else:
-            print(f"Не удалось получить результаты для запроса {i}")
+        for attempt in range(3):  # Попытаемся 3 раза
+            if USE_TOR:
+                print("Отладка: Проверка и перезапуск TOR перед запросом ddgr...")
+                restart_tor_and_check_ddgr()
+            result = query_ddgr(query)
+            if result:
+                results.append(result)
+                print(f"Ответ на запрос {i} получен. Обрабатываю...")
+                print_intermediate_result(result)
+                break
+            else:
+                print(f"Попытка {attempt+1} не удалась. {'Повторяю запрос...' if attempt < 2 else 'Переход к следующему запросу.'}")
+                time.sleep(2)  # Пауза перед следующей попыткой
+        if not result:
+            print(f"Не удалось получить результаты для запроса {i} после 3 попыток")
     return results
+
 
 def print_intermediate_result(result):
     if isinstance(result, list) and len(result) > 0:
