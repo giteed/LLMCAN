@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.3
+# Версия: 2.4
 # ==================================================
 
 import sys
@@ -17,13 +17,15 @@ sys.path.insert(0, str(project_root))
 from settings import BASE_DIR, LLM_API_URL
 from cognitive_interface_agent_functions import *
 
-# Добавляем CYAN в класс Colors
+# Обновленный класс Colors
 class Colors:
     BLUE = "\033[94m"
     GREEN = "\033[92m"
     YELLOW = "\033[93m"
     RED = "\033[91m"
     CYAN = "\033[96m"
+    GRAY = "\033[90m"
+    BOLD = "\033[1m"
     RESET = "\033[0m"
 
 def show_help():
@@ -43,27 +45,36 @@ def check_tor_installation():
         print(f"{Colors.RED}torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
         return False
 
+def print_header():
+    print(f"{Colors.CYAN}{Colors.BOLD}")
+    print("╔═══════════════════════════════════════════════╗")
+    print("║                                               ║")
+    print("║        Интерфейс Агентского Поиска            ║")
+    print("║                                               ║")
+    print("╚═══════════════════════════════════════════════╝")
+    print(f"{Colors.RESET}")
+
 def main():
     global USE_TOR
     load_dialog_history()
+    
+    print_header()
     
     tor_installed = check_tor_installation()
     if tor_installed:
         tor_active = check_tor_connection()
         if tor_active:
-            print(f"{Colors.BLUE}TOR сервис активен в системе.{Colors.RESET}")
+            print(f"{Colors.BLUE}✓ TOR сервис активен в системе.{Colors.RESET}")
         else:
-            print(f"{Colors.YELLOW}TOR сервис неактивен в системе.{Colors.RESET}")
-        print(f"{Colors.YELLOW}Режим опроса через TOR по умолчанию выключен. Включить: /tn{Colors.RESET}")
+            print(f"{Colors.YELLOW}⚠ TOR сервис неактивен в системе.{Colors.RESET}")
+        print(f"{Colors.YELLOW}ℹ Режим опроса через TOR по умолчанию выключен. Включить: /tn{Colors.RESET}")
         USE_TOR = False
     else:
         USE_TOR = False
+    
     print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
-    print(f"{Colors.CYAN}Добро пожаловать в Интерфейс Агентского поиска!{Colors.RESET}")
     print(f"{Colors.CYAN}Введите /help для справки по командам.{Colors.RESET}")
     print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
-
-    # Остальной код функции main() остается без изменений
 
     try:
         while True:
@@ -108,7 +119,6 @@ def main():
         print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
     finally:
         save_dialog_history()
-
 
 if __name__ == "__main__":
     main()
