@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# install_tor.py
+# agents/install_tor.py
 
 import os
 import subprocess
