@@ -110,7 +110,7 @@ def restart_tor_and_check_ddgr():
 
             # Step 3: Get new IP address
             try:
-                ip_result = subprocess.run(["torsocks", "curl", "-m", "10", "https://api.ipify.org"], capture_output=True, text=True, timeout=15)
+                ip_result = subprocess.run(["torsocks", "curl", "-m", "10", "https://api.ipify.org"], capture_output=True, text=True, timeout=3)
                 new_ip = ip_result.stdout.strip()
                 print(f"Отладка: Новый IP через TOR: {new_ip}")
             except subprocess.CalledProcessError:
