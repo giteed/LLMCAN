@@ -4,6 +4,8 @@
 import os
 import subprocess
 import sys
+import time
+import re
 
 def check_root():
     return os.geteuid() == 0
@@ -83,6 +85,62 @@ def main():
     install_tor()
     start_tor_service()
     check_tor_status()
+
+def restart_tor_and_check_ddgr():
+    max_retries = 5
+    retries = 0
+
+    while retries < max_retries:
+        try:
+            # Step 1: Restart TOR
+            print("Перезапуск TOR...")
+            subprocess.run(["sudo", "systemctl", "restart", "tor"], check=True)
+            time.sleep(2)  # Даем TOR время на перезапуск
+
+            # Step 2: Check if TOR is active
+            status = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True)
+            if status.stdout.strip() != "active":
+                print("TOR не активен. Повторная попытка...")
+                retries += 1
+                continue
+
+            # Step 3: Get new IP address
+            ip_result = subprocess.run(["torsocks", "curl", "https://api.ipify.org"], capture_output=True, text=True)
+            new_ip = ip_result.stdout.strip()
+            print(f"Отладка: Новый IP через TOR: {new_ip}")
+
+            # Step 4: Test ddgr with a query
+            ddgr_result = subprocess.run(["torsocks", "ddgr", "-n", "1", "usdt/btc"], capture_output=True, text=True)
+            ddgr_output = ddgr_result.stdout.strip()
+
+            if "[ERROR]" in ddgr_output or "HTTP Error" in ddgr_output:
+                print(f"Отладка: Ошибка при запросе ddgr. Повторная попытка... (Попытка {retries + 1})")
+                retries += 1
+                time.sleep(1)
+                continue
+
+            # Step 5: Parse and display result
+            match = re.search(r'(\d+\.\d+)\s*\|\s*BTC USDT.*\[(.*?)\]', ddgr_output)
+            if match:
+                rate, url = match.groups()
+                print(f"Отладка: Курс BTC/USDT: {rate}")
+                print(f"Отладка: Источник: {url}")
+                return True
+            else:
+                print("Отладка: Не удалось распарсить результат ddgr. Повторная попытка...")
+                retries += 1
+
+        except subprocess.CalledProcessError as e:
+            print(f"Отладка: Ошибка при выполнении команды: {e}")
+            retries += 1
+        except Exception as e:
+            print(f"Отладка: Общая ошибка: {e}")
+            retries += 1
+
+        time.sleep(1)  # Небольшая задержка перед следующей попыткой
+
+    print("Не удалось настроить TOR и ddgr после 5 попыток. Проверьте подключение.")
+    return False
 
 if __name__ == "__main__":
     main()
