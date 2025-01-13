@@ -49,21 +49,21 @@ def main():
     
     tor_installed = check_tor_installation()
     if tor_installed:
-        try:
-            if check_tor_connection():
-                print(f"{Colors.BLUE}TOR соединение активно.{Colors.RESET}")
-                USE_TOR = True
-            else:
-                print(f"{Colors.BLUE}TOR соединение неактивно. Работа будет выполняться без TOR.{Colors.RESET}")
-                USE_TOR = False
-        except Exception as e:
-            print(f"{Colors.RED}Ошибка при проверке TOR: {e}. Работа будет выполняться без TOR.{Colors.RESET}")
-            USE_TOR = False
+        tor_active = check_tor_connection()
+        if tor_active:
+            print(f"{Colors.BLUE}TOR сервис активен в системе.{Colors.RESET}")
+        else:
+            print(f"{Colors.YELLOW}TOR сервис неактивен в системе.{Colors.RESET}")
+        print(f"{Colors.YELLOW}Режим опроса через TOR по умолчанию выключен. Включить: /tn{Colors.RESET}")
+        USE_TOR = False
     else:
         USE_TOR = False
-
-    print(f"{Colors.CYAN}Добро пожаловать в Агент поиска!{Colors.RESET}")
+    print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
+    print(f"{Colors.CYAN}Добро пожаловать в Интерфейс Агентского поиска!{Colors.RESET}")
     print(f"{Colors.CYAN}Введите /help для справки по командам.{Colors.RESET}")
+    print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
+
+    # Остальной код функции main() остается без изменений
 
     try:
         while True:
