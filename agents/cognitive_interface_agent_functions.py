@@ -124,6 +124,7 @@ def perform_search(queries):
     return results
 
 
+
 def get_local_ip():
     try:
         return subprocess.check_output("hostname -I | awk '{print $1}'", shell=True).decode().strip()
