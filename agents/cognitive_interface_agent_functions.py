@@ -114,6 +114,36 @@ def load_dialog_history():
             dialog_history = []
     else:
         dialog_history = []
+def query_ddgr(search_query):
+    global USE_TOR
+    
+    # Очищаем запрос от кавычек
+    cleaned_query = clean_query(search_query)
+    
+    if USE_TOR:
+        command = ["torsocks", "ddgr", "--json", cleaned_query]
+    else:
+        command = ["ddgr", "--json", cleaned_query]
+    
+    print(f"{Colors.YELLOW}Отладка: Использование TOR: {'Да' if USE_TOR else 'Нет'}{Colors.RESET}")
+    print(f"{Colors.YELLOW}Отладка: Выполняемая команда: {' '.join(command)}{Colors.RESET}")
+    
+    try:
+        result = subprocess.check_output(command, universal_newlines=True)
+        if "[ERROR] HTTP Error 202: Accepted" in result:
+            print(f"{Colors.RED}Отладка: Получена ошибка HTTP 202. Повторная попытка...{Colors.RESET}")
+            time.sleep(2)
+            return None
+        print(f"{Colors.GREEN}Отладка: Запрос успешно выполнен{Colors.RESET}")
+        return json.loads(result)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Ошибка при выполнении ddgr: {e}")
+        print(f"{Colors.RED}Отладка: Ошибка выполнения команды: {e}{Colors.RESET}")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
+        print(f"{Colors.RED}Отладка: Ошибка разбора JSON: {e}{Colors.RESET}")
+        return None
 
 
 def perform_search(queries):
@@ -155,36 +185,6 @@ def check_tor_settings():
 def clean_query(query):
     return query.replace('"', '')
 
-def query_ddgr(search_query):
-    global USE_TOR
-    
-    # Очищаем запрос от кавычек
-    cleaned_query = clean_query(search_query)
-    
-    if USE_TOR:
-        command = ["torsocks", "ddgr", "--json", cleaned_query]
-    else:
-        command = ["ddgr", "--json", cleaned_query]
-    
-    print(f"{Colors.YELLOW}Отладка: Использование TOR: {'Да' if USE_TOR else 'Нет'}{Colors.RESET}")
-    print(f"{Colors.YELLOW}Отладка: Выполняемая команда: {' '.join(command)}{Colors.RESET}")
-    
-    try:
-        result = subprocess.check_output(command, universal_newlines=True)
-        if "[ERROR] HTTP Error 202: Accepted" in result:
-            print(f"{Colors.RED}Отладка: Получена ошибка HTTP 202. Повторная попытка...{Colors.RESET}")
-            time.sleep(2)
-            return None
-        print(f"{Colors.GREEN}Отладка: Запрос успешно выполнен{Colors.RESET}")
-        return json.loads(result)
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Ошибка при выполнении ddgr: {e}")
-        print(f"{Colors.RED}Отладка: Ошибка выполнения команды: {e}{Colors.RESET}")
-        return None
-    except json.JSONDecodeError as e:
-        logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
-        print(f"{Colors.RED}Отладка: Ошибка разбора JSON: {e}{Colors.RESET}")
-        return None
 
 
 
