@@ -152,10 +152,19 @@ def query_ddgr(search_query):
 def perform_search(queries):
     results = []
     for query in queries:
-        result = query_ddgr(query)
-        if result:
-            results.append(result)
+        max_retries = 3
+        for attempt in range(max_retries):
+            result = query_ddgr(query)
+            if result:
+                results.append(result)
+                break
+            elif attempt < max_retries - 1:
+                print(f"{Colors.YELLOW}Отладка: Повторная попытка {attempt + 2}/{max_retries}{Colors.RESET}")
+                time.sleep(2)
+        else:
+            print(f"{Colors.RED}Не удалось получить результаты для запроса после {max_retries} попыток{Colors.RESET}")
     return results
+
 
 
 
