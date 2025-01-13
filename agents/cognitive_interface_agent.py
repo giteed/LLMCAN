@@ -10,6 +10,15 @@ from pathlib import Path
 import readline
 import subprocess
 
+class Colors:
+    BLUE = "\033[94m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    RESET = "\033[0m"
+    CYAN = "\033[96m"
+
+
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
