@@ -267,7 +267,7 @@ def process_search_results(search_results, instruction, user_language):
    if not search_results or len(search_results) == 0:
        return "К сожалению, не удалось найти информацию по вашему запросу."
 
-   context=f"""Инструкция:{instruction}
+   context=f"""Инструкция: {instruction}
 
 Результаты поиска:{json.dumps(search_results, ensure_ascii=False, indent=2)}
 
