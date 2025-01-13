@@ -170,6 +170,10 @@ def query_ddgr(search_query):
     
     try:
         result = subprocess.check_output(command, universal_newlines=True)
+        if "[ERROR] HTTP Error 202: Accepted" in result:
+            print(f"{Colors.RED}Отладка: Получена ошибка HTTP 202. Повторная попытка...{Colors.RESET}")
+            time.sleep(2)
+            return None
         print(f"{Colors.GREEN}Отладка: Запрос успешно выполнен{Colors.RESET}")
         return json.loads(result)
     except subprocess.CalledProcessError as e:
@@ -180,6 +184,7 @@ def query_ddgr(search_query):
         logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
         print(f"{Colors.RED}Отладка: Ошибка разбора JSON: {e}{Colors.RESET}")
         return None
+
 
 
 def generate_system_instruction(context):
