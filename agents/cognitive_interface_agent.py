@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.6
+# Версия: 2.7
 # ==================================================
 
 import sys
@@ -17,7 +17,7 @@ sys.path.insert(0, str(project_root))
 from settings import BASE_DIR, LLM_API_URL
 from cognitive_interface_agent_functions import *
 from agents.install_tor import restart_tor_and_check_ddgr
-from agents.cognitive_interface_agent_functions import perform_search
+
 # Обновленный класс Colors
 class Colors:
     BLUE = "\033[94m"
