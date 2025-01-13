@@ -115,6 +115,16 @@ def load_dialog_history():
     else:
         dialog_history = []
 
+
+def perform_search(queries):
+    results = []
+    for query in queries:
+        result = query_ddgr(query)
+        if result:
+            results.append(result)
+    return results
+
+
 def get_local_ip():
     try:
         return subprocess.check_output("hostname -I | awk '{print $1}'", shell=True).decode().strip()
