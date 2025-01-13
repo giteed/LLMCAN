@@ -86,6 +86,7 @@ def main():
     start_tor_service()
     check_tor_status()
 
+
 def restart_tor_and_check_ddgr():
     max_retries = 5
     retries = 0
@@ -94,33 +95,38 @@ def restart_tor_and_check_ddgr():
         try:
             # Step 1: Restart TOR
             print("Перезапуск TOR...")
-            subprocess.run(["sudo", "systemctl", "restart", "tor"], check=True)
-            time.sleep(2)  # Даем TOR время на перезапуск
+            subprocess.run(["sudo", "systemctl", "restart", "tor"], check=True, timeout=30)
+            time.sleep(5)  # Увеличиваем время ожидания после перезапуска
 
             # Step 2: Check if TOR is active
-            status = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True)
+            status = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True, timeout=10)
             if status.stdout.strip() != "active":
                 print("TOR не активен. Повторная попытка...")
                 retries += 1
                 continue
 
             # Step 3: Get new IP address
-            ip_result = subprocess.run(["torsocks", "curl", "https://api.ipify.org"], capture_output=True, text=True)
-            new_ip = ip_result.stdout.strip()
-            print(f"Отладка: Новый IP через TOR: {new_ip}")
+            try:
+                ip_result = subprocess.run(["torsocks", "curl", "-m", "10", "https://api.ipify.org"], capture_output=True, text=True, timeout=15)
+                new_ip = ip_result.stdout.strip()
+                print(f"Отладка: Новый IP через TOR: {new_ip}")
+            except subprocess.CalledProcessError:
+                print("Отладка: Не удалось получить IP. Продолжаем без проверки IP.")
 
             # Step 4: Test ddgr with a query
-            ddgr_result = subprocess.run(["torsocks", "ddgr", "-n", "1", "usdt/btc"], capture_output=True, text=True)
+            print("Отладка: Выполнение запроса ddgr...")
+            ddgr_result = subprocess.run(["torsocks", "ddgr", "-n", "1", "usdt/btc"], capture_output=True, text=True, timeout=30)
             ddgr_output = ddgr_result.stdout.strip()
+            print(f"Отладка: Вывод ddgr (первые 100 символов): {ddgr_output[:100]}...")
 
             if "[ERROR]" in ddgr_output or "HTTP Error" in ddgr_output:
                 print(f"Отладка: Ошибка при запросе ddgr. Повторная попытка... (Попытка {retries + 1})")
                 retries += 1
-                time.sleep(1)
+                time.sleep(2)
                 continue
 
             # Step 5: Parse and display result
-            match = re.search(r'(\d+\.\d+)\s*\|\s*BTC USDT.*\[(.*?)\]', ddgr_output)
+            match = re.search(r'(\d+(?:\.\d+)?)\s*(?:\||USD\/BTC|BTC\/USD).*?\[(.*?)\]', ddgr_output, re.IGNORECASE)
             if match:
                 rate, url = match.groups()
                 print(f"Отладка: Курс BTC/USDT: {rate}")
@@ -130,6 +136,9 @@ def restart_tor_and_check_ddgr():
                 print("Отладка: Не удалось распарсить результат ddgr. Повторная попытка...")
                 retries += 1
 
+        except subprocess.TimeoutExpired:
+            print(f"Отладка: Превышено время ожидания при выполнении команды. Попытка {retries + 1}")
+            retries += 1
         except subprocess.CalledProcessError as e:
             print(f"Отладка: Ошибка при выполнении команды: {e}")
             retries += 1
@@ -137,7 +146,7 @@ def restart_tor_and_check_ddgr():
             print(f"Отладка: Общая ошибка: {e}")
             retries += 1
 
-        time.sleep(1)  # Небольшая задержка перед следующей попыткой
+        time.sleep(2)  # Увеличиваем задержку перед следующей попыткой
 
     print("Не удалось настроить TOR и ddgr после 5 попыток. Проверьте подключение.")
     return False
