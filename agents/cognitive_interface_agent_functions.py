@@ -279,8 +279,9 @@ def parse_preprocessing_response(response):
         "instruction": instruction.strip()
     }
 
-def process_search_results(results, instruction, user_language):
-    context = f"""Инструкция: {instruction}
+def process_search_results(search_results, instruction, user_language):
+    if not search_results:
+        return "К сожалению, не удалось найти информацию по вашему запросу. Попробуйте переформулировать вопрос или уточнить детали."    context = f"""Инструкция: {instruction}
 
 Результаты поиска:
 {json.dumps(results, ensure_ascii=False, indent=2)}
