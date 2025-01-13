@@ -20,6 +20,7 @@ import readline
 global USE_TOR
 USE_TOR = False
 from settings import BASE_DIR, LLM_API_URL
+from agents.install_tor import restart_tor_and_check_ddgr
 
 # === Настройки ===
 MODEL = "qwen2:7b"
@@ -169,14 +170,17 @@ def clean_query(query):
 
 def query_ddgr(search_query):
     global USE_TOR
-    
+
+    # Проверяем и перезапускаем TOR, если необходимо
+    if USE_TOR:
+        print("Отладка: Проверка и перезапуск TOR перед запросом ddgr...")
+        if not restart_tor_and_check_ddgr():
+            print("Отладка: Не удалось настроить TOR. Запрос будет выполнен без TOR.")
+            USE_TOR = False
+
     # Очищаем запрос от кавычек
     cleaned_query = clean_query(search_query)
-    
-    if USE_TOR and not check_tor_connection():
-        print(f"{Colors.RED}TOR соединение не активно. Запрос будет выполнен без TOR.{Colors.RESET}")
-        USE_TOR = False
-    
+
     command = ["torsocks", "ddgr", "--json", cleaned_query] if USE_TOR else ["ddgr", "--json", cleaned_query]
     
     print(f"{Colors.YELLOW}Отладка: Использование TOR: {'Да' if USE_TOR else 'Нет'}{Colors.RESET}")
