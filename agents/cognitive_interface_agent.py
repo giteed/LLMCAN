@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 import readline
 import subprocess
-
+from agents.cognitive_interface_agent_functions import perform_search
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
