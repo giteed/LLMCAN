@@ -83,13 +83,13 @@ def check_tor_connection():
 
 def handle_command(command):
     global USE_TOR
-    if command.lower() == '/tor':
+    if command in ['/tor', '/t']:
         status = "включен" if USE_TOR else "выключен"
         print(f"Режим опроса через TOR: {status}")
-    elif command.lower() == '/toron':
+    elif command in ['/toron', '/tn']:
         USE_TOR = True
         print("Режим опроса через TOR включен.")
-    elif command.lower() == '/toroff':
+    elif command in ['/toroff', '/tf']:
         USE_TOR = False
         print("Режим опроса через TOR выключен.")
     else:
