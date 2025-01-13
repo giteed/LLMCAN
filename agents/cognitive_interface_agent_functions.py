@@ -65,33 +65,30 @@ original_socket = None
 # === Функции ===
 def check_tor_connection():
     try:
-        result = subprocess.run(["torsocks", "curl", "https://check.torproject.org/api/ip"], 
-                                capture_output=True, text=True, timeout=30)  # Увеличиваем таймаут до 30 секунд
-        if "IsTor\":true" in result.stdout:
-            print(f"{Colors.GREEN}Отладка: TOR соединение активно{Colors.RESET}")
+        result = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True, timeout=10)
+        if result.stdout.strip() == "active":
+            print(f"{Colors.BLUE}TOR сервис активен в системе.{Colors.RESET}")
             return True
         else:
-            print(f"{Colors.RED}Отладка: TOR соединение неактивно{Colors.RESET}")
+            print(f"{Colors.YELLOW}TOR сервис неактивен в системе.{Colors.RESET}")
             return False
-    except subprocess.TimeoutExpired:
-        print(f"{Colors.YELLOW}Отладка: Превышено время ожидания при проверке TOR. Предполагаем, что TOR неактивен.{Colors.RESET}")
-        return False
     except subprocess.CalledProcessError as e:
-        print(f"{Colors.RED}Отладка: Ошибка проверки TOR соединения: {e}{Colors.RESET}")
+        print(f"{Colors.RED}Ошибка при проверке статуса TOR: {e}{Colors.RESET}")
         return False
-
 
 def handle_command(command):
     global USE_TOR
     if command in ['/tor', '/t']:
-        status = "включен" if USE_TOR else "выключен"
-        print(f"Режим опроса через TOR: {status}")
+        tor_status = "включен" if USE_TOR else "выключен"
+        print(f"Режим опроса через TOR: {tor_status}")
+        if not USE_TOR:
+            print(f"{Colors.YELLOW}Включить TOR режим: /tn{Colors.RESET}")
     elif command in ['/toron', '/tn']:
         USE_TOR = True
-        print("Режим опроса через TOR включен.")
+        print(f"{Colors.GREEN}Режим опроса через TOR включен.{Colors.RESET}")
     elif command in ['/toroff', '/tf']:
         USE_TOR = False
-        print("Режим опроса через TOR выключен.")
+        print(f"{Colors.YELLOW}Режим опроса через TOR выключен.{Colors.RESET}")
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
