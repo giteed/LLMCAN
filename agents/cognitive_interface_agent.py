@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 import readline
 import subprocess
-from agents.cognitive_interface_agent_functions import *
+from cognitive_interface_agent_functions import *
 
 
 # Добавляем корневую директорию проекта в sys.path
