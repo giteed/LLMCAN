@@ -115,9 +115,14 @@ def restart_tor_and_check_ddgr():
 
             # Step 4: Test ddgr with a query
             print("Отладка: Выполнение запроса ddgr...")
-            ddgr_result = subprocess.run(["torsocks", "ddgr", "-n", "1", "usdt/btc"], capture_output=True, text=True, timeout=30)
+            ddgr_command = ["torsocks", "ddgr", "-n", "1", "usdt/btc"]
+            print(f"Отладка: Выполняемая команда: {' '.join(ddgr_command)}")
+            ddgr_result = subprocess.run(ddgr_command, capture_output=True, text=True, timeout=30)
             ddgr_output = ddgr_result.stdout.strip()
             print(f"Отладка: Вывод ddgr (первые 100 символов): {ddgr_output[:100]}...")
+            print(f"Отладка: Код возврата ddgr: {ddgr_result.returncode}")
+            if ddgr_result.stderr:
+                print(f"Отладка: Ошибка ddgr: {ddgr_result.stderr}")
 
             if "[ERROR]" in ddgr_output or "HTTP Error" in ddgr_output:
                 print(f"Отладка: Ошибка при запросе ddgr. Повторная попытка... (Попытка {retries + 1})")
@@ -136,11 +141,13 @@ def restart_tor_and_check_ddgr():
                 print("Отладка: Не удалось распарсить результат ddgr. Повторная попытка...")
                 retries += 1
 
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as te:
             print(f"Отладка: Превышено время ожидания при выполнении команды. Попытка {retries + 1}")
+            print(f"Отладка: Детали таймаута: {te}")
             retries += 1
         except subprocess.CalledProcessError as e:
             print(f"Отладка: Ошибка при выполнении команды: {e}")
+            print(f"Отладка: Вывод команды: {e.output}")
             retries += 1
         except Exception as e:
             print(f"Отладка: Общая ошибка: {e}")
