@@ -114,16 +114,18 @@ def load_dialog_history():
             dialog_history = []
     else:
         dialog_history = []
+
 def query_ddgr(search_query):
     global USE_TOR
-    
-    # Очищаем запрос от кавычек
-    cleaned_query = clean_query(search_query)
-    
+
     if USE_TOR:
-        command = ["torsocks", "ddgr", "--json", cleaned_query]
-    else:
-        command = ["ddgr", "--json", cleaned_query]
+        print("Отладка: Проверка и перезапуск TOR перед запросом ddgr...")
+        if not restart_tor_and_check_ddgr():
+            print("Отладка: Не удалось настроить TOR. Запрос будет выполнен без TOR.")
+            USE_TOR = False
+
+    cleaned_query = clean_query(search_query)
+    command = ["torsocks", "ddgr", "--json", cleaned_query] if USE_TOR else ["ddgr", "--json", cleaned_query]
     
     print(f"{Colors.YELLOW}Отладка: Использование TOR: {'Да' if USE_TOR else 'Нет'}{Colors.RESET}")
     print(f"{Colors.YELLOW}Отладка: Выполняемая команда: {' '.join(command)}{Colors.RESET}")
@@ -144,6 +146,7 @@ def query_ddgr(search_query):
         logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
         print(f"{Colors.RED}Отладка: Ошибка разбора JSON: {e}{Colors.RESET}")
         return None
+
 
 
 def perform_search(queries):
