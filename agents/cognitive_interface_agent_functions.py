@@ -214,7 +214,7 @@ def query_llm(prompt, include_history=True):
     else:
         full_prompt = f"Текущая дата и время: {current_datetime}\n\n{prompt}"
 
-    payload = {
+   payload = {
        "model": MODEL,
        "prompt": full_prompt,
        "stream": False,
