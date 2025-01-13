@@ -145,19 +145,29 @@ def query_ddgr(search_query):
 
 def perform_search(queries):
     results = []
-    for query in queries:
-        max_retries = 3
-        for attempt in range(max_retries):
-            result = query_ddgr(query)
-            if result:
-                results.append(result)
-                break
-            elif attempt < max_retries - 1:
-                print(f"{Colors.YELLOW}Отладка: Повторная попытка {attempt + 2}/{max_retries}{Colors.RESET}")
-                time.sleep(2)
+    for i, query in enumerate(queries, 1):
+        if USE_TOR:
+            print("Отладка: Проверка и перезапуск TOR перед запросом ddgr...")
+            restart_tor_and_check_ddgr()
+        result = query_ddgr(query)
+        if result:
+            results.append(result)
+            print(f"Ответ на запрос {i} получен. Обрабатываю...")
+            print("Промежуточный результат для запроса {i}:")
+            print_intermediate_result(result)
         else:
-            print(f"{Colors.RED}Не удалось получить результаты для запроса после {max_retries} попыток{Colors.RESET}")
+            print(f"Не удалось получить результаты для запроса {i}")
     return results
+
+def print_intermediate_result(result):
+    if isinstance(result, list) and len(result) > 0:
+        print(f"Найдено {len(result)} результатов:")
+        for i, item in enumerate(result[:3], 1):  # Выводим первые 3 результата
+            title = item.get('title', 'Без названия')
+            url = item.get('url', 'URL отсутствует')
+            print(f"{i}. {title}\n   {url}\n")
+    else:
+        print("Нет доступных промежуточных результатов для отображения.")
 
 
 def get_local_ip():
