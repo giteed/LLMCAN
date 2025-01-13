@@ -2,13 +2,12 @@
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.1
+# Версия: 2.2
 # ==================================================
 
 import sys
 from pathlib import Path
 import readline
-
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
@@ -17,35 +16,45 @@ sys.path.insert(0, str(project_root))
 from settings import BASE_DIR, LLM_API_URL
 from cognitive_interface_agent_functions import *
 
+def show_help():
+    print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
+    print(f"  {Colors.CYAN}/help, /h{Colors.RESET} - показать эту справку")
+    print(f"  {Colors.CYAN}/tor, /t{Colors.RESET} - показать статус TOR")
+    print(f"  {Colors.CYAN}/toron, /tn{Colors.RESET} - включить TOR")
+    print(f"  {Colors.CYAN}/toroff, /tf{Colors.RESET} - выключить TOR")
+    print(f"  {Colors.CYAN}/exit, /q{Colors.RESET} - выйти из программы")
+    print(f"{Colors.CYAN}Для ввода запроса нажмите Enter дважды.{Colors.RESET}")
+
 def main():
     global USE_TOR
     load_dialog_history()
     
     if check_tor_connection():
-        print(f"{Colors.GREEN}TOR соединение активно.{Colors.RESET}")
+        print(f"{Colors.BLUE}TOR соединение активно.{Colors.RESET}")
         USE_TOR = True
     else:
-        print(f"{Colors.RED}TOR соединение неактивно. Работа будет выполняться без TOR.{Colors.RESET}")
+        print(f"{Colors.BLUE}TOR соединение неактивно. Работа будет выполняться без TOR.{Colors.RESET}")
         USE_TOR = False
 
     check_tor_settings()
-    print(f"{Colors.YELLOW}Добро пожаловать в Когнитивный Интерфейсный Агент!{Colors.RESET}")
-    print(f"{Colors.YELLOW}Введите 'выход', '/q' или Ctrl+C для завершения.{Colors.RESET}")
-    print(f"{Colors.YELLOW}Для поиска используйте ключевые слова 'поищи' или 'найди'.{Colors.RESET}")
-    print(f"{Colors.YELLOW}Используйте /toron для включения TOR и /toroff для выключения.{Colors.RESET}")
+    print(f"{Colors.CYAN}Добро пожаловать в Агент поиска!{Colors.RESET}")
+    print(f"{Colors.CYAN}Введите /help для справки по командам.{Colors.RESET}")
 
     try:
         while True:
             user_input = get_multiline_input()
             
-            if user_input.lower() in ['/q', 'выход']:
+            if user_input.lower() in ['/q', '/exit', 'выход']:
                 print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
                 break
+            elif user_input.lower() in ['/h', '/help']:
+                show_help()
+                continue
             elif user_input.startswith('/'):
                 handle_command(user_input.lower())
                 continue
             
-            print(f"{Colors.YELLOW}Обрабатываю запрос пользователя...{Colors.RESET}")
+            print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
             preprocessed = preprocess_query(user_input)
             search_results = perform_search(preprocessed['queries'])
             
