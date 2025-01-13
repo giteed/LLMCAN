@@ -21,7 +21,7 @@ global USE_TOR
 USE_TOR = False
 from settings import BASE_DIR, LLM_API_URL
 from agents.install_tor import restart_tor_and_check_ddgr
-from agents.cognitive_interface_agent_functions import perform_search
+
 
 # === Настройки ===
 MODEL = "qwen2:7b"
