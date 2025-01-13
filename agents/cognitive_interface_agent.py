@@ -9,8 +9,6 @@ import sys
 from pathlib import Path
 import readline
 import subprocess
-from cognitive_interface_agent_functions import *
-
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
