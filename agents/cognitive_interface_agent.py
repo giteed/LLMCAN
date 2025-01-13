@@ -2,12 +2,13 @@
 # LLMCAN/agents/cognitive_interface_agent.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.2
+# Версия: 2.3
 # ==================================================
 
 import sys
 from pathlib import Path
 import readline
+import subprocess
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
@@ -25,18 +26,34 @@ def show_help():
     print(f"  {Colors.CYAN}/exit, /q{Colors.RESET} - выйти из программы")
     print(f"{Colors.CYAN}Для ввода запроса нажмите Enter дважды.{Colors.RESET}")
 
+def check_tor_installation():
+    try:
+        subprocess.run(["torsocks", "--version"], check=True, capture_output=True)
+        return True
+    except FileNotFoundError:
+        print(f"{Colors.RED}torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
+        return False
+
 def main():
     global USE_TOR
     load_dialog_history()
     
-    if check_tor_connection():
-        print(f"{Colors.BLUE}TOR соединение активно.{Colors.RESET}")
-        USE_TOR = True
+    tor_installed = check_tor_installation()
+    if tor_installed:
+        try:
+            if check_tor_connection():
+                print(f"{Colors.BLUE}TOR соединение активно.{Colors.RESET}")
+                USE_TOR = True
+            else:
+                print(f"{Colors.BLUE}TOR соединение неактивно. Работа будет выполняться без TOR.{Colors.RESET}")
+                USE_TOR = False
+            check_tor_settings()
+        except Exception as e:
+            print(f"{Colors.RED}Ошибка при проверке TOR: {e}. Работа будет выполняться без TOR.{Colors.RESET}")
+            USE_TOR = False
     else:
-        print(f"{Colors.BLUE}TOR соединение неактивно. Работа будет выполняться без TOR.{Colors.RESET}")
         USE_TOR = False
 
-    check_tor_settings()
     print(f"{Colors.CYAN}Добро пожаловать в Агент поиска!{Colors.RESET}")
     print(f"{Colors.CYAN}Введите /help для справки по командам.{Colors.RESET}")
 
