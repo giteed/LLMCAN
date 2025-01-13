@@ -90,13 +90,17 @@ def handle_command(command):
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
 def save_dialog_history():
+    global dialog_history
     try:
+        if len(dialog_history) > MAX_HISTORY_LENGTH:
+            dialog_history = dialog_history[-MAX_HISTORY_LENGTH:]
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
         with open(HISTORY_FILE, "w", encoding='utf-8') as file:
             json.dump(dialog_history, file, ensure_ascii=False, indent=2)
         logger.info(f"История диалога сохранена в {HISTORY_FILE}")
     except Exception as e:
         logger.error(f"Ошибка сохранения истории диалога: {e}")
+
 
 def load_dialog_history():
     global dialog_history
@@ -288,18 +292,20 @@ def process_search_results(search_results, instruction, user_language):
 
 Текущая дата и время: {get_current_datetime()}
 
-Пожалуйста, проанализируйте предоставленные результаты поиска и сформируйте ответ на следующий вопрос пользователя:
-"{instruction}"
+Пожалуйста, проанализируйте предоставленные результаты поиска и сформируйте ответ на вопрос пользователя. Ваш ответ должен:
+1. Точно отвечать на вопрос, используя актуальную информацию из результатов поиска.
+2. Включать конкретные данные, такие как курсы валют, даты и числовые значения, если они есть в результатах поиска.
+3. Сравнивать значения, если запрос требует сравнения (например, курсы за разные дни).
+4. Быть структурированным, кратким и информативным.
+5. Использовать формат Markdown для лучшей читаемости.
 
-Ваш ответ должен:
-1. Точно отвечать на вопрос пользователя, используя актуальную информацию из результатов поиска.
-2. Включать текущую дату и время, если это релевантно запросу.
-3. Быть структурированным, кратким и информативным.
-4. Использовать формат Markdown для лучшей читаемости.
+Если информации недостаточно или она противоречива, укажите на это в ответе.
 
 Ответ должен быть на языке пользователя: {user_language}."""
 
     response = query_llm(context, include_history=True)
+    if not response:
+        return "Извините, не удалось обработать результаты поиска. Пожалуйста, попробуйте еще раз или переформулируйте запрос."
     return response
 
 def save_temp_result(result, query_number):
