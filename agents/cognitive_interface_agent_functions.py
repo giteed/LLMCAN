@@ -92,6 +92,7 @@ def handle_command(command):
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
 
+
 def save_dialog_history():
     try:
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
