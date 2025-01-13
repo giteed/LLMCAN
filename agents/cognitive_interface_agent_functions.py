@@ -343,14 +343,17 @@ def print_message(role, message):
 
 def get_multiline_input():
     prefix = "Вы(tor): " if USE_TOR else "Вы: "
-    print(f"{Colors.BLUE}{prefix}{Colors.RESET}", end="")
     lines = []
     while True:
+        print(f"{Colors.BLUE}{prefix}{Colors.RESET}", end="")
         line = input()
-        if line.strip() == "":
-            break
+        if line.strip() == "" and not lines:
+            continue  # Игнорируем пустой ввод в первой строке
+        if line.strip() == "" and lines:
+            break  # Завершаем ввод, если введена пустая строка после непустых строк
         lines.append(line)
     return "\n".join(lines)
+
 
 def save_report(preprocessed, response):
     with open(REPORT_FILE, "a", encoding='utf-8') as file:
