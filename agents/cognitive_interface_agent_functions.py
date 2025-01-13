@@ -112,11 +112,17 @@ def load_dialog_history():
         dialog_history = []
 
 def query_ddgr(search_query):
-    # ... (существующий код)
+    global USE_TOR
+    cleaned_query = clean_query(search_query)
+    command = ["torsocks", "ddgr", "--json", cleaned_query] if USE_TOR else ["ddgr", "--json", cleaned_query]
+    
+    print(f"{Colors.YELLOW}Отладка: Использование TOR: {'Да' if USE_TOR else 'Нет'}{Colors.RESET}")
+    print(f"{Colors.YELLOW}Отладка: Выполняемая команда: {' '.join(command)}{Colors.RESET}")
+    
     try:
         result = subprocess.check_output(command, universal_newlines=True)
         if "[ERROR]" in result:
-            print(f"Отладка: Получена ошибка: {result}")
+            print(f"{Colors.RED}Отладка: Получена ошибка: {result}{Colors.RESET}")
             return None
         print(f"{Colors.GREEN}Отладка: Запрос успешно выполнен{Colors.RESET}")
         return json.loads(result)
@@ -124,14 +130,14 @@ def query_ddgr(search_query):
         print(f"{Colors.RED}Отладка: Ошибка выполнения команды: {e}{Colors.RESET}")
         return None
     except json.JSONDecodeError as e:
-        logger.error(f"Ошибка при разборе JSON от ddgr: {e}")
         print(f"{Colors.RED}Отладка: Ошибка разбора JSON: {e}{Colors.RESET}")
         return None
+
 
 def perform_search(queries):
     results = []
     for i, query in enumerate(queries, 1):
-        for attempt in range(3):  # Попытаемся 3 раза
+        for attempt in range(3):
             if USE_TOR:
                 print("Отладка: Проверка и перезапуск TOR перед запросом ddgr...")
                 restart_tor_and_check_ddgr()
@@ -143,7 +149,7 @@ def perform_search(queries):
                 break
             else:
                 print(f"Попытка {attempt+1} не удалась. {'Повторяю запрос...' if attempt < 2 else 'Переход к следующему запросу.'}")
-                time.sleep(2)  # Пауза перед следующей попыткой
+                time.sleep(2)
         if not result:
             print(f"Не удалось получить результаты для запроса {i} после 3 попыток")
     return results
@@ -281,10 +287,12 @@ def parse_preprocessing_response(response):
 
 def process_search_results(search_results, instruction, user_language):
     if not search_results:
-        return "К сожалению, не удалось найти информацию по вашему запросу. Попробуйте переформулировать вопрос или уточнить детали."    context = f"""Инструкция: {instruction}
+        return "К сожалению, не удалось найти информацию по вашему запросу. Попробуйте переформулировать вопрос или уточнить детали."
+    
+    context = f"""Инструкция: {instruction}
 
 Результаты поиска:
-{json.dumps(results, ensure_ascii=False, indent=2)}
+{json.dumps(search_results, ensure_ascii=False, indent=2)}
 
 Текущая дата и время: {get_current_datetime()}
 
@@ -297,9 +305,11 @@ def process_search_results(search_results, instruction, user_language):
 3. Быть структурированным, кратким и информативным.
 4. Использовать формат Markdown для лучшей читаемости.
 
-Ответ должен быть на языке пользователя: {user_language}."""
+Ответ должен быть на языке пользователя: {user_language}.
 
     response = query_llm(context, include_history=True)
+    if response is None:
+        return "Извините, не удалось обработать результаты поиска. Пожалуйста, попробуйте еще раз или переформулируйте запрос."
     return response
 
 
