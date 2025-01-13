@@ -164,13 +164,20 @@ def check_tor_settings():
     except Exception as e:
         print(f"Не удалось проверить настройки TOR: {e}")
 
+def clean_query(query):
+    return query.replace('"', '')
+
 def query_ddgr(search_query):
     global USE_TOR
+    
+    # Очищаем запрос от кавычек
+    cleaned_query = clean_query(search_query)
+    
     if USE_TOR and not check_tor_connection():
         print(f"{Colors.RED}TOR соединение не активно. Запрос будет выполнен без TOR.{Colors.RESET}")
         USE_TOR = False
     
-    command = ["torsocks", "ddgr", "--json", search_query] if USE_TOR else ["ddgr", "--json", search_query]
+    command = ["torsocks", "ddgr", "--json", cleaned_query] if USE_TOR else ["ddgr", "--json", cleaned_query]
     
     print(f"{Colors.YELLOW}Отладка: Использование TOR: {'Да' if USE_TOR else 'Нет'}{Colors.RESET}")
     print(f"{Colors.YELLOW}Отладка: Выполняемая команда: {' '.join(command)}{Colors.RESET}")
