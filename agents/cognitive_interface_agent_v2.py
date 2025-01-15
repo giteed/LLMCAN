@@ -165,6 +165,12 @@ def main():
             logger.info(f"Total search results obtained: {len(search_results)}")
             logger.debug(f"Raw search results: {search_results}")
             if search_results:
+                references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
+                if references:
+                    print(f"{Colors.CYAN}
+Список источников:{Colors.RESET}")
+                    for i, ref in enumerate(references[:15], start=1):
+                        print(f"{i}. {ref}")
                 user_language = detect_language(user_input)
                 logger.debug(f"Processing search results: {search_results[:2]} with instruction: {preprocessed['instruction']} and language: {user_language}")
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
