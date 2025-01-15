@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.9.1
+# Версия: 2.9.2
 # ==================================================
 
 import sys
@@ -11,6 +11,7 @@ import readline
 import subprocess
 import logging
 import os
+import json
 import time
 
 # Добавляем корневую директорию проекта в sys.path
@@ -120,17 +121,13 @@ def get_multiline_input():
     print(f"{Colors.CYAN}Введите ваш запрос. Для завершения ввода нажмите Enter на пустой строке.{Colors.RESET}")
     lines = []
     while True:
-        try:
-            line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
-            if line.startswith("/"):
-                handle_command(line)
-                continue
-            if line == "":
-                break
-            lines.append(line)
-        except KeyboardInterrupt:
-            print(f"{Colors.RED}\nСеанс прерван пользователем.{Colors.RESET}")
+        line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
+        if line.startswith("/"):
+            handle_command(line)
+            continue
+        if line == "":
             break
+        lines.append(line)
     return " ".join(lines)
 
 def perform_search(queries, use_tor):
@@ -142,19 +139,14 @@ def perform_search(queries, use_tor):
             logger.info(f"Executing command: {' '.join(command)} (Attempt {retries + 1})")
             try:
                 output = subprocess.check_output(command, universal_newlines=True)
-                logger.debug(f"Search output for query '{query}': {output[:500]}")
-                results.append(output)
+                results.extend(json.loads(output) if output else [])
                 break
-            except Exception as e:  # Перехватываем любые ошибки
+            except Exception as e:
                 logger.error(f"Search command failed: {e}. Retrying...")
                 retries += 1
                 if use_tor:
-                    logger.info("Restarting TOR and trying again.")
                     restart_tor_and_check_ddgr()
                 time.sleep(1)
-        else:
-            logger.error(f"Failed to complete search for query: {query} after {MAX_RETRIES} attempts.")
-            results.append(None)
     return results
 
 def main():
@@ -179,18 +171,24 @@ def main():
             preprocessed = preprocess_query(user_input)
             search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
             logger.info(f"Total search results obtained: {len(search_results)}")
-            logger.debug(f"Raw search results: {search_results}")
             if search_results:
-                references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
-                if references:
-                    print(f"{Colors.CYAN}\nСписок источников:{Colors.RESET}")
-                    for i, ref in enumerate(references[:15], start=1):
-                        print(f"{i}. {ref}")
                 user_language = detect_language(user_input)
-                logger.debug(f"Processing search results: {search_results[:2]} with instruction: {preprocessed['instruction']} and language: {user_language}")
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
-                append_to_dialog_history({"role": "assistant", "content": response})
-                print_message("Агент", response)
+                references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
+                report = f"""
+### Тема ответа пользователю:
+{response}
+
+## Вывод:
+На основе полученных данных можно сделать следующие выводы...
+
+## Интересные моменты:
+1. Выделены ключевые аспекты анализа...
+
+## Источники:
+""" + "\n".join([f"{i + 1}. {url}" for i, url in enumerate(references[:15])])
+                print_message("Агент", report)
+                append_to_dialog_history({"role": "assistant", "content": report})
             else:
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
