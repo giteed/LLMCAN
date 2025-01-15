@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.8.3
+# Версия: 2.8.4
 # ==================================================
 
 import sys
@@ -10,6 +10,7 @@ from pathlib import Path
 import readline
 import subprocess
 import logging
+import json
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
@@ -110,10 +111,13 @@ def perform_search(queries, use_tor):
         try:
             output = subprocess.check_output(command, universal_newlines=True)
             logger.debug(f"Search output for query '{query}': {output[:500]}")
-            results.append(output)
+            try:
+                parsed_output = json.loads(output)
+                results.extend(parsed_output if isinstance(parsed_output, list) else [])
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse JSON output: {e}")
         except subprocess.CalledProcessError as e:
             logger.error(f"Search command failed: {e}")
-            results.append(None)
     return results
 
 def main():
@@ -138,14 +142,14 @@ def main():
             preprocessed = preprocess_query(user_input)
             search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
             logger.info(f"Total search results obtained: {len(search_results)}")
-            logger.debug(f"Search results (partial): {search_results[:2]}")  # Log only the first two results for brevity
+            logger.debug(f"Search results (raw): {search_results}")  # Log all results for debugging
             if search_results:
                 user_language = detect_language(user_input)
-                logger.debug(f"Processing search results: {search_results[:2]} with instruction: {preprocessed['instruction']} and language: {user_language}")
+                logger.debug(f"Processing search results with instruction: {preprocessed['instruction']} and language: {user_language}")
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
                 append_to_dialog_history({"role": "assistant", "content": response})
                 print_message("Агент", response)
-                references = [result['url'] for result in search_results if result and 'url' in result]
+                references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
                 if references:
                     print(f"{Colors.CYAN}\nСписок источников:{Colors.RESET}")
                     for i, ref in enumerate(references, start=1):
