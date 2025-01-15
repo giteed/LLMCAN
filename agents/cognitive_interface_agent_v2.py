@@ -102,7 +102,7 @@ def main():
                 print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
                 append_to_dialog_history({"role": "user", "content": user_input})
                 preprocessed = preprocess_query(user_input)
-                search_results = perform_search(preprocessed['queries'])
+                search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
                 if search_results:
                     user_language = detect_language(user_input)
                     response = process_search_results(search_results, preprocessed['instruction'], user_language)
