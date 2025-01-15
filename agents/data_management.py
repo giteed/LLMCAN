@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # agents/data_management.py
-# Version: 1.5.1
+# Version: 1.5.2
 # Purpose: Handle data and dialog history management for the cognitive agent.
 
 import json
@@ -15,6 +15,7 @@ MAX_HISTORY_LENGTH = 100
 dialog_history_cache = None
 
 def save_dialog_history(dialog_history):
+    global dialog_history_cache
     try:
         if not isinstance(dialog_history, list):
             logger.error("Invalid dialog history format. Expected a list.")
@@ -29,7 +30,6 @@ def save_dialog_history(dialog_history):
         logger.info(f"Dialog history successfully saved to {HISTORY_FILE}")
 
         # Update the cache after saving
-        global dialog_history_cache
         dialog_history_cache = dialog_history.copy()
 
         return True
@@ -78,6 +78,15 @@ def append_to_dialog_history(entry):
         logger.debug(f"Dialog history after append: {dialog_history_cache}")
     else:
         logger.error("Cannot append to dialog history. Cache is not a list.")
+
+# Ensure save_dialog_history is called only once at program end
+def finalize_history_saving():
+    global dialog_history_cache
+    if dialog_history_cache is not None:
+        logger.debug("Finalizing dialog history saving...")
+        if not save_dialog_history(dialog_history_cache):
+            logger.error("Failed to finalize dialog history saving.")
+
 
 def save_temp_result(result, query_number, temp_dir=Path("temp")):
     try:
