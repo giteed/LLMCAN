@@ -118,7 +118,8 @@ def main():
                 preprocessed = preprocess_query(user_input)
                 search_results = perform_search_with_tor_support(preprocessed['queries'])
                 if search_results:
-                    response = process_search_results(search_results, preprocessed['instruction'])
+                    user_language = detect_language(user_input)
+                    response = process_search_results(search_results, preprocessed['instruction'], user_language)
                     append_to_dialog_history({"role": "assistant", "content": response})
                     print_message("Агент", response)
                 else:
