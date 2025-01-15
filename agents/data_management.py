@@ -87,7 +87,6 @@ def finalize_history_saving():
         if not save_dialog_history(dialog_history_cache):
             logger.error("Failed to finalize dialog history saving.")
 
-
 def save_temp_result(result, query_number, temp_dir=Path("temp")):
     try:
         temp_dir.mkdir(exist_ok=True)
