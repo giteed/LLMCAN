@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.8.7
+# Версия: 2.8.8
 # ==================================================
 
 import sys
@@ -11,6 +11,7 @@ import readline
 import subprocess
 import logging
 import os
+import time
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
@@ -50,6 +51,7 @@ logger = logging.getLogger(__name__)
 
 # Глобальная переменная для режима TOR
 USE_TOR = True
+MAX_RETRIES = 3  # Максимальное количество попыток для запросов
 
 def show_help():
     print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
@@ -130,14 +132,24 @@ def get_multiline_input():
 def perform_search(queries, use_tor):
     results = []
     for query in queries:
-        command = ["torsocks", "ddgr", "--json", query] if use_tor else ["ddgr", "--json", query]
-        logger.info(f"Executing command: {' '.join(command)}")
-        try:
-            output = subprocess.check_output(command, universal_newlines=True)
-            logger.debug(f"Search output for query '{query}': {output[:500]}")
-            results.append(output)
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Search command failed: {e}")
+        retries = 0
+        while retries < MAX_RETRIES:
+            command = ["torsocks", "ddgr", "--json", query] if use_tor else ["ddgr", "--json", query]
+            logger.info(f"Executing command: {' '.join(command)} (Attempt {retries + 1})")
+            try:
+                output = subprocess.check_output(command, universal_newlines=True)
+                logger.debug(f"Search output for query '{query}': {output[:500]}")
+                results.append(output)
+                break
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Search command failed: {e}. Retrying...")
+                retries += 1
+                if use_tor:
+                    logger.info("Restarting TOR and trying again.")
+                    restart_tor_and_check_ddgr()
+                time.sleep(1)
+        else:
+            logger.error(f"Failed to complete search for query: {query} after {MAX_RETRIES} attempts.")
             results.append(None)
     return results
 
