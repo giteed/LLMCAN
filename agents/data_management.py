@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # agents/data_management.py
-# Version: 1.4.0
+# Version: 1.5.1
 # Purpose: Handle data and dialog history management for the cognitive agent.
 
 import json
@@ -27,6 +27,11 @@ def save_dialog_history(dialog_history):
         with open(HISTORY_FILE, "w", encoding="utf-8") as file:
             json.dump(dialog_history, file, ensure_ascii=False, indent=2)
         logger.info(f"Dialog history successfully saved to {HISTORY_FILE}")
+
+        # Update the cache after saving
+        global dialog_history_cache
+        dialog_history_cache = dialog_history.copy()
+
         return True
     except Exception as e:
         logger.error(f"Error saving dialog history: {e}")
@@ -45,7 +50,7 @@ def load_dialog_history():
                 history = json.load(file)
                 if isinstance(history, list):
                     logger.info(f"Loaded dialog history from {HISTORY_FILE}")
-                    dialog_history_cache = history
+                    dialog_history_cache = history.copy()
                     return history
                 else:
                     logger.warning("Invalid format in dialog history file. Resetting to empty list.")
@@ -65,9 +70,12 @@ def append_to_dialog_history(entry):
     if dialog_history_cache is None:
         dialog_history_cache = load_dialog_history()
 
+    logger.debug(f"Dialog history before append: {dialog_history_cache}")
+
     if isinstance(dialog_history_cache, list):
         dialog_history_cache.append(entry)
         logger.debug(f"Appended new entry to dialog history: {entry}")
+        logger.debug(f"Dialog history after append: {dialog_history_cache}")
     else:
         logger.error("Cannot append to dialog history. Cache is not a list.")
 
