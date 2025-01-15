@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.8.3
+# Версия: 2.8.0 (рабочая версия)
 # ==================================================
 
 import sys
@@ -82,20 +82,6 @@ def handle_command(command):
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
-def perform_search_with_tor_support(queries):
-    global USE_TOR
-    results = []
-    for query in queries:
-        command = ["torsocks", "ddgr", "--json", query] if USE_TOR else ["ddgr", "--json", query]
-        logger.info(f"Executing command: {' '.join(command)}")
-        try:
-            output = subprocess.check_output(command, universal_newlines=True)
-            results.append(output)
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Search command failed: {e}")
-            results.append(None)
-    return results
-
 def main():
     global USE_TOR
     dialog_history = load_dialog_history()
@@ -116,7 +102,7 @@ def main():
                 print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
                 append_to_dialog_history({"role": "user", "content": user_input})
                 preprocessed = preprocess_query(user_input)
-                search_results = perform_search_with_tor_support(preprocessed['queries'])
+                search_results = perform_search(preprocessed['queries'], USE_TOR)
                 if search_results:
                     user_language = detect_language(user_input)
                     response = process_search_results(search_results, preprocessed['instruction'], user_language)
