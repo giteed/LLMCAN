@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.8 (с улучшениями)
+# Версия: 2.8.1
 # ==================================================
 
 import sys
@@ -18,6 +18,7 @@ sys.path.insert(0, str(project_root))
 from settings import BASE_DIR, LLM_API_URL
 from cognitive_interface_agent_functions import *
 from agents.install_tor import restart_tor_and_check_ddgr
+from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history
 
 # Обновленный класс Colors
 class Colors:
@@ -62,7 +63,7 @@ def print_header():
 
 def main():
     global USE_TOR
-    dialog_history = load_dialog_history()  # Load once to avoid duplication
+    dialog_history = load_dialog_history()
     
     print_header()
     
@@ -89,8 +90,7 @@ def main():
             
             if user_input in ['/q', '/exit', 'выход']:
                 print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
-                if not save_dialog_history(dialog_history):
-                    logger.error("Failed to save dialog history. Check permissions and file path.")
+                save_dialog_history(dialog_history)
                 break
             elif user_input in ['/h', '/help']:
                 show_help()
@@ -103,7 +103,7 @@ def main():
                 continue
             
             print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
-            append_to_dialog_history({"role": "user", "content": user_input})  # Log added user input
+            append_to_dialog_history({"role": "user", "content": user_input})
             preprocessed = preprocess_query(user_input)
             logger.debug(f"Preprocessed query: {preprocessed}")
             search_results = perform_search(preprocessed['queries'])
@@ -117,7 +117,7 @@ def main():
                     formatted_response = format_response_with_references(response, references)
                     print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
                     print_message("Агент", formatted_response)
-                    append_to_dialog_history({"role": "assistant", "content": formatted_response})  # Log added assistant response
+                    append_to_dialog_history({"role": "assistant", "content": formatted_response})
                 else:
                     print_message("Агент", "Не удалось обработать результаты поиска. Пожалуйста, попробуйте еще раз.")
             else:
