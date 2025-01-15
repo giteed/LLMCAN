@@ -52,7 +52,8 @@ def check_tor_installation():
         subprocess.run(["torsocks", "--version"], check=True, capture_output=True)
         return True
     except FileNotFoundError:
-        print(f"{Colors.RED}torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
+        print(f"{Colors.RED}
+Сеанс прерван пользователем. История сохранена.{Colors.RESET}")torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
         return False
 
 def print_header():
