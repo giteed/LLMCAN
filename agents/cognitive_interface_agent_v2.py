@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.8.4
+# Версия: 2.8.5
 # ==================================================
 
 import sys
@@ -146,6 +146,7 @@ def main():
             if search_results:
                 user_language = detect_language(user_input)
                 logger.debug(f"Processing search results with instruction: {preprocessed['instruction']} and language: {user_language}")
+                logger.debug(f"Data sent to process_search_results: {search_results}")
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
                 append_to_dialog_history({"role": "assistant", "content": response})
                 print_message("Агент", response)
