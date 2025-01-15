@@ -100,6 +100,19 @@ def get_multiline_input():
         lines.append(line)
     return " ".join(lines)
 
+def perform_search(queries, use_tor):
+    results = []
+    for query in queries:
+        command = ["torsocks", "ddgr", "--json", query] if use_tor else ["ddgr", "--json", query]
+        logger.info(f"Executing command: {' '.join(command)}")
+        try:
+            output = subprocess.check_output(command, universal_newlines=True)
+            results.append(output)
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Search command failed: {e}")
+            results.append(None)
+    return results
+
 def main():
     global USE_TOR
     dialog_history = load_dialog_history()
@@ -120,7 +133,7 @@ def main():
             print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
             append_to_dialog_history({"role": "user", "content": user_input})
             preprocessed = preprocess_query(user_input)
-            search_results = perform_search(preprocessed['queries'])
+            search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
             if search_results:
                 user_language = detect_language(user_input)
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
