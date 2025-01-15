@@ -1,125 +1,48 @@
 #!/usr/bin/env python3
-# LLMCAN/agents/cognitive_interface_agent_v2.py
-# ==================================================
-# Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.7
-# ==================================================
+# agents/cognitive_interface_agent_v2.py
+# Version: 1.1.0
+# Purpose: Main script for managing user interactions and coordinating modules.
 
-import sys
-from pathlib import Path
-import readline
-import subprocess
+import logging
+from agents.data_management import save_dialog_history, load_dialog_history
+from agents.external_interactions import query_ddgr, restart_tor, check_tor_connection
+from agents.cognitive_logic import preprocess_query, process_search_results
 
-# Добавляем корневую директорию проекта в sys.path
-project_root = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(project_root))
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
-from settings import BASE_DIR, LLM_API_URL
-from cognitive_interface_agent_functions import *
-from agents.install_tor import restart_tor_and_check_ddgr
-
-# Обновленный класс Colors
-class Colors:
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    RED = "\033[91m"
-    CYAN = "\033[96m"
-    GRAY = "\033[90m"
-    BOLD = "\033[1m"
-    RESET = "\033[0m"
-
-def show_help():
-    print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
-    print(f"  {Colors.CYAN}/help, /h{Colors.RESET} - показать эту справку")
-    print(f"  {Colors.CYAN}/tor, /t{Colors.RESET} - показать статус TOR")
-    print(f"  {Colors.CYAN}/toron, /tn{Colors.RESET} - включить TOR")
-    print(f"  {Colors.CYAN}/toroff, /tf{Colors.RESET} - выключить TOR")
-    print(f"  {Colors.CYAN}/exit, /q{Colors.RESET} - выйти из программы")
-    print(f"{Colors.CYAN}Для ввода запроса нажмите Enter дважды.{Colors.RESET}")
-
-def check_tor_installation():
-    try:
-        subprocess.run(["torsocks", "--version"], check=True, capture_output=True)
-        return True
-    except FileNotFoundError:
-        print(f"{Colors.RED}torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
-        return False
-
-def print_header():
-    print(f"{Colors.CYAN}{Colors.BOLD}")
-    print("╔═══════════════════════════════════════════════╗")
-    print("║                                               ║")
-    print("║        Интерфейс Агентского Поиска            ║")
-    print("║                                               ║")
-    print("╚═══════════════════════════════════════════════╝")
-    print(f"{Colors.RESET}")
+# Load dialog history
+dialog_history = load_dialog_history()
 
 def main():
-    global USE_TOR
-    load_dialog_history()
-    
-    print_header()
-    
-    tor_installed = check_tor_installation()
-    if tor_installed:
-        tor_active = check_tor_connection()
-        if tor_active:
-            print(f"{Colors.BLUE}✓ TOR сервис активен в системе.{Colors.RESET}")
+    logger.info("Starting cognitive interface agent.")
+    use_tor = False
+    while True:
+        user_input = input("You: ")
+        if user_input in ["/debug"]:
+            logger.setLevel(logging.DEBUG)
+            logger.info("Debug mode enabled.")
+        elif user_input in ["/tn", "/toron"]:
+            use_tor = True
+            logger.info("TOR mode enabled.")
+        elif user_input in ["/tf", "/toroff"]:
+            use_tor = False
+            logger.info("TOR mode disabled.")
+        elif user_input == "/exit":
+            save_dialog_history(dialog_history)
+            logger.info("Exiting agent. Dialog history saved.")
+            break
         else:
-            print(f"{Colors.YELLOW}⚠ TOR сервис неактивен в системе.{Colors.RESET}")
-        print(f"{Colors.YELLOW}ℹ Режим опроса через TOR по умолчанию выключен. Включить: /tn{Colors.RESET}")
-        USE_TOR = False
-    else:
-        USE_TOR = False
-    
-    print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
-    print(f"{Colors.CYAN}Введите /help для справки по командам.{Colors.RESET}")
-    print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
-
-    try:
-        while True:
-            user_input = get_multiline_input()
-            user_input = user_input.strip().lower()
-            
-            if user_input in ['/q', '/exit', 'выход']:
-                print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
-                break
-            elif user_input in ['/h', '/help']:
-                show_help()
-                continue
-            elif user_input.startswith('/'):
-                handle_command(user_input)
-                continue
-            
-            if not user_input:
-                continue
-            
-            print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
             preprocessed = preprocess_query(user_input)
-            search_results = perform_search(preprocessed['queries'])
-            
-            if search_results:
-                user_language = detect_language(user_input)
-                response = process_search_results(search_results, preprocessed['instruction'], user_language)
-                if response:
-                    references = [result['url'] for result in search_results[0] if 'url' in result]
-                    formatted_response = format_response_with_references(response, references)
-                    print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
-                    print_message("Агент", formatted_response)
-                    
-                    dialog_history.append({"role": "user", "content": user_input})
-                    dialog_history.append({"role": "assistant", "content": formatted_response})
-                    save_dialog_history()
-                    save_report(preprocessed, formatted_response)
+            logger.debug(f"Preprocessed query: {preprocessed}")
+            for query in preprocessed["queries"]:
+                results = query_ddgr(query, use_tor=use_tor)
+                if results:
+                    response = process_search_results(results, preprocessed["instruction"])
+                    print(f"Agent: {response}")
                 else:
-                    print_message("Агент", "Не удалось обработать результаты поиска. Пожалуйста, попробуйте еще раз.")
-            else:
-                print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
-    except KeyboardInterrupt:
-        print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
-    finally:
-        save_dialog_history()
+                    print("Agent: No results available. Try again.")
 
 if __name__ == "__main__":
     main()
