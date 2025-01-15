@@ -108,6 +108,7 @@ def perform_search(queries, use_tor):
         try:
             output = subprocess.check_output(command, universal_newlines=True)
             logger.debug(f"Search output for query '{query}': {output[:500]}")
+            logger.debug(f"Search output (partial) for query '{query}': {output[:500]}")
             results.append(output)
         except subprocess.CalledProcessError as e:
             logger.error(f"Search command failed: {e}")
@@ -135,7 +136,8 @@ def main():
             append_to_dialog_history({"role": "user", "content": user_input})
             preprocessed = preprocess_query(user_input)
             search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
-            logger.debug(f"Search results: {search_results[:2]}")  # Log only the first two results for brevity
+            logger.info(f"Total search results obtained: {len(search_results)}")
+            logger.debug(f"Search results (partial): {search_results[:2]}")  # Log only the first two results for brevity
             if search_results:
                 user_language = detect_language(user_input)
                 logger.debug(f"Processing search results: {search_results[:2]} with instruction: {preprocessed['instruction']} and language: {user_language}")
@@ -145,7 +147,9 @@ def main():
             else:
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
-        print(f"{Colors.RED}\nСеанс прерван пользователем.{Colors.RESET}")
+        logger.warning("KeyboardInterrupt detected. Saving dialog history and exiting.")
+        print(f"{Colors.RED}
+Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
         finalize_history_saving()
 
 if __name__ == "__main__":
