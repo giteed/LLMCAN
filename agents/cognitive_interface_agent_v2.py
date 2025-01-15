@@ -145,6 +145,11 @@ def main():
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
                 append_to_dialog_history({"role": "assistant", "content": response})
                 print_message("Агент", response)
+                references = [result['url'] for result in search_results if result and 'url' in result]
+                if references:
+                    print(f"{Colors.CYAN}\nСписок источников:{Colors.RESET}")
+                    for i, ref in enumerate(references, start=1):
+                        print(f"{i}. {ref}")
             else:
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
