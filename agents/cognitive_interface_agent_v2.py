@@ -74,8 +74,8 @@ def main():
             print(f"{Colors.BLUE}✓ TOR сервис активен в системе.{Colors.RESET}")
         else:
             print(f"{Colors.YELLOW}⚠ TOR сервис неактивен в системе.{Colors.RESET}")
-        print(f"{Colors.YELLOW}ℹ Режим опроса через TOR по умолчанию выключен. Включить: /tn{Colors.RESET}")
-        USE_TOR = False
+        print(f"{Colors.YELLOW}ℹ Режим опроса через TOR по умолчанию включен. Отключить: /tf{Colors.RESET}")
+        USE_TOR = True
     else:
         USE_TOR = False
     
