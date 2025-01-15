@@ -2,13 +2,14 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.7
+# Версия: 2.8 (с улучшениями)
 # ==================================================
 
 import sys
 from pathlib import Path
 import readline
 import subprocess
+import logging
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
@@ -28,6 +29,10 @@ class Colors:
     GRAY = "\033[90m"
     BOLD = "\033[1m"
     RESET = "\033[0m"
+
+# Настройка логирования
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 def show_help():
     print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
@@ -57,7 +62,7 @@ def print_header():
 
 def main():
     global USE_TOR
-    load_dialog_history()
+    dialog_history = load_dialog_history()  # Load once to avoid duplication
     
     print_header()
     
@@ -84,6 +89,8 @@ def main():
             
             if user_input in ['/q', '/exit', 'выход']:
                 print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
+                if not save_dialog_history(dialog_history):
+                    logger.error("Failed to save dialog history. Check permissions and file path.")
                 break
             elif user_input in ['/h', '/help']:
                 show_help()
@@ -96,30 +103,31 @@ def main():
                 continue
             
             print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
+            append_to_dialog_history({"role": "user", "content": user_input})  # Log added user input
             preprocessed = preprocess_query(user_input)
+            logger.debug(f"Preprocessed query: {preprocessed}")
             search_results = perform_search(preprocessed['queries'])
             
             if search_results:
                 user_language = detect_language(user_input)
+                logger.debug(f"Detected user language: {user_language}")
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
                 if response:
                     references = [result['url'] for result in search_results[0] if 'url' in result]
                     formatted_response = format_response_with_references(response, references)
                     print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
                     print_message("Агент", formatted_response)
-                    
-                    dialog_history.append({"role": "user", "content": user_input})
-                    dialog_history.append({"role": "assistant", "content": formatted_response})
-                    save_dialog_history()
-                    save_report(preprocessed, formatted_response)
+                    append_to_dialog_history({"role": "assistant", "content": formatted_response})  # Log added assistant response
                 else:
                     print_message("Агент", "Не удалось обработать результаты поиска. Пожалуйста, попробуйте еще раз.")
             else:
+                logger.warning("No results found for user query.")
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
         print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
+        save_dialog_history(dialog_history)
     finally:
-        save_dialog_history()
+        save_dialog_history(dialog_history)
 
 if __name__ == "__main__":
     main()
