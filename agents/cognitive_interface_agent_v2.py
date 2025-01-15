@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.8.6
+# Версия: 2.8.7
 # ==================================================
 
 import sys
@@ -167,8 +167,7 @@ def main():
             if search_results:
                 references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
                 if references:
-                    print(f"{Colors.CYAN}
-Список источников:{Colors.RESET}")
+                    print(f"{Colors.CYAN}\nСписок источников:{Colors.RESET}")
                     for i, ref in enumerate(references[:15], start=1):
                         print(f"{i}. {ref}")
                 user_language = detect_language(user_input)
