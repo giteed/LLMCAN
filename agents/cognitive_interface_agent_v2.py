@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.8.5
+# Версия: 2.8.6
 # ==================================================
 
 import sys
@@ -10,7 +10,7 @@ from pathlib import Path
 import readline
 import subprocess
 import logging
-import json
+import os
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
@@ -33,7 +33,19 @@ class Colors:
     RESET = "\033[0m"
 
 # Настройка логирования
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+DEFAULT_LOG_LEVEL = "INFO"
+ENV_FILE = Path(".env")
+
+# Загрузка уровня логирования из .env
+if ENV_FILE.exists():
+    with open(ENV_FILE, "r") as file:
+        for line in file:
+            if line.startswith("LOG_LEVEL"):
+                DEFAULT_LOG_LEVEL = line.strip().split("=")[1]
+                break
+
+logging.basicConfig(level=getattr(logging, DEFAULT_LOG_LEVEL, logging.INFO),
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # Глобальная переменная для режима TOR
@@ -45,8 +57,17 @@ def show_help():
     print(f"  {Colors.CYAN}/tor, /t{Colors.RESET} - показать статус TOR")
     print(f"  {Colors.CYAN}/tn{Colors.RESET} - включить TOR")
     print(f"  {Colors.CYAN}/tf{Colors.RESET} - отключить TOR")
+    print(f"  {Colors.CYAN}/DEBUG, /INFO, /ERROR{Colors.RESET} - установить уровень логирования")
     print(f"  {Colors.CYAN}/exit, /q{Colors.RESET} - выйти из программы")
     print(f"{Colors.CYAN}Для ввода запроса нажмите Enter.{Colors.RESET}")
+
+def set_log_level(level):
+    global logger
+    logging.getLogger().setLevel(level)
+    logger.info(f"Уровень логирования установлен на {level}")
+    # Сохраняем настройку в .env
+    with open(ENV_FILE, "w") as file:
+        file.write(f"LOG_LEVEL={level}\n")
 
 def check_tor_installation():
     try:
@@ -81,6 +102,9 @@ def handle_command(command):
         USE_TOR = False
         print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
         logger.info("TOR mode disabled")
+    elif command.upper() in ["/DEBUG", "/INFO", "/ERROR"]:
+        level = command.upper().lstrip("/")
+        set_log_level(getattr(logging, level, logging.INFO))
     elif command in ["/help", "/h"]:
         show_help()
     elif command in ["/exit", "/q"]:
@@ -111,13 +135,10 @@ def perform_search(queries, use_tor):
         try:
             output = subprocess.check_output(command, universal_newlines=True)
             logger.debug(f"Search output for query '{query}': {output[:500]}")
-            try:
-                parsed_output = json.loads(output)
-                results.extend(parsed_output if isinstance(parsed_output, list) else [])
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse JSON output: {e}")
+            results.append(output)
         except subprocess.CalledProcessError as e:
             logger.error(f"Search command failed: {e}")
+            results.append(None)
     return results
 
 def main():
@@ -142,19 +163,13 @@ def main():
             preprocessed = preprocess_query(user_input)
             search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
             logger.info(f"Total search results obtained: {len(search_results)}")
-            logger.debug(f"Search results (raw): {search_results}")  # Log all results for debugging
+            logger.debug(f"Raw search results: {search_results}")
             if search_results:
                 user_language = detect_language(user_input)
-                logger.debug(f"Processing search results with instruction: {preprocessed['instruction']} and language: {user_language}")
-                logger.debug(f"Data sent to process_search_results: {search_results}")
+                logger.debug(f"Processing search results: {search_results[:2]} with instruction: {preprocessed['instruction']} and language: {user_language}")
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
                 append_to_dialog_history({"role": "assistant", "content": response})
                 print_message("Агент", response)
-                references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
-                if references:
-                    print(f"{Colors.CYAN}\nСписок источников:{Colors.RESET}")
-                    for i, ref in enumerate(references, start=1):
-                        print(f"{i}. {ref}")
             else:
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
