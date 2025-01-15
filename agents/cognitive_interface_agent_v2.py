@@ -52,7 +52,7 @@ def check_tor_installation():
         subprocess.run(["torsocks", "--version"], check=True, capture_output=True)
         return True
     except FileNotFoundError:
-        print(f"{Colors.RED}torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
+        print(f"{Colors.RED}torsocks не найден. Установите его для использования TOR.{Colors.RESET}")torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
 Сеанс прерван пользователем. История сохранена.{Colors.RESET}")torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
         return False
 
@@ -109,7 +109,7 @@ def perform_search(queries, use_tor):
         try:
             output = subprocess.check_output(command, universal_newlines=True)
             logger.debug(f"Search output for query '{query}': {output[:500]}")
-            logger.debug(f"Search output (partial) for query '{query}': {output[:500]}")
+            
             results.append(output)
         except subprocess.CalledProcessError as e:
             logger.error(f"Search command failed: {e}")
@@ -150,7 +150,7 @@ def main():
     except KeyboardInterrupt:
         logger.warning("KeyboardInterrupt detected. Saving dialog history and exiting.")
         print(f"{Colors.RED}
-Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
+Сеанс прерван пользователем. История сохранена.{Colors.RESET}"))
         finalize_history_saving()
 
 if __name__ == "__main__":
