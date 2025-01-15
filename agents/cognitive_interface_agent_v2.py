@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.8.9
+# Версия: 2.9.1
 # ==================================================
 
 import sys
@@ -120,13 +120,17 @@ def get_multiline_input():
     print(f"{Colors.CYAN}Введите ваш запрос. Для завершения ввода нажмите Enter на пустой строке.{Colors.RESET}")
     lines = []
     while True:
-        line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
-        if line.startswith("/"):
-            handle_command(line)
-            continue
-        if line == "":
+        try:
+            line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
+            if line.startswith("/"):
+                handle_command(line)
+                continue
+            if line == "":
+                break
+            lines.append(line)
+        except KeyboardInterrupt:
+            print(f"{Colors.RED}\nСеанс прерван пользователем.{Colors.RESET}")
             break
-        lines.append(line)
     return " ".join(lines)
 
 def perform_search(queries, use_tor):
