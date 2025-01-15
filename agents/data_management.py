@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # agents/data_management.py
-# Version: 1.1.0
+# Version: 1.2.0
 # Purpose: Handle data and dialog history management for the cognitive agent.
 
 import json
@@ -13,8 +13,13 @@ MAX_HISTORY_LENGTH = 100
 
 def save_dialog_history(dialog_history):
     try:
+        if not isinstance(dialog_history, list):
+            logger.error("Invalid dialog history format. Expected a list.")
+            return
+
         if len(dialog_history) > MAX_HISTORY_LENGTH:
             dialog_history = dialog_history[-MAX_HISTORY_LENGTH:]
+        
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
         with open(HISTORY_FILE, "w", encoding="utf-8") as file:
             json.dump(dialog_history, file, ensure_ascii=False, indent=2)
@@ -27,11 +32,17 @@ def load_dialog_history():
         try:
             with open(HISTORY_FILE, "r", encoding="utf-8") as file:
                 history = json.load(file)
-                logger.info(f"Loaded dialog history from {HISTORY_FILE}")
-                return history
+                if isinstance(history, list):
+                    logger.info(f"Loaded dialog history from {HISTORY_FILE}")
+                    return history
+                else:
+                    logger.warning("Invalid format in dialog history file. Resetting to empty list.")
+        except json.JSONDecodeError:
+            logger.error("Failed to decode dialog history file. Resetting to empty list.")
         except Exception as e:
             logger.error(f"Error loading dialog history: {e}")
-    logger.warning("No dialog history found or file is empty.")
+    else:
+        logger.warning("No dialog history found or file is empty.")
     return []
 
 def save_temp_result(result, query_number, temp_dir=Path("temp")):
