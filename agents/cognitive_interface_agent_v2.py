@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.8.8
+# Версия: 2.8.9
 # ==================================================
 
 import sys
@@ -141,7 +141,7 @@ def perform_search(queries, use_tor):
                 logger.debug(f"Search output for query '{query}': {output[:500]}")
                 results.append(output)
                 break
-            except subprocess.CalledProcessError as e:
+            except Exception as e:  # Перехватываем любые ошибки
                 logger.error(f"Search command failed: {e}. Retrying...")
                 retries += 1
                 if use_tor:
