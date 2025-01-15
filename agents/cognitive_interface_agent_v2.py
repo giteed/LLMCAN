@@ -2,11 +2,8 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.9.0
+# Версия: 2.8.9
 # ==================================================
-
-# Все настройки, функции, и классы остаются как в предоставленном ранее скрипте.
-# Здесь я исправляю ошибки и улучшаю сбор и вывод отчетов с ссылками.
 
 import sys
 from pathlib import Path
@@ -94,6 +91,44 @@ def print_header():
     print(f"{Colors.CYAN}Введите /help для справки по командам.{Colors.RESET}")
     print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
 
+def handle_command(command):
+    global USE_TOR
+    if command in ["/tor", "/t"]:
+        status = "включен" if USE_TOR else "выключен"
+        print(f"Режим опроса через TOR: {status}")
+    elif command == "/tn":
+        USE_TOR = True
+        print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
+        logger.info("TOR mode enabled")
+    elif command == "/tf":
+        USE_TOR = False
+        print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
+        logger.info("TOR mode disabled")
+    elif command.upper() in ["/DEBUG", "/INFO", "/ERROR"]:
+        level = command.upper().lstrip("/")
+        set_log_level(getattr(logging, level, logging.INFO))
+    elif command in ["/help", "/h"]:
+        show_help()
+    elif command in ["/exit", "/q"]:
+        save_dialog_history(load_dialog_history())
+        print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
+        sys.exit()
+    else:
+        print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
+
+def get_multiline_input():
+    print(f"{Colors.CYAN}Введите ваш запрос. Для завершения ввода нажмите Enter на пустой строке.{Colors.RESET}")
+    lines = []
+    while True:
+        line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
+        if line.startswith("/"):
+            handle_command(line)
+            continue
+        if line == "":
+            break
+        lines.append(line)
+    return " ".join(lines)
+
 def perform_search(queries, use_tor):
     results = []
     for query in queries:
@@ -104,9 +139,9 @@ def perform_search(queries, use_tor):
             try:
                 output = subprocess.check_output(command, universal_newlines=True)
                 logger.debug(f"Search output for query '{query}': {output[:500]}")
-                results.append(json.loads(output))
+                results.append(output)
                 break
-            except Exception as e:
+            except Exception as e:  # Перехватываем любые ошибки
                 logger.error(f"Search command failed: {e}. Retrying...")
                 retries += 1
                 if use_tor:
@@ -140,23 +175,18 @@ def main():
             preprocessed = preprocess_query(user_input)
             search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
             logger.info(f"Total search results obtained: {len(search_results)}")
+            logger.debug(f"Raw search results: {search_results}")
             if search_results:
-                user_language = detect_language(user_input)
-                response = process_search_results(search_results, preprocessed['instruction'], user_language)
                 references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
-                report = f"""### Тема ответа пользователю:
-{response}
-
-## Вывод:
-На основе полученных данных можно сделать следующие выводы...
-
-## Интересные моменты:
-1. Выделено из анализа данных...
-
-## Источники:
-""" + "\n".join([f"{i + 1}. {url}" for i, url in enumerate(references[:15])])
-                print_message("Агент", report)
-                append_to_dialog_history({"role": "assistant", "content": report})
+                if references:
+                    print(f"{Colors.CYAN}\nСписок источников:{Colors.RESET}")
+                    for i, ref in enumerate(references[:15], start=1):
+                        print(f"{i}. {ref}")
+                user_language = detect_language(user_input)
+                logger.debug(f"Processing search results: {search_results[:2]} with instruction: {preprocessed['instruction']} and language: {user_language}")
+                response = process_search_results(search_results, preprocessed['instruction'], user_language)
+                append_to_dialog_history({"role": "assistant", "content": response})
+                print_message("Агент", response)
             else:
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
