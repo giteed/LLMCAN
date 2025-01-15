@@ -1,115 +1,114 @@
 #!/usr/bin/env python3
-# agents/data_management.py
-# Version: 1.5.2
-# Purpose: Handle data and dialog history management for the cognitive agent.
+# LLMCAN/agents/cognitive_interface_agent_v2.py
+# ==================================================
+# Когнитивный интерфейсный агент для проекта LLMCAN
+# Версия: 2.8.2
+# ==================================================
 
-import json
-import logging
+import sys
 from pathlib import Path
+import readline
+import subprocess
+import logging
 
+# Добавляем корневую директорию проекта в sys.path
+project_root = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(project_root))
+
+from settings import BASE_DIR, LLM_API_URL
+from cognitive_interface_agent_functions import *
+from agents.install_tor import restart_tor_and_check_ddgr
+from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history
+
+# Обновленный класс Colors
+class Colors:
+    BLUE = "\033[94m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    CYAN = "\033[96m"
+    GRAY = "\033[90m"
+    BOLD = "\033[1m"
+    RESET = "\033[0m"
+
+# Настройка логирования
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
-HISTORY_FILE = Path("history/dialog_history.json")
-MAX_HISTORY_LENGTH = 100
 
-# Cached dialog history to prevent double loading
-dialog_history_cache = None
+# Глобальная переменная для режима TOR
+USE_TOR = True
 
-def save_dialog_history(dialog_history):
-    global dialog_history_cache
+def show_help():
+    print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
+    print(f"  {Colors.CYAN}/help, /h{Colors.RESET} - показать эту справку")
+    print(f"  {Colors.CYAN}/tor, /t{Colors.RESET} - показать статус TOR")
+    print(f"  {Colors.CYAN}/tn{Colors.RESET} - включить или выключить TOR")
+    print(f"  {Colors.CYAN}/exit, /q{Colors.RESET} - выйти из программы")
+    print(f"{Colors.CYAN}Для ввода запроса нажмите Enter.{Colors.RESET}")
+
+def check_tor_installation():
     try:
-        if not isinstance(dialog_history, list):
-            logger.error("Invalid dialog history format. Expected a list.")
-            return False
-
-        if len(dialog_history) > MAX_HISTORY_LENGTH:
-            dialog_history = dialog_history[-MAX_HISTORY_LENGTH:]
-
-        HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(HISTORY_FILE, "w", encoding="utf-8") as file:
-            json.dump(dialog_history, file, ensure_ascii=False, indent=2)
-        logger.info(f"Dialog history successfully saved to {HISTORY_FILE}")
-
-        # Update the cache after saving
-        dialog_history_cache = dialog_history.copy()
-
+        subprocess.run(["torsocks", "--version"], check=True, capture_output=True)
         return True
-    except Exception as e:
-        logger.error(f"Error saving dialog history: {e}")
+    except FileNotFoundError:
+        print(f"{Colors.RED}torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
         return False
 
-def load_dialog_history():
-    global dialog_history_cache
+def print_header():
+    print(f"{Colors.CYAN}{Colors.BOLD}")
+    print("╔═══════════════════════════════════════════════╗")
+    print("║                                               ║")
+    print("║        Интерфейс Агентского Поиска            ║")
+    print("║                                               ║")
+    print("╚═══════════════════════════════════════════════╝")
+    print(f"{Colors.RESET}")
 
-    if dialog_history_cache is not None:
-        logger.debug("Using cached dialog history.")
-        return dialog_history_cache
-
-    if HISTORY_FILE.exists() and HISTORY_FILE.stat().st_size > 0:
-        try:
-            with open(HISTORY_FILE, "r", encoding="utf-8") as file:
-                history = json.load(file)
-                if isinstance(history, list):
-                    logger.info(f"Loaded dialog history from {HISTORY_FILE}")
-                    dialog_history_cache = history.copy()
-                    return history
-                else:
-                    logger.warning("Invalid format in dialog history file. Resetting to empty list.")
-        except json.JSONDecodeError:
-            logger.error("Failed to decode dialog history file. Resetting to empty list.")
-        except Exception as e:
-            logger.error(f"Error loading dialog history: {e}")
+def handle_command(command):
+    global USE_TOR
+    if command in ["/tor", "/t"]:
+        status = "включен" if USE_TOR else "выключен"
+        print(f"Режим опроса через TOR: {status}")
+    elif command == "/tn":
+        USE_TOR = not USE_TOR
+        status = "включен" if USE_TOR else "выключен"
+        print(f"Режим опроса через TOR теперь {status}.")
+    elif command in ["/help", "/h"]:
+        show_help()
+    elif command in ["/exit", "/q"]:
+        finalize_history_saving()
+        print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
+        sys.exit()
     else:
-        logger.warning("No dialog history found or file is empty.")
+        print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
-    dialog_history_cache = []
-    return dialog_history_cache
+def main():
+    global USE_TOR
+    dialog_history = load_dialog_history()
+    print_header()
+    tor_installed = check_tor_installation()
+    if not tor_installed:
+        USE_TOR = False
+    print(f"{Colors.YELLOW}ℹ Режим опроса через TOR по умолчанию {'включен' if USE_TOR else 'выключен'}.{Colors.RESET}")
 
-def append_to_dialog_history(entry):
-    global dialog_history_cache
-
-    if dialog_history_cache is None:
-        dialog_history_cache = load_dialog_history()
-
-    logger.debug(f"Dialog history before append: {dialog_history_cache}")
-
-    if isinstance(dialog_history_cache, list):
-        dialog_history_cache.append(entry)
-        logger.debug(f"Appended new entry to dialog history: {entry}")
-        logger.debug(f"Dialog history after append: {dialog_history_cache}")
-    else:
-        logger.error("Cannot append to dialog history. Cache is not a list.")
-
-# Ensure save_dialog_history is called only once at program end
-def finalize_history_saving():
-    global dialog_history_cache
-    if dialog_history_cache is not None:
-        logger.debug("Finalizing dialog history saving...")
-        if not save_dialog_history(dialog_history_cache):
-            logger.error("Failed to finalize dialog history saving.")
-
-
-def save_temp_result(result, query_number, temp_dir=Path("temp")):
     try:
-        temp_dir.mkdir(exist_ok=True)
-        file_path = temp_dir / f"result_{query_number}.json"
-        with open(file_path, "w", encoding="utf-8") as file:
-            json.dump(result, file, ensure_ascii=False, indent=2)
-        logger.info(f"Temporary result saved to {file_path}")
-    except Exception as e:
-        logger.error(f"Error saving temporary result: {e}")
+        while True:
+            user_input = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
+            if user_input.startswith("/"):
+                handle_command(user_input)
+            else:
+                print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
+                append_to_dialog_history({"role": "user", "content": user_input})
+                preprocessed = preprocess_query(user_input)
+                search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
+                if search_results:
+                    response = process_search_results(search_results, preprocessed['instruction'])
+                    append_to_dialog_history({"role": "assistant", "content": response})
+                    print_message("Агент", response)
+                else:
+                    print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
+    except KeyboardInterrupt:
+        print(f"{Colors.RED}\nСеанс прерван пользователем.{Colors.RESET}")
+        finalize_history_saving()
 
-def detect_language(text):
-    import re
-    logger.debug(f"Detecting language for text: {text[:30]}...")
-    if re.search('[а-яА-Я]', text):
-        logger.info("Detected language: Russian")
-        return 'ru'
-    else:
-        logger.info("Detected language: English")
-        return 'en'
-
-def print_message(role, message):
-    color = "\033[94m" if role == "User" else "\033[92m"
-    reset = "\033[0m"
-    logger.debug(f"{role}: {message}")
-    print(f"{color}{role}: {message}{reset}")
+if __name__ == "__main__":
+    main()
