@@ -107,6 +107,7 @@ def perform_search(queries, use_tor):
         logger.info(f"Executing command: {' '.join(command)}")
         try:
             output = subprocess.check_output(command, universal_newlines=True)
+            logger.debug(f"Search output for query '{query}': {output[:500]}")
             results.append(output)
         except subprocess.CalledProcessError as e:
             logger.error(f"Search command failed: {e}")
@@ -134,8 +135,10 @@ def main():
             append_to_dialog_history({"role": "user", "content": user_input})
             preprocessed = preprocess_query(user_input)
             search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
+            logger.debug(f"Search results: {search_results[:2]}")  # Log only the first two results for brevity
             if search_results:
                 user_language = detect_language(user_input)
+                logger.debug(f"Processing search results: {search_results[:2]} with instruction: {preprocessed['instruction']} and language: {user_language}")
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
                 append_to_dialog_history({"role": "assistant", "content": response})
                 print_message("Агент", response)
