@@ -62,7 +62,7 @@ def print_header():
 
 def main():
     global USE_TOR
-    load_dialog_history()
+    dialog_history = load_dialog_history()  # Load once to avoid duplication
     
     print_header()
     
@@ -89,6 +89,8 @@ def main():
             
             if user_input in ['/q', '/exit', 'выход']:
                 print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
+                if not save_dialog_history(dialog_history):
+                    logger.error("Failed to save dialog history. Check permissions and file path.")
                 break
             elif user_input in ['/h', '/help']:
                 show_help()
@@ -101,6 +103,7 @@ def main():
                 continue
             
             print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
+            append_to_dialog_history({"role": "user", "content": user_input})  # Log added user input
             preprocessed = preprocess_query(user_input)
             logger.debug(f"Preprocessed query: {preprocessed}")
             search_results = perform_search(preprocessed['queries'])
@@ -114,11 +117,7 @@ def main():
                     formatted_response = format_response_with_references(response, references)
                     print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
                     print_message("Агент", formatted_response)
-                    
-                    dialog_history.append({"role": "user", "content": user_input})
-                    dialog_history.append({"role": "assistant", "content": formatted_response})
-                    save_dialog_history()
-                    save_report(preprocessed, formatted_response)
+                    append_to_dialog_history({"role": "assistant", "content": formatted_response})  # Log added assistant response
                 else:
                     print_message("Агент", "Не удалось обработать результаты поиска. Пожалуйста, попробуйте еще раз.")
             else:
@@ -126,8 +125,9 @@ def main():
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
         print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
+        save_dialog_history(dialog_history)
     finally:
-        save_dialog_history()
+        save_dialog_history(dialog_history)
 
 if __name__ == "__main__":
     main()
