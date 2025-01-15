@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # agents/data_management.py
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Handle data and dialog history management for the cognitive agent.
 
 import json
@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 HISTORY_FILE = Path("history/dialog_history.json")
 MAX_HISTORY_LENGTH = 100
 
+# Cached dialog history to prevent double loading
+dialog_history_cache = None
 
 def save_dialog_history(dialog_history):
     try:
@@ -30,14 +32,20 @@ def save_dialog_history(dialog_history):
         logger.error(f"Error saving dialog history: {e}")
         return False
 
-
 def load_dialog_history():
+    global dialog_history_cache
+
+    if dialog_history_cache is not None:
+        logger.debug("Using cached dialog history.")
+        return dialog_history_cache
+
     if HISTORY_FILE.exists() and HISTORY_FILE.stat().st_size > 0:
         try:
             with open(HISTORY_FILE, "r", encoding="utf-8") as file:
                 history = json.load(file)
                 if isinstance(history, list):
                     logger.info(f"Loaded dialog history from {HISTORY_FILE}")
+                    dialog_history_cache = history
                     return history
                 else:
                     logger.warning("Invalid format in dialog history file. Resetting to empty list.")
@@ -47,17 +55,21 @@ def load_dialog_history():
             logger.error(f"Error loading dialog history: {e}")
     else:
         logger.warning("No dialog history found or file is empty.")
-    return []
 
+    dialog_history_cache = []
+    return dialog_history_cache
 
-def verify_history_saved():
-    if HISTORY_FILE.exists() and HISTORY_FILE.stat().st_size > 0:
-        logger.info(f"Verified that dialog history exists at {HISTORY_FILE}.")
-        return True
+def append_to_dialog_history(entry):
+    global dialog_history_cache
+
+    if dialog_history_cache is None:
+        dialog_history_cache = load_dialog_history()
+
+    if isinstance(dialog_history_cache, list):
+        dialog_history_cache.append(entry)
+        logger.debug(f"Appended new entry to dialog history: {entry}")
     else:
-        logger.error(f"Dialog history verification failed: File {HISTORY_FILE} is missing or empty.")
-        return False
-
+        logger.error("Cannot append to dialog history. Cache is not a list.")
 
 def save_temp_result(result, query_number, temp_dir=Path("temp")):
     try:
@@ -69,7 +81,6 @@ def save_temp_result(result, query_number, temp_dir=Path("temp")):
     except Exception as e:
         logger.error(f"Error saving temporary result: {e}")
 
-
 def detect_language(text):
     import re
     logger.debug(f"Detecting language for text: {text[:30]}...")
@@ -79,7 +90,6 @@ def detect_language(text):
     else:
         logger.info("Detected language: English")
         return 'en'
-
 
 def print_message(role, message):
     color = "\033[94m" if role == "User" else "\033[92m"
