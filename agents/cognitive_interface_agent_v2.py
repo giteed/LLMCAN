@@ -2,14 +2,13 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.8.0 (рабочая версия)
+# Версия: 2.7
 # ==================================================
 
 import sys
 from pathlib import Path
 import readline
 import subprocess
-import logging
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
@@ -18,7 +17,6 @@ sys.path.insert(0, str(project_root))
 from settings import BASE_DIR, LLM_API_URL
 from cognitive_interface_agent_functions import *
 from agents.install_tor import restart_tor_and_check_ddgr
-from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history
 
 # Обновленный класс Colors
 class Colors:
@@ -31,20 +29,14 @@ class Colors:
     BOLD = "\033[1m"
     RESET = "\033[0m"
 
-# Настройка логирования
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
-
-# Глобальная переменная для режима TOR
-USE_TOR = True
-
 def show_help():
     print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
     print(f"  {Colors.CYAN}/help, /h{Colors.RESET} - показать эту справку")
     print(f"  {Colors.CYAN}/tor, /t{Colors.RESET} - показать статус TOR")
-    print(f"  {Colors.CYAN}/tn{Colors.RESET} - включить или выключить TOR")
+    print(f"  {Colors.CYAN}/toron, /tn{Colors.RESET} - включить TOR")
+    print(f"  {Colors.CYAN}/toroff, /tf{Colors.RESET} - выключить TOR")
     print(f"  {Colors.CYAN}/exit, /q{Colors.RESET} - выйти из программы")
-    print(f"{Colors.CYAN}Для ввода запроса нажмите Enter.{Colors.RESET}")
+    print(f"{Colors.CYAN}Для ввода запроса нажмите Enter дважды.{Colors.RESET}")
 
 def check_tor_installation():
     try:
@@ -63,56 +55,71 @@ def print_header():
     print("╚═══════════════════════════════════════════════╝")
     print(f"{Colors.RESET}")
 
-def handle_command(command):
-    global USE_TOR
-    if command in ["/tor", "/t"]:
-        status = "включен" if USE_TOR else "выключен"
-        print(f"Режим опроса через TOR: {status}")
-    elif command == "/tn":
-        USE_TOR = not USE_TOR
-        status = "включен" if USE_TOR else "выключен"
-        print(f"Режим опроса через TOR теперь {status}.")
-        logger.info(f"TOR mode switched: {status}")
-    elif command in ["/help", "/h"]:
-        show_help()
-    elif command in ["/exit", "/q"]:
-        finalize_history_saving()
-        print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
-        sys.exit()
-    else:
-        print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
-
 def main():
     global USE_TOR
-    dialog_history = load_dialog_history()
+    load_dialog_history()
+    
     print_header()
+    
     tor_installed = check_tor_installation()
-    if not tor_installed:
+    if tor_installed:
+        tor_active = check_tor_connection()
+        if tor_active:
+            print(f"{Colors.BLUE}✓ TOR сервис активен в системе.{Colors.RESET}")
+        else:
+            print(f"{Colors.YELLOW}⚠ TOR сервис неактивен в системе.{Colors.RESET}")
+        print(f"{Colors.YELLOW}ℹ Режим опроса через TOR по умолчанию выключен. Включить: /tn{Colors.RESET}")
         USE_TOR = False
     else:
-        print(f"{Colors.BLUE}TOR готов к использованию.{Colors.RESET}")
-    print(f"{Colors.YELLOW}ℹ Режим опроса через TOR по умолчанию {'включен' if USE_TOR else 'выключен'}.{Colors.RESET}")
+        USE_TOR = False
+    
+    print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
+    print(f"{Colors.CYAN}Введите /help для справки по командам.{Colors.RESET}")
+    print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
 
     try:
         while True:
-            user_input = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
-            if user_input.startswith("/"):
+            user_input = get_multiline_input()
+            user_input = user_input.strip().lower()
+            
+            if user_input in ['/q', '/exit', 'выход']:
+                print(f"{Colors.GREEN}Сеанс завершен. История сохранена.{Colors.RESET}")
+                break
+            elif user_input in ['/h', '/help']:
+                show_help()
+                continue
+            elif user_input.startswith('/'):
                 handle_command(user_input)
-            else:
-                print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
-                append_to_dialog_history({"role": "user", "content": user_input})
-                preprocessed = preprocess_query(user_input)
-                search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
-                if search_results:
-                    user_language = detect_language(user_input)
-                    response = process_search_results(search_results, preprocessed['instruction'], user_language)
-                    append_to_dialog_history({"role": "assistant", "content": response})
-                    print_message("Агент", response)
+                continue
+            
+            if not user_input:
+                continue
+            
+            print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
+            preprocessed = preprocess_query(user_input)
+            search_results = perform_search(preprocessed['queries'])
+            
+            if search_results:
+                user_language = detect_language(user_input)
+                response = process_search_results(search_results, preprocessed['instruction'], user_language)
+                if response:
+                    references = [result['url'] for result in search_results[0] if 'url' in result]
+                    formatted_response = format_response_with_references(response, references)
+                    print(f"{Colors.GREEN}Ответ готов:{Colors.RESET}")
+                    print_message("Агент", formatted_response)
+                    
+                    dialog_history.append({"role": "user", "content": user_input})
+                    dialog_history.append({"role": "assistant", "content": formatted_response})
+                    save_dialog_history()
+                    save_report(preprocessed, formatted_response)
                 else:
-                    print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
+                    print_message("Агент", "Не удалось обработать результаты поиска. Пожалуйста, попробуйте еще раз.")
+            else:
+                print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
-        print(f"{Colors.RED}\nСеанс прерван пользователем.{Colors.RESET}")
-        finalize_history_saving()
+        print(f"\n{Colors.RED}Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
+    finally:
+        save_dialog_history()
 
 if __name__ == "__main__":
     main()
