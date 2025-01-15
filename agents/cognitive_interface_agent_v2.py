@@ -150,7 +150,7 @@ def main():
     except KeyboardInterrupt:
         logger.warning("KeyboardInterrupt detected. Saving dialog history and exiting.")
         print(f"{Colors.RED}
-Сеанс прерван пользователем. История сохранена.{Colors.RESET}"))
+Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
         finalize_history_saving()
 
 if __name__ == "__main__":
