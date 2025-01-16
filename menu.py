@@ -2,14 +2,17 @@
 # LLMCAN/agents/menu.py
 # ==================================================
 # Главное меню для проекта LLMCAN
-# Версия: 1.0.0
+# Версия: 1.0.1
 # ==================================================
 
 import os
 import sys
 from agents.colors import Colors
-import readline
 import logging
+
+# Настройка логгирования
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.WARNING)
 
 # Путь к скриптам проекта
 SCRIPTS = {
@@ -40,18 +43,17 @@ def execute_script(choice):
     else:
         print(f"{Colors.RED}[ERROR] Некорректный выбор. Попробуйте снова.{Colors.RESET}")
 
-    except KeyboardInterrupt:
-        logger.warning("KeyboardInterrupt detected. Saving dialog history and exiting.")
-        print(f"{Colors.RED}\nСеанс прерван пользователем. История сохранена.{Colors.RESET}")
-        save_dialog_history(dialog_history)
-        exit(0)  # Завершение программы с кодом 0 (успешно)
-
 if __name__ == "__main__":
-    while True:
-        show_menu()
-        choice = input(f"{Colors.CYAN}Выберите действие (1-5, q/exit): {Colors.RESET}").strip().lower()
-        if choice in ["q", "exit"]:
-            print(f"{Colors.GREEN}\n[INFO] Выход из программы. До свидания!{Colors.RESET}")
-            sys.exit(0)
-        else:
-            execute_script(choice)
+    try:
+        while True:
+            show_menu()
+            choice = input(f"{Colors.CYAN}Выберите действие (1-5, q/exit): {Colors.RESET}").strip().lower()
+            if choice in ["q", "exit"]:
+                print(f"{Colors.GREEN}\n[INFO] Выход из программы. До свидания!{Colors.RESET}")
+                sys.exit(0)
+            else:
+                execute_script(choice)
+    except KeyboardInterrupt:
+        logger.warning("KeyboardInterrupt detected. Exiting.")
+        print(f"{Colors.RED}\nСеанс прерван пользователем.{Colors.RESET}")
+        sys.exit(0)  # Завершение программы с кодом 0 (успешно)
