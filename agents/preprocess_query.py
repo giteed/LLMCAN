@@ -98,7 +98,7 @@ def handle_command(command, use_tor):
     """
     Обработка команды пользователя.
     """
-    if command in ["/tor", "/t", ".т", ".е"]:
+    if command in ["/tor", "/t", ".т", ".е", ".тор"]:
         status = "включен" if use_tor else "выключен"
         print(f"Режим опроса через TOR: {status}")
     elif command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
@@ -111,12 +111,12 @@ def handle_command(command, use_tor):
             use_tor = False
             logger.info("TOR mode disabled")  # Логирование только один раз
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
-    elif command.upper() in ["/DEBUG", "/INFO", "/ERROR"]:
+    elif command.upper() in ["/DEBUG", "/D", "/INFO", "/I", "/ERROR", "/E", ".дебаг", ".ошибка", ".ошибки", ".инфо"]:
         level = command.upper().lstrip("/")
         set_log_level(getattr(logging, level, logging.INFO))
-    elif command in ["/help", "/h", ".р", ".х", ".п", ".с"]:
+    elif command in ["/help", "/h", ".р", ".х", ".п", ".с", ".помощь", ".справка"]:
         show_help()
-    elif command in ["/exit", "/q", ".й", ".в"]:
+    elif command in ["/exit", "/q", ".й", ".в", ".выход"]:
         save_dialog_history(load_dialog_history())
         print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
         sys.exit()
