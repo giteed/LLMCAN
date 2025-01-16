@@ -70,18 +70,19 @@ def print_header():
 
 
 def get_multiline_input():
+    global USE_TOR
     print(f"{Colors.CYAN}Введите ваш запрос. Для завершения ввода нажмите Enter на пустой строке.{Colors.RESET}")
     lines = []
     while True:
         line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
-        #if line.startswith("/", "."):
-        if line.startswith(("/", ".")):  # Исправлено
-            handle_command(line)
+        if line.startswith(("/", ".")):
+            USE_TOR = handle_command(line, USE_TOR)
             continue
         if line == "":
             break
         lines.append(line)
     return " ".join(lines)
+
     
 def perform_search(queries, use_tor):
     """
