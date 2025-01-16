@@ -24,11 +24,11 @@ from agents.install_tor import restart_tor_and_check_ddgr
 from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_language
 from colors import Colors  # Используем Colors из внешнего файла
 from cognitive_logic import print_message, process_search_results
-from preprocess_query import preprocess_query, handle_command, show_help, set_log_level
+from preprocess_query import preprocess_query, handle_command, show_help, set_log_level, , ENV_FILE
 
 # Настройка логирования
 DEFAULT_LOG_LEVEL = "INFO"
-ENV_FILE = Path(".env")
+#ENV_FILE = Path(".env")
 
 # Загрузка уровня логирования из .env
 if ENV_FILE.exists():
