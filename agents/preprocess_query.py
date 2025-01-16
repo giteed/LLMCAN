@@ -52,7 +52,6 @@ logger.addHandler(file_handler)
 
 
 def set_log_level(level):
-    global logger
     logger.setLevel(level)
     if level == logging.DEBUG:
         print(f"{Colors.YELLOW}Уровень логирования установлен на DEBUG.{Colors.RESET}")
@@ -60,7 +59,6 @@ def set_log_level(level):
         print(f"{Colors.GREEN}Уровень логирования установлен на INFO.{Colors.RESET}")
     elif level == logging.ERROR:
         print(f"{Colors.RED}Уровень логирования установлен на ERROR.{Colors.RESET}")
-
 
 
 def show_help():
