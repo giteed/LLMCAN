@@ -118,6 +118,10 @@ def handle_command(command):
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
 def perform_search(queries, use_tor):
+    """
+    Выполняет поисковые запросы с использованием ddgr через TOR или напрямую.
+    Перезапускает TOR при возникновении ошибок и повторяет запросы.
+    """
     results = []
     for query in queries:
         retries = 0
