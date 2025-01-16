@@ -1,25 +1,49 @@
-# menu.py
-# Заглушка меню для проекта LLMCAN
+#!/usr/bin/env python3
+# LLMCAN/agents/menu.py
+# ==================================================
+# Главное меню для проекта LLMCAN
+# Версия: 1.0.0
+# ==================================================
+
+import os
+import sys
+from agents.colors import Colors
+
+# Путь к скриптам проекта
+SCRIPTS = {
+    "1": "agents/cognitive_interface_agent_v2.py",
+    "2": "agents/cognitive_interface_agent.py",
+    "3": "agents/chat_with_ddgr_context.py",
+    "4": "agents/ddgr_agent.py",
+    "5": "agents/install_tor.py",
+}
 
 def show_menu():
-    print("\n=== Меню LLMCAN ===")
-    print("1. Запустить обработку данных")
-    print("2. Посмотреть логи")
-    print("3. Выход")
+    print(f"{Colors.CYAN}\n=== Главное меню LLMCAN ==={Colors.RESET}")
+    print(f"{Colors.GREEN}1.{Colors.RESET} Запустить cognitive_interface_agent_v2.py")
+    print(f"{Colors.GREEN}2.{Colors.RESET} Запустить cognitive_interface_agent.py")
+    print(f"{Colors.GREEN}3.{Colors.RESET} Запустить chat_with_ddgr_context.py")
+    print(f"{Colors.GREEN}4.{Colors.RESET} Запустить ddgr_agent.py")
+    print(f"{Colors.GREEN}5.{Colors.RESET} Запустить install_tor.py")
+    print(f"{Colors.RED}q или exit{Colors.RESET} - Выйти из программы\n")
 
-    choice = input("\nВыберите действие (1-3): ")
-    if choice == "1":
-        print("\n[INFO] Обработка данных запущена...")
-        # Заглушка для обработки данных
-    elif choice == "2":
-        print("\n[INFO] Открытие логов...")
-        # Заглушка для просмотра логов
-    elif choice == "3":
-        print("\n[INFO] Выход из программы. До свидания!")
-        exit(0)
+def execute_script(choice):
+    script_path = SCRIPTS.get(choice)
+    if script_path:
+        print(f"{Colors.YELLOW}[INFO] Запуск: {script_path}{Colors.RESET}")
+        try:
+            os.system(f"python3 {script_path}")
+        except Exception as e:
+            print(f"{Colors.RED}[ERROR] Не удалось запустить {script_path}: {e}{Colors.RESET}")
     else:
-        print("\n[ERROR] Некорректный выбор. Попробуйте снова.")
+        print(f"{Colors.RED}[ERROR] Некорректный выбор. Попробуйте снова.{Colors.RESET}")
 
 if __name__ == "__main__":
     while True:
         show_menu()
+        choice = input(f"{Colors.CYAN}Выберите действие (1-5, q/exit): {Colors.RESET}").strip().lower()
+        if choice in ["q", "exit"]:
+            print(f"{Colors.GREEN}\n[INFO] Выход из программы. До свидания!{Colors.RESET}")
+            sys.exit(0)
+        else:
+            execute_script(choice)
