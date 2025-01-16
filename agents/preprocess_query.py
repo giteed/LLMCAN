@@ -113,21 +113,21 @@ def handle_command(command, use_tor):
         # Показать текущий статус TOR
         status = "включен" if use_tor else "выключен"
         print(f"Режим опроса через TOR: {status}")
-    
+
     elif command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
         # Включение TOR
         if not use_tor:
             use_tor = True
             logger.info("TOR mode enabled")  # Логирование
             print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
-    
+
     elif command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
         # Выключение TOR
         if use_tor:
             use_tor = False
             logger.info("TOR mode disabled")  # Логирование
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
-    
+
     elif command in ["/debug", "/info", "/error", ".дебаг", ".инфо", ".ошибка", ".ошибки"]:
         # Установка уровня логирования
         levels = {
@@ -141,33 +141,32 @@ def handle_command(command, use_tor):
         }
         level = levels.get(command.lower(), logging.INFO)
         set_log_level(level)
-    
-    elif command in ["/log", "/l", ".лог", ".л"]:
+
+    elif command in ["/log", "/l", ".лог", ".л", ".д", ".дщп"]:
         # Показ текущего уровня логирования
         current_level = logging.getLevelName(logger.level)
         print(f"{Colors.CYAN}Текущий уровень логирования: {Colors.BOLD}{current_level}{Colors.RESET}")
-    
+
     elif command in ["/help", "/h", ".р", ".х", ".п", ".с", ".помощь", ".справка"]:
         # Показать справку
         show_help()
-    
+
     elif command in ["/exit", "/q", ".й", ".в", ".выход"]:
         # Выход из программы
         save_dialog_history(load_dialog_history())
         print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
         sys.exit()
-    
-    elif command in ["/show", ".покажи"]:
+
+    elif command in ["/show", "/s", ".покажи", ".п", ".покаж"]:
         # Показать дополнительную информацию о системе
         from agents.show_info_cognitive_interface_agent_v2 import show_info
         log_level = logging.getLevelName(logger.level)
         show_info(use_tor, log_level)
-    
+
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
     return use_tor
-
 
 
 def get_current_datetime():
