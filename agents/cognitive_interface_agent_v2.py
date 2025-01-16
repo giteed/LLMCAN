@@ -55,19 +55,19 @@ USE_TOR = True
 MAX_RETRIES = 3  # Максимальное количество попыток для запросов
 
 def show_help():
-    print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
-    print(f"  {Colors.CYAN}/help, /h{Colors.RESET} - показать эту справку")
-    print(f"  {Colors.CYAN}/tor, /t{Colors.RESET} - показать статус TOR")
-    print(f"  {Colors.CYAN}/tn{Colors.RESET} - включить TOR")
-    print(f"  {Colors.CYAN}/tf{Colors.RESET} - отключить TOR")
-    print(f"  {Colors.CYAN}/DEBUG, /INFO, /ERROR{Colors.RESET} - установить уровень логирования")
-    print(f"  {Colors.CYAN}/exit, /q{Colors.RESET} - выйти из программы")
-    print(f"{Colors.CYAN}Для ввода запроса нажмите Enter.{Colors.RESET}")
+    print(f"{Colors.CYAN} Доступные команды:{Colors.RESET}")
+    print(f"  {Colors.CYAN} /help, /h{Colors.RESET} - показать эту справку")
+    print(f"  {Colors.CYAN} /tor, /t{Colors.RESET} - показать статус TOR")
+    print(f"  {Colors.CYAN} /tn{Colors.RESET} - включить TOR")
+    print(f"  {Colors.CYAN} /tf{Colors.RESET} - отключить TOR")
+    print(f"  {Colors.CYAN} /DEBUG, /INFO, /ERROR{Colors.RESET} - установить уровень логирования")
+    print(f"  {Colors.CYAN} /exit, /q{Colors.RESET} - выйти из программы")
+    print(f"{Colors.CYAN} Для ввода запроса нажмите Enter.{Colors.RESET}")
 
 def set_log_level(level):
     global logger
     logging.getLogger().setLevel(level)
-    logger.info(f"Уровень логирования установлен на {level}")
+    logger.info(f" Уровень логирования установлен на {level}")
     # Сохраняем настройку в .env
     with open(ENV_FILE, "w") as file:
         file.write(f"LOG_LEVEL={level}\n")
@@ -77,7 +77,7 @@ def check_tor_installation():
         subprocess.run(["torsocks", "--version"], check=True, capture_output=True)
         return True
     except FileNotFoundError:
-        print(f"{Colors.RED}torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
+        print(f"{Colors.RED} torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
         return False
 
 def print_header():
@@ -96,14 +96,14 @@ def handle_command(command):
     global USE_TOR
     if command in ["/tor", "/t"]:
         status = "включен" if USE_TOR else "выключен"
-        print(f"Режим опроса через TOR: {status}")
+        print(f" Режим опроса через TOR: {status}")
     elif command == "/tn":
         USE_TOR = True
-        print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
+        print(f"{Colors.GREEN} Режим опроса через TOR включён.{Colors.RESET}")
         logger.info("TOR mode enabled")
     elif command == "/tf":
         USE_TOR = False
-        print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
+        print(f"{Colors.YELLOW} Режим опроса через TOR отключён.{Colors.RESET}")
         logger.info("TOR mode disabled")
     elif command.upper() in ["/DEBUG", "/INFO", "/ERROR"]:
         level = command.upper().lstrip("/")
@@ -112,13 +112,13 @@ def handle_command(command):
         show_help()
     elif command in ["/exit", "/q"]:
         save_dialog_history(load_dialog_history())
-        print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
+        print(f"{Colors.GREEN} Сеанс завершен.{Colors.RESET}")
         sys.exit()
     else:
-        print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
+        print(f"{Colors.RED} Неизвестная команда: {command}{Colors.RESET}")
 
 def get_multiline_input():
-    print(f"{Colors.CYAN}Введите ваш запрос. Для завершения ввода нажмите Enter на пустой строке.{Colors.RESET}")
+    print(f"{Colors.CYAN} Введите ваш запрос.\n Для завершения ввода нажмите Enter на пустой строке.{Colors.RESET}")
     lines = []
     while True:
         line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
@@ -161,7 +161,6 @@ def perform_search(queries, use_tor):
     return results
 
 
-
 def main():
     global USE_TOR
     dialog_history = load_dialog_history()
@@ -170,7 +169,7 @@ def main():
     if not tor_installed:
         USE_TOR = False
     else:
-        print(f"{Colors.BLUE}TOR готов к использованию.{Colors.RESET}")
+        print(f"{Colors.BLUE} TOR готов к использованию.{Colors.RESET}")
     print(f"{Colors.YELLOW}ℹ Режим опроса через TOR по умолчанию {'включен' if USE_TOR else 'выключен'}.{Colors.RESET}")
 
     try:
@@ -179,11 +178,11 @@ def main():
             if not user_input:
                 continue
 
-            print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
+            print(f"{Colors.BLUE} Обрабатываю запрос пользователя...{Colors.RESET}")
             append_to_dialog_history({"role": "user", "content": user_input})
             preprocessed = preprocess_query(user_input)
             search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
-            logger.info(f"Total search results obtained: {len(search_results)}")
+            logger.info(f" Total search results obtained: {len(search_results)}")
             if search_results:
                 user_language = detect_language(user_input)
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
@@ -206,7 +205,7 @@ def main():
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
         logger.warning("KeyboardInterrupt detected. Saving dialog history and exiting.")
-        print(f"{Colors.RED}\nСеанс прерван пользователем. История сохранена.{Colors.RESET}")
+        print(f"{Colors.RED}\n Сеанс прерван пользователем. История сохранена.{Colors.RESET}")
         save_dialog_history(dialog_history)
 
 if __name__ == "__main__":
