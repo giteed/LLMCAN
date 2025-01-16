@@ -84,19 +84,7 @@ def print_header():
     print(f"{Colors.CYAN}Введите /help для справки по командам.{Colors.RESET}")
     print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
 
-def preprocess_query(user_input):
-    """
-    Генерирует три связанных запроса на основе пользовательского ввода.
-    """
-    logger.debug(f"Preprocessing user input: {user_input}")
-    queries = [
-        user_input,
-        f"{user_input} - связанные темы",
-        f"Актуальная информация по запросу: {user_input}"
-    ]
-    instruction = "Анализируйте запросы и предоставьте структурированную информацию на основе результатов поиска."
-    logger.debug(f"Generated queries: {queries}, Instruction: {instruction}")
-    return {"queries": queries, "instruction": instruction}
+
 
 def get_multiline_input():
     print(f"{Colors.CYAN}Введите ваш запрос. Для завершения ввода нажмите Enter на пустой строке.{Colors.RESET}")
