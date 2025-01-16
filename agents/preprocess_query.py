@@ -25,12 +25,7 @@ from colors import Colors  # Используем Colors из внешнего �
 
 # === Настройки ===
 MODEL = "qwen2:7b"
-HISTORY_FILE = BASE_DIR / "data" / "cognitive_agent_history.txt"
-TEMP_DIR = BASE_DIR / "temp"
-REPORT_FILE = BASE_DIR / "data" / "cognitive_agent_reports.txt"
-MAX_HISTORY_LENGTH = 50
-LOG_DIR = BASE_DIR / 'logs'
-DELAY_BETWEEN_REQUESTS = 5  # секунды
+
 
 # === Настройка логирования ===
 logger = logging.getLogger(__name__)
