@@ -96,3 +96,9 @@ def process_search_results(instruction, search_results, user_language):
     except Exception as e:
         logger.error(f"Error while processing search results: {e}")
         return "An error occurred while processing results."
+
+def print_message(role, message):
+    color = Colors.BLUE if role == "Вы" else Colors.GREEN
+    print(f"\n{color}┌─ {role}:{Colors.RESET}")
+    print(f"│ {message.replace('  ', '  │ ')}")
+    print("└" + "─" * 50)
