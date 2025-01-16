@@ -72,15 +72,26 @@ def parse_preprocessing_response(response):
 
 def handle_command(command):
     global USE_TOR
-    if command in ['/tor', '/t']:
-        tor_status = "включен" if USE_TOR else "выключен"
-        print(f"Режим опроса через TOR: {tor_status}")
-    elif command in ['/toron', '/tn']:
+    if command in ["/tor", "/t"]:
+        status = "включен" if USE_TOR else "выключен"
+        print(f"Режим опроса через TOR: {status}")
+    elif command == "/tn":
         USE_TOR = True
-        print(f"{Colors.GREEN}Режим опроса через TOR включен.{Colors.RESET}")
-    elif command in ['/toroff', '/tf']:
+        print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
+        logger.info("TOR mode enabled")
+    elif command == "/tf":
         USE_TOR = False
-        print(f"{Colors.YELLOW}Режим опроса через TOR выключен.{Colors.RESET}")
+        print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
+        logger.info("TOR mode disabled")
+    elif command.upper() in ["/DEBUG", "/INFO", "/ERROR"]:
+        level = command.upper().lstrip("/")
+        set_log_level(getattr(logging, level, logging.INFO))
+    elif command in ["/help", "/h"]:
+        show_help()
+    elif command in ["/exit", "/q"]:
+        save_dialog_history(load_dialog_history())
+        print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
+        sys.exit()
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
