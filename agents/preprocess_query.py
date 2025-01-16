@@ -98,33 +98,42 @@ def handle_command(command, use_tor):
     """
     Обработка команды пользователя.
     """
-    lower_command = command.lower()  # Приводим команду к нижнему регистру для сравнения
-
-    if lower_command in ["/tor", "/t", ".т", ".е", ".тор"]:
+    command = command.strip().lower()  # Приводим команду к нижнему регистру для сравнения
+    if command in ["/tor", "/t", ".т", ".е", ".тор"]:
         status = "включен" if use_tor else "выключен"
         print(f"Режим опроса через TOR: {status}")
-    elif lower_command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
+    elif command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
         if not use_tor:
             use_tor = True
             logger.info("TOR mode enabled")  # Логирование только один раз
             print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
-    elif lower_command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
+    elif command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
         if use_tor:
             use_tor = False
             logger.info("TOR mode disabled")  # Логирование только один раз
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
-    elif lower_command in ["/debug", "/d", "/info", "/i", "/error", "/e", ".дебаг", ".ошибка", ".ошибки", ".инфо"]:
-        level = lower_command.lstrip("/").upper()
-        set_log_level(getattr(logging, level, logging.INFO))
-    elif lower_command in ["/help", "/h", ".р", ".х", ".п", ".с", ".помощь", ".справка"]:
+    elif command.upper() in ["/DEBUG", "/INFO", "/ERROR"] or command in [".дебаг", ".инфо", ".ошибка", ".ошибки"]:
+        levels = {
+            "/debug": logging.DEBUG,
+            "/info": logging.INFO,
+            "/error": logging.ERROR,
+            ".дебаг": logging.DEBUG,
+            ".инфо": logging.INFO,
+            ".ошибка": logging.ERROR,
+            ".ошибки": logging.ERROR,
+        }
+        level = levels.get(command.lower(), logging.INFO)
+        set_log_level(level)
+    elif command in ["/help", "/h", ".р", ".х", ".п", ".с", ".помощь", ".справка"]:
         show_help()
-    elif lower_command in ["/exit", "/q", ".й", ".в", ".выход"]:
+    elif command in ["/exit", "/q", ".й", ".в", ".выход"]:
         save_dialog_history(load_dialog_history())
         print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
         sys.exit()
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
     return use_tor
+
 
 
 
