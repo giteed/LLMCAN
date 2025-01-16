@@ -35,22 +35,33 @@ def check_llm_api_status():
 def get_script_versions():
     """Возвращает версии скриптов из их заголовков."""
     script_files = {
-        "cognitive_interface_agent_v2.py": "LLMCAN/agents/cognitive_interface_agent_v2.py",
-        "cognitive_logic.py": "LLMCAN/agents/cognitive_logic.py",
-        "data_management.py": "LLMCAN/agents/data_management.py",
-        "preprocess_query.py": "LLMCAN/agents/preprocess_query.py"
+        "cognitive_interface_agent_v2.py": "./agents/cognitive_interface_agent_v2.py",
+        "cognitive_logic.py": "./agents/cognitive_logic.py",
+        "data_management.py": "./agents/data_management.py",
+        "preprocess_query.py": "./agents/preprocess_query.py"
     }
     versions = {}
     for name, path in script_files.items():
         try:
-            with open(path, "r", encoding="utf-8") as file:
+            # Проверяем существование файла
+            absolute_path = Path(path).resolve()
+            if not absolute_path.is_file():
+                raise FileNotFoundError(f"Файл {absolute_path} не найден.")
+
+            # Читаем файл и ищем версию
+            with open(absolute_path, "r", encoding="utf-8") as file:
                 for line in file:
                     if "Версия:" in line or "Version:" in line:
                         versions[name] = line.strip().split(":")[1].strip()
                         break
-        except FileNotFoundError:
-            versions[name] = f"{Colors.RED}Файл не найден{Colors.RESET}"
+                else:
+                    versions[name] = f"{Colors.YELLOW}Версия не указана{Colors.RESET}"
+        except FileNotFoundError as e:
+            versions[name] = f"{Colors.RED}Файл не найден: {str(e)}{Colors.RESET}"
+        except Exception as e:
+            versions[name] = f"{Colors.RED}Ошибка: {str(e)}{Colors.RESET}"
     return versions
+
 
 def show_info(use_tor, log_level):
     """Отображает информацию об агенте."""
