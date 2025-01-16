@@ -74,7 +74,8 @@ def get_multiline_input():
     lines = []
     while True:
         line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
-        if line.startswith("/", "."):
+        #if line.startswith("/", "."):
+        if line.startswith(("/", ".")):  # Исправлено
             handle_command(line)
             continue
         if line == "":
