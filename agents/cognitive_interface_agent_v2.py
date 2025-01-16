@@ -21,7 +21,7 @@ sys.path.insert(0, str(project_root))
 
 from settings import BASE_DIR, LLM_API_URL
 from agents.install_tor import restart_tor_and_check_ddgr
-from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_languag
+from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_language
 from colors import Colors  # Используем Colors из внешнего файла
 from cognitive_logic import print_message, process_search_results
 
