@@ -113,7 +113,7 @@ def handle_command(command):
         set_log_level(getattr(logging, level, logging.INFO))
     elif command in ["/help", "/h"]:
         show_help()
-    elif command in ["/exit", "/q"]:
+    elif command in ["/exit", "/q", ".й" ]:
         save_dialog_history(load_dialog_history())
         print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
         sys.exit()
