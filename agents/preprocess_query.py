@@ -21,14 +21,14 @@ import readline
 from settings import BASE_DIR, LLM_API_URL
 from agents.install_tor import restart_tor_and_check_ddgr
 from colors import Colors  # Используем Colors из внешнего файла
-from agents.data_management import save_dialog_history, load_dialog_history, ENV_FILE
+from agents.data_management import save_dialog_history, load_dialog_history
 
 # === Настройки ===
 MODEL = "qwen2:7b"
 LOG_DIR = BASE_DIR / 'logs'
 # Настройка логирования
 #DEFAULT_LOG_LEVEL = "INFO"
-#ENV_FILE = Path(".env")
+ENV_FILE = Path(".env")
 
 
 # === Настройка логирования ===
