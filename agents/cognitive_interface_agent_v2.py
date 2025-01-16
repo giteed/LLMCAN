@@ -75,14 +75,12 @@ def get_multiline_input():
     while True:
         line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
         if line.startswith(("/", ".")):
-            USE_TOR = handle_command(line, USE_TOR)
+            USE_TOR = handle_command(line, USE_TOR)  # Передача USE_TOR как аргумента
             continue
         if line == "":
             break
         lines.append(line)
     return " ".join(lines)
-
-
 
     
 def perform_search(queries, use_tor):
