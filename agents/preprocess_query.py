@@ -98,21 +98,29 @@ def handle_command(command, use_tor):
     """
     Обработка команды пользователя.
     """
-    command = command.strip().lower()  # Приводим команду к нижнему регистру для сравнения
+    command = command.strip().lower()  # Приводим команду к нижнему регистру для унификации
+
     if command in ["/tor", "/t", ".т", ".е", ".тор"]:
+        # Показать текущий статус TOR
         status = "включен" if use_tor else "выключен"
         print(f"Режим опроса через TOR: {status}")
+    
     elif command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
+        # Включение TOR
         if not use_tor:
             use_tor = True
-            logger.info("TOR mode enabled")  # Логирование только один раз
+            logger.info("TOR mode enabled")  # Логирование
             print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
+    
     elif command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
+        # Выключение TOR
         if use_tor:
             use_tor = False
-            logger.info("TOR mode disabled")  # Логирование только один раз
+            logger.info("TOR mode disabled")  # Логирование
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
-    elif command.upper() in ["/DEBUG", "/INFO", "/ERROR"] or command in [".дебаг", ".инфо", ".ошибка", ".ошибки"]:
+    
+    elif command in ["/debug", "/info", "/error", ".дебаг", ".инфо", ".ошибка", ".ошибки"]:
+        # Установка уровня логирования
         levels = {
             "/debug": logging.DEBUG,
             "/info": logging.INFO,
@@ -124,17 +132,31 @@ def handle_command(command, use_tor):
         }
         level = levels.get(command.lower(), logging.INFO)
         set_log_level(level)
+    
+    elif command in ["/log", "/l", ".лог", ".л"]:
+        # Показ текущего уровня логирования
+        current_level = logging.getLevelName(logger.level)
+        print(f"{Colors.CYAN}Текущий уровень логирования: {Colors.BOLD}{current_level}{Colors.RESET}")
+    
     elif command in ["/help", "/h", ".р", ".х", ".п", ".с", ".помощь", ".справка"]:
+        # Показать справку
         show_help()
+    
     elif command in ["/exit", "/q", ".й", ".в", ".выход"]:
+        # Выход из программы
         save_dialog_history(load_dialog_history())
         print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
         sys.exit()
+    
+    elif command in ["/show", ".покажи"]:
+        # Показать дополнительную информацию о системе
+        from agents.show_info_cognitive_interface_agent_v2 import display_info
+        display_info(use_tor)
+    
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
+
     return use_tor
-
-
 
 
 
