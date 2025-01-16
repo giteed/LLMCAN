@@ -186,7 +186,7 @@ def main():
             logger.info(f"Total search results obtained: {len(search_results)}")
             if search_results:
                 user_language = detect_language(user_input)
-                response = process_search_results(search_results, preprocessed['instruction'], user_language)
+                response = process_search_results(preprocessed['instruction'], search_results, user_language)
                 references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
                 report = f"""
 ### Тема ответа пользователю:
