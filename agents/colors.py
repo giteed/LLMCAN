@@ -95,7 +95,7 @@ if __name__ == "__main__":
     # 11. Сообщение с огнем
     print(f"{Colors.RED}11. Внимание! {Colors.FIRE} Это сообщение с огнем!{Colors.RESET}")
 
-    # 12. Сообщение с звездой
+        # 12. Сообщение с звездой
     print(f"{Colors.YELLOW}12. Поздравляем! {Colors.STAR} Вы выиграли приз!{Colors.RESET}")
 
     # 13. Сообщение с разделителем из звездочек
@@ -105,5 +105,35 @@ if __name__ == "__main__":
     print(Colors.format_message(Colors.DARK_GREEN, "14. Это сообщение в темно-зеленом цвете."))
 
     # 15. Сообщение с использованием всех стилей
-    styled_message = Colors.format_message(Colors.MAGENTA,
+    styled_message = Colors.format_message(Colors.MAGENTA, "15. Это сообщение с жирным и подчеркнутым текстом!", bold=True, underline=True)
+    print(styled_message)
 
+    # 16. Сообщение с инвертированными цветами
+    print(Colors.format_message(Colors.WHITE, "16. Это сообщение с инвертированными цветами!", bold=True))
+
+    # 17. Сообщение с использованием нескольких эмодзи
+    print(f"{Colors.CYAN}17. Ура! {Colors.THUMBS_UP} {Colors.HEART} {Colors.SMILE} Это отличное сообщение!{Colors.RESET}")
+
+    # 18. Сообщение с предупреждением и разделителем
+    Colors.print_with_divider("18. Внимание! Это важное сообщение!", divider=Colors.EQUALS_LINE)
+
+    # 19. Сообщение с использованием темных цветов
+    print(Colors.format_message(Colors.DARK_RED, "19. Это сообщение в темно-красном цвете."))
+
+    # 20. Сообщение с использованием всех доступных цветов
+    print(f"{Colors.RED}20. Красный текст{Colors.RESET}, {Colors.GREEN}зеленый текст{Colors.RESET}, {Colors.BLUE}синий текст{Colors.RESET}, {Colors.YELLOW}желтый текст{Colors.RESET}, {Colors.CYAN}циановый текст{Colors.RESET}, {Colors.MAGENTA}магентовый текст{Colors.RESET}, {Colors.WHITE}белый текст{Colors.RESET}.")
+
+    # 21. Сообщение с использованием жирного текста и эмодзи
+    print(f"{Colors.BOLD}{Colors.GREEN}21. Это жирное зеленое сообщение с эмодзи {Colors.SMILE}{Colors.RESET}")
+
+    # 22. Сообщение с использованием подчеркивания и эмодзи
+    print(f"{Colors.UNDERLINE}{Colors.BLUE}22. Это подчеркнутое синее сообщение с эмодзи {Colors.HEART}{Colors.RESET}")
+
+    # 23. Сообщение с использованием всех стилей и эмодзи
+    print(f"{Colors.BOLD}{Colors.UNDERLINE}{Colors.RED}23. Это жирное и подчеркнутое красное сообщение с эмодзи {Colors.WARNING}{Colors.RESET}")
+
+    # 24. Сообщение с использованием разделителей и эмодзи
+    Colors.print_with_divider(f"{Colors.CYAN}24. Это сообщение с разделителем и эмодзи {Colors.THUMBS_UP}{Colors.RESET}")
+
+    # 25. Сообщение с использованием всех цветов в одном
+    print(f"{Colors.RED}25. Красный {Colors.GREEN}Зеленый {Colors.YELLOW}Желтый {Colors.BLUE}Синий {Colors.MAGENTA}Магента {Colors.CYAN}Циан {Colors.WHITE}Белый{Colors.RESET}")
