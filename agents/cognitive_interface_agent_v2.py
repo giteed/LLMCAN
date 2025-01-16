@@ -186,7 +186,7 @@ def main():
             search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
             logger.info(f"Total search results obtained: {len(search_results)}")
             if search_results:
-                user_language = detect_language(user_input)
+                user_language = user_language(user_input)
                 response = process_search_results(preprocessed['instruction'], search_results, user_language)
                 references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
                 report = f"""
