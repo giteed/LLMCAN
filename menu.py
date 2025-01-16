@@ -39,6 +39,11 @@ def execute_script(choice):
     else:
         print(f"{Colors.RED}[ERROR] Некорректный выбор. Попробуйте снова.{Colors.RESET}")
 
+    except KeyboardInterrupt:
+        logger.warning("KeyboardInterrupt detected. Saving dialog history and exiting.")
+        print(f"{Colors.RED}\nСеанс прерван пользователем. История сохранена.{Colors.RESET}")
+        save_dialog_history(dialog_history)
+
 if __name__ == "__main__":
     while True:
         show_menu()
