@@ -24,7 +24,7 @@ from agents.install_tor import restart_tor_and_check_ddgr
 from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_language
 from colors import Colors  # Используем Colors из внешнего файла
 from cognitive_logic import print_message, process_search_results
-from preprocess_query import preprocess_query, handle_command
+from preprocess_query import preprocess_query, handle_command, show_help
 
 # Настройка логирования
 DEFAULT_LOG_LEVEL = "INFO"
@@ -46,15 +46,7 @@ logger = logging.getLogger(__name__)
 USE_TOR = True
 MAX_RETRIES = 3  # Максимальное количество попыток для запросов
 
-def show_help():
-    print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
-    print(f"  {Colors.CYAN}/help, /h{Colors.RESET} - показать эту справку")
-    print(f"  {Colors.CYAN}/tor, /t{Colors.RESET} - показать статус TOR")
-    print(f"  {Colors.CYAN}/tn{Colors.RESET} - включить TOR")
-    print(f"  {Colors.CYAN}/tf{Colors.RESET} - отключить TOR")
-    print(f"  {Colors.CYAN}/DEBUG, /INFO, /ERROR{Colors.RESET} - установить уровень логирования")
-    print(f"  {Colors.CYAN}/exit, /q{Colors.RESET} - выйти из программы")
-    print(f"{Colors.CYAN}Для ввода запроса нажмите Enter.{Colors.RESET}")
+
 
 def set_log_level(level):
     global logger
