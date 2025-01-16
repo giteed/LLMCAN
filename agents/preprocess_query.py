@@ -70,7 +70,19 @@ def parse_preprocessing_response(response):
         "instruction": instruction.strip()
     }
 
-
+def handle_command(command):
+    global USE_TOR
+    if command in ['/tor', '/t']:
+        tor_status = "включен" if USE_TOR else "выключен"
+        print(f"Режим опроса через TOR: {tor_status}")
+    elif command in ['/toron', '/tn']:
+        USE_TOR = True
+        print(f"{Colors.GREEN}Режим опроса через TOR включен.{Colors.RESET}")
+    elif command in ['/toroff', '/tf']:
+        USE_TOR = False
+        print(f"{Colors.YELLOW}Режим опроса через TOR выключен.{Colors.RESET}")
+    else:
+        print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
 def get_current_datetime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')
