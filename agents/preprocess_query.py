@@ -95,21 +95,19 @@ def parse_preprocessing_response(response):
 
 
 
-def handle_command(command):
+def handle_command(command, use_tor):
     global USE_TOR
     if command in ["/tor", "/t", ".т", ".е"]:
-        status = "включен" if USE_TOR else "выключен"
+        status = "включен" if use_tor else "выключен"
         print(f"Режим опроса через TOR: {status}")
     elif command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
-        if not USE_TOR:  # Только если режим действительно меняется
-            USE_TOR = True
-            print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
-            logger.info("TOR mode enabled")
+        use_tor = True
+        print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
+        logger.info("TOR mode enabled")
     elif command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
-        if USE_TOR:  # Только если режим действительно меняется
-            USE_TOR = False
-            print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
-            logger.info("TOR mode disabled")
+        use_tor = False
+        print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
+        logger.info("TOR mode disabled")
     elif command.upper() in ["/DEBUG", "/INFO", "/ERROR"]:
         level = command.upper().lstrip("/")
         set_log_level(getattr(logging, level, logging.INFO))
@@ -121,6 +119,8 @@ def handle_command(command):
         sys.exit()
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
+    return use_tor
+
 
 
 def get_current_datetime():
