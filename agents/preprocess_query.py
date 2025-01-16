@@ -22,6 +22,9 @@ from settings import BASE_DIR, LLM_API_URL
 from agents.install_tor import restart_tor_and_check_ddgr
 from colors import Colors  # Используем Colors из внешнего файла
 from agents.data_management import save_dialog_history, load_dialog_history
+from agents.show_info_cognitive_interface_agent_v2 import show_info
+
+
 
 # === Настройки ===
 MODEL = "qwen2:7b"
@@ -150,14 +153,14 @@ def handle_command(command, use_tor):
     
     elif command in ["/show", ".покажи"]:
         # Показать дополнительную информацию о системе
-        from agents.show_info_cognitive_interface_agent_v2 import display_info
-        display_info(use_tor)
+        from agents.show_info_cognitive_interface_agent_v2 import show_info
+        log_level = logging.getLevelName(logger.level)
+        show_info(use_tor, log_level)
     
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
     return use_tor
-
 
 
 
