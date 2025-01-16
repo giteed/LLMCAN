@@ -9,6 +9,14 @@ import os
 import sys
 from agents.colors import Colors
 import logging
+import readline
+
+from pathlib import Path
+import subprocess
+import json
+import time
+import re
+
 
 # Настройка логгирования
 logger = logging.getLogger(__name__)
