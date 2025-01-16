@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.9.3
+# Версия: 2.9.4
 # ==================================================
 
 import sys
@@ -117,6 +117,19 @@ def handle_command(command):
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
+def get_multiline_input():
+    print(f"{Colors.CYAN}Введите ваш запрос. Для завершения ввода нажмите Enter на пустой строке.{Colors.RESET}")
+    lines = []
+    while True:
+        line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
+        if line.startswith("/"):
+            handle_command(line)
+            continue
+        if line == "":
+            break
+        lines.append(line)
+    return " ".join(lines)
+
 def perform_search(queries, use_tor):
     """
     Выполняет поисковые запросы с использованием ddgr через TOR или напрямую.
@@ -145,6 +158,7 @@ def perform_search(queries, use_tor):
             results.append(None)
     return results
 
+
 def main():
     global USE_TOR
     dialog_history = load_dialog_history()
@@ -167,18 +181,24 @@ def main():
             preprocessed = preprocess_query(user_input)
             search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
             logger.info(f"Total search results obtained: {len(search_results)}")
-            logger.debug(f"Raw search results: {search_results}")
             if search_results:
-                references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
-                if references:
-                    print(f"{Colors.CYAN}\nСписок источников:{Colors.RESET}")
-                    for i, ref in enumerate(references[:15], start=1):
-                        print(f"{i}. {ref}")
                 user_language = detect_language(user_input)
-                logger.debug(f"Processing search results: {search_results[:2]} with instruction: {preprocessed['instruction']} and language: {user_language}")
                 response = process_search_results(search_results, preprocessed['instruction'], user_language)
-                append_to_dialog_history({"role": "assistant", "content": response})
-                print_message("Агент", response)
+                references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
+                report = f"""
+### Тема ответа пользователю:
+{response}
+
+## Вывод:
+На основе полученных данных можно сделать следующие выводы...
+
+## Интересные моменты:
+1. Выделены ключевые аспекты анализа...
+
+## Источники:
+""" + "\n".join([f"{i + 1}. {url}" for i, url in enumerate(references[:15])])
+                print_message("Агент", report)
+                append_to_dialog_history({"role": "assistant", "content": report})
             else:
                 print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
     except KeyboardInterrupt:
