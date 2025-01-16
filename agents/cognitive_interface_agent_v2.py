@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.9.4
+# Версия: 2.9.5
 # ==================================================
 
 import sys
@@ -142,21 +142,24 @@ def perform_search(queries, use_tor):
             command = ["torsocks", "ddgr", "--json", query] if use_tor else ["ddgr", "--json", query]
             logger.info(f"Executing command: {' '.join(command)} (Attempt {retries + 1})")
             try:
-                output = subprocess.check_output(command, universal_newlines=True)
+                output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT)
                 logger.debug(f"Search output for query '{query}': {output[:500]}")
                 results.extend(json.loads(output) if output else [])
                 break  # Успешное выполнение команды
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Search command failed with CalledProcessError: {e.output}")
             except Exception as e:
-                logger.error(f"Search command failed: {e}. Retrying...")
-                retries += 1
-                if use_tor:
-                    logger.info("Restarting TOR and trying again.")
-                    restart_tor_and_check_ddgr()
-                time.sleep(1)  # Задержка перед повтором
+                logger.error(f"Search command failed with exception: {e}")
+            retries += 1
+            if use_tor:
+                logger.info("Restarting TOR and trying again.")
+                restart_tor_and_check_ddgr()
+            time.sleep(1)  # Задержка перед повтором
         else:
             logger.error(f"Failed to complete search for query: {query} after {MAX_RETRIES} attempts.")
             results.append(None)
     return results
+
 
 
 def main():
