@@ -127,6 +127,19 @@ def perform_search(queries, use_tor):
             results.append(None)
     return results
 
+def get_multiline_input():
+    prefix = "Вы(tor): " if USE_TOR else "Вы: "
+    lines = []
+    while True:
+        print(f"{Colors.BLUE}{prefix}{Colors.RESET}", end="")
+        line = input()
+        if line.strip() == "" and not lines:
+            continue  # Игнорируем пустой ввод в первой строке
+        if line.strip() == "" and lines:
+            break  # Завершаем ввод, если введена пустая строка после непустых строк
+        lines.append(line)
+    return "\n".join(lines)
+
 def main():
     global USE_TOR
     dialog_history = load_dialog_history()
