@@ -9,6 +9,7 @@ import socket
 import requests
 from colors import Colors
 from settings import LLM_API_URL
+from pathlib import Path
 
 def get_ip_address():
     """Получает локальный IP-адрес."""
