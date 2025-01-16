@@ -22,7 +22,7 @@ from settings import BASE_DIR, LLM_API_URL
 from agents.install_tor import restart_tor_and_check_ddgr
 from colors import Colors  # Используем Colors из внешнего файла
 from agents.data_management import save_dialog_history, load_dialog_history
-
+from agents.cognitive_interface_agent_v2 import show_help
 # === Настройки ===
 MODEL = "qwen2:7b"
 LOG_DIR = BASE_DIR / 'logs'
