@@ -107,8 +107,8 @@ def detect_language(text):
         logger.info("Detected language: English")
         return 'en'
 
-def print_message(role, message):
-    color = "\033[94m" if role == "User" else "\033[92m"
-    reset = "\033[0m"
-    logger.debug(f"{role}: {message}")
-    print(f"{color}{role}: {message}{reset}")
+#def print_message(role, message):
+#    color = "\033[94m" if role == "User" else "\033[92m"
+#    reset = "\033[0m"
+#    logger.debug(f"{role}: {message}")
+#    print(f"{color}{role}: {message}{reset}")
