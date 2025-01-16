@@ -1,3 +1,20 @@
+
+
+import os
+import sys
+import requests
+import json
+import subprocess
+from pathlib import Path
+from datetime import datetime
+import logging
+import re
+import time
+import uuid
+import socket
+import socks
+import readline
+
 from colors import Colors  # Используем Colors из внешнего файла
 
 
