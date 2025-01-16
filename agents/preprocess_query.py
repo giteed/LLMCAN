@@ -74,8 +74,11 @@ def show_help():
     print(f"  {Colors.CYAN}/tn{Colors.RESET} - включить TOR")
     print(f"  {Colors.CYAN}/tf{Colors.RESET} - отключить TOR")
     print(f"  {Colors.CYAN}/DEBUG, /INFO, /ERROR{Colors.RESET} - установить уровень логирования")
+    print(f"  {Colors.CYAN}/log, /l{Colors.RESET} - показать текущий уровень логирования")
+    print(f"  {Colors.CYAN}/show, .покажи{Colors.RESET} - показать информацию о системе и текущих режимах")
     print(f"  {Colors.CYAN}/exit, /q{Colors.RESET} - выйти из программы")
     print(f"{Colors.CYAN}Для ввода запроса нажмите Enter.{Colors.RESET}")
+
 
 def parse_preprocessing_response(response):
     lines = response.split('\n')
