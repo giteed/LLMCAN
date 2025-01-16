@@ -98,31 +98,34 @@ def handle_command(command, use_tor):
     """
     Обработка команды пользователя.
     """
-    if command in ["/tor", "/t", ".т", ".е", ".тор"]:
+    lower_command = command.lower()  # Приводим команду к нижнему регистру для сравнения
+
+    if lower_command in ["/tor", "/t", ".т", ".е", ".тор"]:
         status = "включен" if use_tor else "выключен"
         print(f"Режим опроса через TOR: {status}")
-    elif command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
+    elif lower_command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
         if not use_tor:
             use_tor = True
             logger.info("TOR mode enabled")  # Логирование только один раз
             print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
-    elif command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
+    elif lower_command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
         if use_tor:
             use_tor = False
             logger.info("TOR mode disabled")  # Логирование только один раз
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
-    elif command.upper() in ["/DEBUG", "/D", "/INFO", "/I", "/ERROR", "/E", ".дебаг", ".ошибка", ".ошибки", ".инфо"]:
-        level = command.upper().lstrip("/")
+    elif lower_command in ["/debug", "/d", "/info", "/i", "/error", "/e", ".дебаг", ".ошибка", ".ошибки", ".инфо"]:
+        level = lower_command.lstrip("/").upper()
         set_log_level(getattr(logging, level, logging.INFO))
-    elif command in ["/help", "/h", ".р", ".х", ".п", ".с", ".помощь", ".справка"]:
+    elif lower_command in ["/help", "/h", ".р", ".х", ".п", ".с", ".помощь", ".справка"]:
         show_help()
-    elif command in ["/exit", "/q", ".й", ".в", ".выход"]:
+    elif lower_command in ["/exit", "/q", ".й", ".в", ".выход"]:
         save_dialog_history(load_dialog_history())
         print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
         sys.exit()
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
     return use_tor
+
 
 
 
