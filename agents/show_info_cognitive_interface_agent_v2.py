@@ -29,9 +29,11 @@ def check_llm_api_status():
         response = requests.get(LLM_API_URL, timeout=5)
         if response.status_code == 200:
             return f"{Colors.GREEN}Доступен{Colors.RESET}"
-        return f"{Colors.YELLOW}Ошибка: {response.status_code}{Colors.RESET}"
+        else:
+            return f"{Colors.YELLOW}Ошибка: {response.status_code}, {response.reason}{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Недоступен: {str(e)}{Colors.RESET}"
+
 
 def get_script_versions():
     """Возвращает версии скриптов из их заголовков."""
