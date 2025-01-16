@@ -111,7 +111,7 @@ def handle_command(command):
     elif command.upper() in ["/DEBUG", "/INFO", "/ERROR"]:
         level = command.upper().lstrip("/")
         set_log_level(getattr(logging, level, logging.INFO))
-    elif command in ["/help", "/h"]:
+    elif command in ["/help", "/h", ".р"]:
         show_help()
     elif command in ["/exit", "/q", ".й" ]:
         save_dialog_history(load_dialog_history())
