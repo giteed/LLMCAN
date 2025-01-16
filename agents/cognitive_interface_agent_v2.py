@@ -21,8 +21,6 @@ project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
 from settings import BASE_DIR, LLM_API_URL
-#from cognitive_interface_agent_functions import *
-from cognitive_logic import print_message, preprocess_query, process_search_results, Colors
 from agents.install_tor import restart_tor_and_check_ddgr
 from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history
 
@@ -36,6 +34,8 @@ class Colors:
     GRAY = "\033[90m"
     BOLD = "\033[1m"
     RESET = "\033[0m"
+    
+from cognitive_logic import print_message, preprocess_query, process_search_results
 
 # Настройка логирования
 DEFAULT_LOG_LEVEL = "INFO"
