@@ -8,6 +8,7 @@
 import os
 import sys
 from agents.colors import Colors
+import readline
 
 # Путь к скриптам проекта
 SCRIPTS = {
