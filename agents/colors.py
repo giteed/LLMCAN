@@ -2,30 +2,32 @@
 
 class Colors:
     # Основные цвета
-    BLACK = "\033[90m"
-    RED = "\033[91m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    MAGENTA = "\033[95m"
-    CYAN = "\033[96m"
-    WHITE = "\033[97m"
+    BLACK = "\033[90m"      # Черный
+    DARK_GRAY = "\033[90m"  # Темно-серый
+    GRAY = "\033[37m"       # Светло-серый
+    RED = "\033[91m"        # Красный
+    GREEN = "\033[92m"      # Зеленый
+    YELLOW = "\033[93m"     # Желтый
+    BLUE = "\033[94m"       # Синий
+    MAGENTA = "\033[95m"    # Магента
+    CYAN = "\033[96m"       # Циан
+    WHITE = "\033[97m"      # Белый
 
     # Темные цвета
-    DARK_BLACK = "\033[30m"
-    DARK_RED = "\033[31m"
-    DARK_GREEN = "\033[32m"
-    DARK_YELLOW = "\033[33m"
-    DARK_BLUE = "\033[34m"
-    DARK_MAGENTA = "\033[35m"
-    DARK_CYAN = "\033[36m"
-    DARK_WHITE = "\033[37m"
+    DARK_BLACK = "\033[30m"      # Темный черный
+    DARK_RED = "\033[31m"        # Темный красный
+    DARK_GREEN = "\033[32m"      # Темный зеленый
+    DARK_YELLOW = "\033[33m"     # Темный желтый
+    DARK_BLUE = "\033[34m"       # Темный синий
+    DARK_MAGENTA = "\033[35m"    # Темная магента
+    DARK_CYAN = "\033[36m"       # Темный циан
+    DARK_WHITE = "\033[37m"      # Темный белый
 
     # Стили
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-    REVERSED = "\033[7m"
-    RESET = "\033[0m"
+    BOLD = "\033[1m"          # Жирный текст
+    UNDERLINE = "\033[4m"     # Подчеркнутый текст
+    REVERSED = "\033[7m"      # Инвертированные цвета
+    RESET = "\033[0m"         # Сброс цвета и стиля
 
     # Эмодзи
     HEART = "❤️"
@@ -59,6 +61,12 @@ class Colors:
         print(divider)
         print(message)
         print(divider)
+
+# Пример использования
+if __name__ == "__main__":
+    # Примеры использования серого цвета
+    print(Colors.format_message(Colors.GRAY, "Это светло-серое сообщение."))
+    print(Colors.format_message(Colors.DARK_GRAY, "Это темно-серое сообщение."))
 
 # Пример использования
 if __name__ == "__main__":
