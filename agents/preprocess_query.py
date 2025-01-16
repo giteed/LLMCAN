@@ -106,13 +106,13 @@ def handle_command(command, use_tor):
     elif command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
         if not use_tor:
             use_tor = True
+            logger.info("TOR mode enabled")  # Логирование только один раз
             print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
-            logger.info("TOR mode enabled")
     elif command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
         if use_tor:
             use_tor = False
+            logger.info("TOR mode disabled")  # Логирование только один раз
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
-            logger.info("TOR mode disabled")
     elif command.upper() in ["/DEBUG", "/INFO", "/ERROR"]:
         level = command.upper().lstrip("/")
         set_log_level(getattr(logging, level, logging.INFO))
@@ -125,6 +125,7 @@ def handle_command(command, use_tor):
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
     return use_tor
+
 
 
 
