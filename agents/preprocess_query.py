@@ -1,5 +1,30 @@
 from colors import Colors  # Используем Colors из внешнего файла
 
+def query_llm(prompt, include_history=True):
+    global dialog_history
+    
+    current_datetime = get_current_datetime()
+    
+    if include_history:
+        context = "\n".join([f"{entry['role']}: {entry['content']}" for entry in dialog_history[-5:]])
+        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{context}\n\nСистемная инструкция: {generate_system_instruction(dialog_history)}\n\nТекущий запрос: {prompt}"
+    else:
+        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{prompt}"
+
+    payload = {
+        "model": MODEL,
+        "prompt": full_prompt,
+        "stream": False
+    }
+
+    try:
+        response = requests.post(LLM_API_URL, json=payload)
+        response.raise_for_status()
+        return response.json().get("response", "<Нет ответа>")
+    except requests.RequestException as e:
+        logger.error(f"Ошибка запроса к модели: {e}")
+        return None
+
 def preprocess_query(user_input):
     print(f"{Colors.YELLOW}Запрос пользователя получен. Начинаю анализ и формирование поисковых запросов...{Colors.RESET}")
     system_prompt = """Проанализируй запрос пользователя, исправь возможные ошибки и сформулируй до трех связанных поисковых запросов для расширения контекста. Также создай инструкцию для обработки результатов поиска.
