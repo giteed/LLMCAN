@@ -1,5 +1,9 @@
 from colors import Colors  # Используем Colors из внешнего файла
 
+
+def get_current_datetime():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')
+
 def query_llm(prompt, include_history=True):
     global dialog_history
     
