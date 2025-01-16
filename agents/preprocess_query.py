@@ -51,6 +51,28 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
 
+def parse_preprocessing_response(response):
+    lines = response.split('\n')
+    queries = []
+    instruction = ""
+    parsing_instruction = False
+
+    for line in lines:
+        if line.startswith("Основной запрос:"):
+            queries.append(line.split(": ", 1)[1].strip())
+        elif line.startswith("Дополнительные запросы:"):
+            continue
+        elif line.startswith(("1. ", "2. ", "3. ")):
+            queries.append(line.split(". ", 1)[1].strip())
+        elif line.startswith("Инструкция для обработки результатов:"):
+            parsing_instruction = True
+        elif parsing_instruction:
+            instruction += line + "\n"
+
+    return {
+        "queries": queries[:3],
+        "instruction": instruction.strip()
+    }
 
 
 
