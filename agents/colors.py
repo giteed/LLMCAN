@@ -62,7 +62,48 @@ class Colors:
 
 # Пример использования
 if __name__ == "__main__":
-    print(Colors.format_message(Colors.GREEN, "Это зеленое сообщение!", bold=True))
-    print(Colors.format_message(Colors.RED, "Это красное сообщение с подчеркиванием!", underline=True))
-    Colors.print_with_divider("Это сообщение с разделителем")
-    print(Colors.HEART, "Любовь", Colors.SMILE)
+    # 1. Простое сообщение в зеленом цвете
+    print(Colors.format_message(Colors.GREEN, "1. Это зеленое сообщение!", bold=True))
+
+    # 2. Красное сообщение с подчеркиванием
+    print(Colors.format_message(Colors.RED, "2. Это красное сообщение с подчеркиванием!", underline=True))
+
+    # 3. Синее сообщение с жирным текстом
+    print(Colors.format_message(Colors.BLUE, "3. Это синее сообщение с жирным текстом!", bold=True))
+
+    # 4. Желтое сообщение с инвертированными цветами
+    print(Colors.format_message(Colors.YELLOW, "4. Это желтое сообщение с инвертированными цветами!", bold=True))
+
+    # 5. Сообщение с эмодзи
+    print(f"{Colors.CYAN}5. Это сообщение с эмодзи: {Colors.HEART} {Colors.SMILE}{Colors.RESET}")
+
+    # 6. Печать сообщения с разделителем
+    Colors.print_with_divider("6. Это сообщение с разделителем")
+
+    # 7. Сообщение с предупреждением
+    print(Colors.format_message(Colors.YELLOW, "7. Внимание! Это предупреждение ⚠️", bold=True))
+
+    # 8. Сообщение с галочкой
+    print(f"{Colors.GREEN}8. Успех! {Colors.CHECK_MARK} Операция выполнена успешно!{Colors.RESET}")
+
+    # 9. Сообщение с ошибкой
+    print(Colors.format_message(Colors.RED, "9. Ошибка! ❌ Что-то пошло не так.", bold=True))
+
+    # 10. Подсказка с вопросом
+    print(f"{Colors.BLUE}10. Подсказка: Как вы себя чувствуете? {Colors.QUESTION}{Colors.RESET}")
+
+    # 11. Сообщение с огнем
+    print(f"{Colors.RED}11. Внимание! {Colors.FIRE} Это сообщение с огнем!{Colors.RESET}")
+
+    # 12. Сообщение с звездой
+    print(f"{Colors.YELLOW}12. Поздравляем! {Colors.STAR} Вы выиграли приз!{Colors.RESET}")
+
+    # 13. Сообщение с разделителем из звездочек
+    Colors.print_with_divider("13. Сообщение с разделителем из звездочек", divider=Colors.ASTERISK_LINE)
+
+    # 14. Сообщение с темным цветом
+    print(Colors.format_message(Colors.DARK_GREEN, "14. Это сообщение в темно-зеленом цвете."))
+
+    # 15. Сообщение с использованием всех стилей
+    styled_message = Colors.format_message(Colors.MAGENTA,
+
