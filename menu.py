@@ -9,6 +9,7 @@ import os
 import sys
 from agents.colors import Colors
 import readline
+import logging
 
 # Путь к скриптам проекта
 SCRIPTS = {
@@ -43,6 +44,7 @@ def execute_script(choice):
         logger.warning("KeyboardInterrupt detected. Saving dialog history and exiting.")
         print(f"{Colors.RED}\nСеанс прерван пользователем. История сохранена.{Colors.RESET}")
         save_dialog_history(dialog_history)
+        exit(0)  # Завершение программы с кодом 0 (успешно)
 
 if __name__ == "__main__":
     while True:
