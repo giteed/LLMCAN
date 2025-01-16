@@ -94,16 +94,19 @@ def parse_preprocessing_response(response):
     }
 
 def handle_command(command, use_tor):
+    """
+    Обработка команды пользователя.
+    """
     if command in ["/tor", "/t", ".т", ".е"]:
         status = "включен" if use_tor else "выключен"
         print(f"Режим опроса через TOR: {status}")
     elif command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
-        if not use_tor:  # Только если режим действительно меняется
+        if not use_tor:
             use_tor = True
             print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
             logger.info("TOR mode enabled")
     elif command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
-        if use_tor:  # Только если режим действительно меняется
+        if use_tor:
             use_tor = False
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
             logger.info("TOR mode disabled")
@@ -119,6 +122,7 @@ def handle_command(command, use_tor):
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
     return use_tor
+
 
 
 def get_current_datetime():
