@@ -21,7 +21,7 @@ project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
 from settings import BASE_DIR, LLM_API_URL
-from cognitive_interface_agent_functions import *
+#from cognitive_interface_agent_functions import *
 from cognitive_logic import *
 from agents.install_tor import restart_tor_and_check_ddgr
 from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history
