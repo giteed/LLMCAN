@@ -97,6 +97,19 @@ def preprocess_query(user_input):
     logger.debug(f"Generated queries: {queries}, Instruction: {instruction}")
     return {"queries": queries, "instruction": instruction}
 
+def get_multiline_input():
+    print(f"{Colors.CYAN}Введите ваш запрос. Для завершения ввода нажмите Enter на пустой строке.{Colors.RESET}")
+    lines = []
+    while True:
+        line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
+        if line.startswith("/"):
+            handle_command(line)
+            continue
+        if line == "":
+            break
+        lines.append(line)
+    return " ".join(lines)
+    
 def perform_search(queries, use_tor):
     """
     Выполняет поисковые запросы с использованием ddgr через TOR или напрямую.
@@ -126,19 +139,6 @@ def perform_search(queries, use_tor):
             logger.error(f"Failed to complete search for query: {query} after {MAX_RETRIES} attempts.")
             results.append(None)
     return results
-
-def get_multiline_input():
-    prefix = "Вы(tor): " if USE_TOR else "Вы: "
-    lines = []
-    while True:
-        print(f"{Colors.BLUE}{prefix}{Colors.RESET}", end="")
-        line = input()
-        if line.strip() == "" and not lines:
-            continue  # Игнорируем пустой ввод в первой строке
-        if line.strip() == "" and lines:
-            break  # Завершаем ввод, если введена пустая строка после непустых строк
-        lines.append(line)
-    return "\n".join(lines)
 
 def main():
     global USE_TOR
