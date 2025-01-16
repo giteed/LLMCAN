@@ -1,4 +1,7 @@
-
+# LLMCAN/agents/cognitive_interface_agent_functions.py
+# ==================================================
+# Функции для Когнитивного интерфейсного агента
+# ==================================================
 
 import os
 import sys
@@ -15,7 +18,40 @@ import socket
 import socks
 import readline
 
+from settings import BASE_DIR, LLM_API_URL
+from agents.install_tor import restart_tor_and_check_ddgr
 from colors import Colors  # Используем Colors из внешнего файла
+
+
+# === Настройки ===
+MODEL = "qwen2:7b"
+HISTORY_FILE = BASE_DIR / "data" / "cognitive_agent_history.txt"
+TEMP_DIR = BASE_DIR / "temp"
+REPORT_FILE = BASE_DIR / "data" / "cognitive_agent_reports.txt"
+MAX_HISTORY_LENGTH = 50
+LOG_DIR = BASE_DIR / 'logs'
+DELAY_BETWEEN_REQUESTS = 5  # секунды
+
+# === Настройка логирования ===
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(formatter)
+
+LOG_DIR.mkdir(exist_ok=True)
+file_handler = logging.FileHandler(LOG_DIR / f'cognitive_agent_{datetime.now().strftime("%Y%m%d")}.log', encoding='utf-8')
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
+
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+
+
+
 
 
 def get_current_datetime():
