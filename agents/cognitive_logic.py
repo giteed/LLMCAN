@@ -54,11 +54,38 @@ def preprocess_query(user_input):
     logger.debug(f"Generated queries: {queries}, Instruction: {instruction}")
     return {"queries": queries, "instruction": instruction}
 
-def process_search_results(results, instruction):
-    logger.debug(f"Processing search results with instruction: {instruction}")
-    if not results:
-        logger.warning("No results provided for processing.")
-        return "No results found."
+def process_search_results(instruction, search_results, user_language):
+    """
+    Обрабатывает результаты поиска и возвращает сформулированный ответ.
+    
+    Args:
+        instruction (str): Инструкция для обработки.
+        search_results (list): Список результатов поиска.
+        user_language (str): Язык пользователя ('ru' или 'en').
+    
+    Returns:
+        str: Сформулированный ответ.
+    """
+    try:
+        if not search_results:
+            return "Результаты поиска отсутствуют." if user_language == 'ru' else "No search results found."
+
+        # Формирование ответа
+        response = []
+        for i, result in enumerate(search_results[:10], start=1):
+            title = result.get("title", "Без названия") if user_language == 'ru' else result.get("title", "No title")
+            url = result.get("url", "URL отсутствует") if user_language == 'ru' else result.get("url", "URL missing")
+            response.append(f"{i}. {title} - {url}")
+
+        formatted_response = "\n".join(response)
+        if user_language == 'ru':
+            return f"Обработанные результаты:\n{formatted_response}"
+        else:
+            return f"Processed results:\n{formatted_response}"
+    except Exception as e:
+        logger.error(f"Ошибка обработки результатов: {e}")
+        return "Ошибка обработки данных." if user_language == 'ru' else "Error processing data."
+
 
     try:
         context = json.dumps(results, ensure_ascii=False, indent=2)
