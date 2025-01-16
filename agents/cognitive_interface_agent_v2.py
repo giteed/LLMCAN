@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.9.5
+# Версия: 2.9.6
 # ==================================================
 
 import sys
@@ -15,7 +15,6 @@ import json
 import time
 import re
 
-
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
@@ -23,19 +22,8 @@ sys.path.insert(0, str(project_root))
 from settings import BASE_DIR, LLM_API_URL
 from agents.install_tor import restart_tor_and_check_ddgr
 from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history
-
-# Обновленный класс Colors
-class Colors:
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    RED = "\033[91m"
-    CYAN = "\033[96m"
-    GRAY = "\033[90m"
-    BOLD = "\033[1m"
-    RESET = "\033[0m"
-    
 from cognitive_logic import print_message, preprocess_query, process_search_results
+from colors import Colors  # Импорт обновленного класса Colors из файла colors.py
 
 # Настройка логирования
 DEFAULT_LOG_LEVEL = "INFO"
