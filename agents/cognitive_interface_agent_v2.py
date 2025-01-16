@@ -76,7 +76,8 @@ def get_multiline_input():
     while True:
         line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
         if line.startswith(("/", ".")):
-            USE_TOR = handle_command(line, USE_TOR)
+#            USE_TOR = handle_command(line, USE_TOR)
+            USE_TOR = handle_command(line)
             continue
         if line == "":
             break
