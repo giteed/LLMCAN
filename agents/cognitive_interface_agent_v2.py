@@ -13,6 +13,8 @@ import logging
 import os
 import json
 import time
+import re
+
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
