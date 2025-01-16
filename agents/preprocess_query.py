@@ -26,6 +26,9 @@ from agents.data_management import save_dialog_history, load_dialog_history
 # === Настройки ===
 MODEL = "qwen2:7b"
 LOG_DIR = BASE_DIR / 'logs'
+# Настройка логирования
+#DEFAULT_LOG_LEVEL = "INFO"
+ENV_FILE = Path(".env")
 
 
 # === Настройка логирования ===
