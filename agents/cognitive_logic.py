@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # agents/cognitive_logic.py
-# Version: 1.2.0
+# Version: 1.2.1
 # Purpose: Define cognitive logic and LLM interaction for the agent.
 
 import json
 import logging
 from datetime import datetime
+from colors import Colors  # Импортируем Colors из внешнего файла
 
 logger = logging.getLogger(__name__)
 
@@ -87,18 +88,15 @@ def process_search_results(instruction, search_results, user_language):
         return "Ошибка обработки данных." if user_language == 'ru' else "Error processing data."
 
 
-    try:
-        context = json.dumps(results, ensure_ascii=False, indent=2)
-        logger.debug(f"Formatted search results: {context}")
-        response = (f"Results processed with instruction: {instruction}\n\n{context}")
-        logger.debug(f"Generated response: {response}")
-        return response
-    except Exception as e:
-        logger.error(f"Error while processing search results: {e}")
-        return "An error occurred while processing results."
-
 def print_message(role, message):
-    color = Colors.BLUE if role == "Вы" else Colors.GREEN
-    print(f"\n{color}┌─ {role}:{Colors.RESET}")
-    print(f"│ {message.replace('  ', '  │ ')}")
-    print("└" + "─" * 50)
+    """
+    Выводит сообщение с ролью и текстом, форматированным с использованием цветов.
+    """
+    try:
+        color = Colors.BLUE if role == "Вы" else Colors.GREEN
+        print(f"\n{color}┌─ {role}:{Colors.RESET}")
+        print(f"│ {message.replace('  ', '  │ ')}")
+        print("└" + "─" * 50)
+    except AttributeError as e:
+        logger.error(f"Ошибка при выводе сообщения: {e}")
+        print(f"{Colors.RED}Ошибка в выводе сообщения.{Colors.RESET}")
