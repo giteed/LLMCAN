@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.9.2
+# Версия: 2.9.6
 # ==================================================
 
 import sys
@@ -13,26 +13,17 @@ import logging
 import os
 import json
 import time
+import re
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
 from settings import BASE_DIR, LLM_API_URL
-from cognitive_interface_agent_functions import *
 from agents.install_tor import restart_tor_and_check_ddgr
 from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history
-
-# Обновленный класс Colors
-class Colors:
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    RED = "\033[91m"
-    CYAN = "\033[96m"
-    GRAY = "\033[90m"
-    BOLD = "\033[1m"
-    RESET = "\033[0m"
+from colors import Colors  # Используем Colors из внешнего файла
+from cognitive_logic import print_message, process_search_results, detect_language
 
 # Настройка логирования
 DEFAULT_LOG_LEVEL = "INFO"
@@ -92,45 +83,25 @@ def print_header():
     print(f"{Colors.CYAN}Введите /help для справки по командам.{Colors.RESET}")
     print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
 
-def handle_command(command):
-    global USE_TOR
-    if command in ["/tor", "/t"]:
-        status = "включен" if USE_TOR else "выключен"
-        print(f"Режим опроса через TOR: {status}")
-    elif command == "/tn":
-        USE_TOR = True
-        print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
-        logger.info("TOR mode enabled")
-    elif command == "/tf":
-        USE_TOR = False
-        print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
-        logger.info("TOR mode disabled")
-    elif command.upper() in ["/DEBUG", "/INFO", "/ERROR"]:
-        level = command.upper().lstrip("/")
-        set_log_level(getattr(logging, level, logging.INFO))
-    elif command in ["/help", "/h"]:
-        show_help()
-    elif command in ["/exit", "/q"]:
-        save_dialog_history(load_dialog_history())
-        print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
-        sys.exit()
-    else:
-        print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
-
-def get_multiline_input():
-    print(f"{Colors.CYAN}Введите ваш запрос. Для завершения ввода нажмите Enter на пустой строке.{Colors.RESET}")
-    lines = []
-    while True:
-        line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
-        if line.startswith("/"):
-            handle_command(line)
-            continue
-        if line == "":
-            break
-        lines.append(line)
-    return " ".join(lines)
+def preprocess_query(user_input):
+    """
+    Генерирует три связанных запроса на основе пользовательского ввода.
+    """
+    logger.debug(f"Preprocessing user input: {user_input}")
+    queries = [
+        user_input,
+        f"{user_input} - связанные темы",
+        f"Актуальная информация по запросу: {user_input}"
+    ]
+    instruction = "Анализируйте запросы и предоставьте структурированную информацию на основе результатов поиска."
+    logger.debug(f"Generated queries: {queries}, Instruction: {instruction}")
+    return {"queries": queries, "instruction": instruction}
 
 def perform_search(queries, use_tor):
+    """
+    Выполняет поисковые запросы с использованием ddgr через TOR или напрямую.
+    Перезапускает TOR при возникновении ошибок и повторяет запросы.
+    """
     results = []
     for query in queries:
         retries = 0
@@ -138,15 +109,22 @@ def perform_search(queries, use_tor):
             command = ["torsocks", "ddgr", "--json", query] if use_tor else ["ddgr", "--json", query]
             logger.info(f"Executing command: {' '.join(command)} (Attempt {retries + 1})")
             try:
-                output = subprocess.check_output(command, universal_newlines=True)
+                output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT)
+                logger.debug(f"Search output for query '{query}': {output[:500]}")
                 results.extend(json.loads(output) if output else [])
-                break
+                break  # Успешное выполнение команды
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Search command failed with CalledProcessError: {e.output}")
             except Exception as e:
-                logger.error(f"Search command failed: {e}. Retrying...")
-                retries += 1
-                if use_tor:
-                    restart_tor_and_check_ddgr()
-                time.sleep(1)
+                logger.error(f"Search command failed with exception: {e}")
+            retries += 1
+            if use_tor:
+                logger.info("Restarting TOR and trying again.")
+                restart_tor_and_check_ddgr()
+            time.sleep(1)  # Задержка перед повтором
+        else:
+            logger.error(f"Failed to complete search for query: {query} after {MAX_RETRIES} attempts.")
+            results.append(None)
     return results
 
 def main():
@@ -173,7 +151,7 @@ def main():
             logger.info(f"Total search results obtained: {len(search_results)}")
             if search_results:
                 user_language = detect_language(user_input)
-                response = process_search_results(search_results, preprocessed['instruction'], user_language)
+                response = process_search_results(preprocessed['instruction'], search_results, user_language)
                 references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
                 report = f"""
 ### Тема ответа пользователю:
