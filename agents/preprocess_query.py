@@ -46,6 +46,17 @@ file_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
+
+
+def set_log_level(level):
+    global logger
+    logging.getLogger().setLevel(level)
+    logger.info(f"Уровень логирования установлен на {level}")
+    # Сохраняем настройку в .env
+    with open(ENV_FILE, "w") as file:
+        file.write(f"LOG_LEVEL={level}\n")
+
+
 def show_help():
     print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
     print(f"  {Colors.CYAN}/help, /h{Colors.RESET} - показать эту справку")
