@@ -21,7 +21,7 @@ sys.path.insert(0, str(project_root))
 
 from settings import BASE_DIR, LLM_API_URL
 from agents.install_tor import restart_tor_and_check_ddgr
-from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history
+from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_language
 from cognitive_logic import print_message, preprocess_query, process_search_results
 from colors import Colors  # Импорт обновленного класса Colors из файла colors.py
 
@@ -151,12 +151,6 @@ def perform_search(queries, use_tor):
             results.append(None)
     return results
 
-
-def detect_language(text):
-    if re.search('[а-яА-Я]', text):
-        return 'ru'
-    else:
-        return 'en'
         
 def main():
     global USE_TOR
