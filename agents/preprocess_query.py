@@ -70,17 +70,7 @@ def parse_preprocessing_response(response):
         "instruction": instruction.strip()
     }
 
-def save_dialog_history():
-    global dialog_history
-    try:
-        if len(dialog_history) > MAX_HISTORY_LENGTH:
-            dialog_history = dialog_history[-MAX_HISTORY_LENGTH:]
-        HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(HISTORY_FILE, "w", encoding='utf-8') as file:
-            json.dump(dialog_history, file, ensure_ascii=False, indent=2)
-        logger.info(f"История диалога сохранена в {HISTORY_FILE}")
-    except Exception as e:
-        logger.error(f"Ошибка сохранения истории диалога: {e}")
+
 
 def handle_command(command):
     global USE_TOR
