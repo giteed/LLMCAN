@@ -1,7 +1,10 @@
-# LLMCAN/agents/cognitive_interface_agent_functions.py
+#!/usr/bin/env python3
+# LLMCAN/agents/preprocess_query.py
 # ==================================================
-# Функции для Когнитивного интерфейсного агента
+# Модуль для обработки пользовательских запросов
+# Версия: 1.0.0
 # ==================================================
+
 
 import os
 import sys
