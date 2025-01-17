@@ -128,15 +128,21 @@ def handle_command(command, use_tor):
             logger.info("TOR mode disabled")  # Логирование
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
 
-    elif command in ["/debug", "/info", "/error", ".дебаг", ".инфо", ".ошибка", ".ошибки"]:
+    elif command in ["/debug","/d", "/info", "/i", "/error", "/e", ".дебаг", ".д", ".инфо", ".и", ".ошибка", ".о", ".ошибки"]:
         # Установка уровня логирования
         levels = {
             "/debug": logging.DEBUG,
+            "/d": logging.DEBUG,
             "/info": logging.INFO,
+            "/i": logging.INFO,
             "/error": logging.ERROR,
+            "/e": logging.ERROR,
             ".дебаг": logging.DEBUG,
+            ".д": logging.DEBUG,
             ".инфо": logging.INFO,
+            ".и": logging.INFO,
             ".ошибка": logging.ERROR,
+            ".о": logging.ERROR,
             ".ошибки": logging.ERROR,
         }
         level = levels.get(command.lower(), logging.INFO)
