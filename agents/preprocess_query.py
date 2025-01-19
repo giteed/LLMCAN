@@ -58,13 +58,21 @@ logger.addHandler(file_handler)
 
 
 def set_log_level(level):
+    """
+    Устанавливает уровень логирования для всех обработчиков.
+    """
     logger.setLevel(level)
+    for handler in logger.handlers:
+        handler.setLevel(level)
+
+    level_name = logging.getLevelName(level)
     if level == logging.DEBUG:
         print(f"{Colors.YELLOW}Уровень логирования установлен на DEBUG.{Colors.RESET}")
     elif level == logging.INFO:
         print(f"{Colors.GREEN}Уровень логирования установлен на INFO.{Colors.RESET}")
     elif level == logging.ERROR:
         print(f"{Colors.RED}Уровень логирования установлен на ERROR.{Colors.RESET}")
+
 
 
 def show_help():
