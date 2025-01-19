@@ -72,6 +72,7 @@ def set_log_level(level):
         print(f"{Colors.GREEN}Уровень логирования установлен на INFO.{Colors.RESET}")
     elif level == logging.ERROR:
         print(f"{Colors.RED}Уровень логирования установлен на ERROR.{Colors.RESET}")
+    logger.debug(f"Текущий уровень логирования: {level_name}")
 
 
 
@@ -126,17 +127,17 @@ def handle_command(command, use_tor):
         # Включение TOR
         if not use_tor:
             use_tor = True
-            logger.info("TOR mode enabled")  # Логирование
+            logger.info("TOR mode enabled")
             print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
 
     elif command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
         # Выключение TOR
         if use_tor:
             use_tor = False
-            logger.info("TOR mode disabled")  # Логирование
+            logger.info("TOR mode disabled")
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
 
-    elif command in ["/debug","/d", "/info", "/i", "/error", "/e", ".дебаг", ".д", ".инфо", ".и", ".ошибка", ".о", ".ошибки"]:
+    elif command in ["/debug", "/d", "/info", "/i", "/error", "/e", ".дебаг", ".инфо", ".ошибка"]:
         # Установка уровня логирования
         levels = {
             "/debug": logging.DEBUG,
@@ -146,34 +147,29 @@ def handle_command(command, use_tor):
             "/error": logging.ERROR,
             "/e": logging.ERROR,
             ".дебаг": logging.DEBUG,
-            ".д": logging.DEBUG,
             ".инфо": logging.INFO,
-            ".и": logging.INFO,
             ".ошибка": logging.ERROR,
-            ".о": logging.ERROR,
-            ".ошибки": logging.ERROR,
         }
         level = levels.get(command.lower(), logging.INFO)
         set_log_level(level)
-        logger.debug(f"Текущий уровень логирования: {logging.getLevelName(logger.level)}")
 
-    elif command in ["/log", "/l", ".лог", ".л", ".д", ".дщп"]:
+    elif command in ["/log", "/l", ".лог", ".л"]:
         # Показ текущего уровня логирования
         current_level = logging.getLevelName(logger.level)
         print(f"{Colors.CYAN}Текущий уровень логирования: {Colors.BOLD}{current_level}{Colors.RESET}")
 
-    elif command in ["/help", "/h", ".р", ".х", ".п", ".с", ".помощь", ".справка"]:
-        # Показать справку
+    elif command in ["/help", "/h", ".р", ".х", ".помощь", ".справка"]:
+        # Показ справки
         show_help()
 
     elif command in ["/exit", "/q", ".й", ".в", ".выход"]:
-        # Выход из программы
+        # Завершение работы
         save_dialog_history(load_dialog_history())
         print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
         sys.exit()
 
     elif command in ["/show", "/s", ".покажи", ".п", ".покаж"]:
-        # Показать дополнительную информацию о системе
+        # Показ дополнительной информации
         from agents.show_info_cognitive_interface_agent_v2 import show_info
         log_level = logging.getLevelName(logger.level)
         show_info(use_tor, log_level)
