@@ -97,10 +97,13 @@ def perform_search(queries, use_tor):
             try:
                 output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT)
                 logger.debug(f"Search output for query '{query}': {output[:500]}")
-                results.extend(json.loads(output) if output else [])
+                if output.strip():  # Проверяем, есть ли данные в выводе
+                    results.extend(json.loads(output))
                 break  # Успешное выполнение команды
             except subprocess.CalledProcessError as e:
                 logger.error(f"Search command failed with CalledProcessError: {e.output}")
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decode error while processing query '{query}': {e}")
             except Exception as e:
                 logger.error(f"Search command failed with exception: {e}")
             retries += 1
@@ -111,7 +114,9 @@ def perform_search(queries, use_tor):
         else:
             logger.error(f"Failed to complete search for query: {query} after {MAX_RETRIES} attempts.")
             results.append(None)
+    logger.debug(f"Total results: {len(results)} for queries: {queries}")
     return results
+
 
 def main():
     global USE_TOR
