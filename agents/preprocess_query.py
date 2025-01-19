@@ -155,6 +155,7 @@ def handle_command(command, use_tor):
         }
         level = levels.get(command.lower(), logging.INFO)
         set_log_level(level)
+        logger.debug(f"Текущий уровень логирования: {logging.getLevelName(logger.level)}")
 
     elif command in ["/log", "/l", ".лог", ".л", ".д", ".дщп"]:
         # Показ текущего уровня логирования
