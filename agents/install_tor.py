@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # agents/install_tor.py
-# Версия: 1.1.1
+# Версия: 1.2.0
 
 import os
 import subprocess
 import sys
 import time
-import re
 import logging
 import logging.config
 from pathlib import Path
@@ -55,10 +54,15 @@ def install_tor():
     
     try:
         logger.info("Запуск процесса установки Tor.")
+        print("Удаляю старые репозитории...")
         run_command(["rm", "-f", "/etc/pki/rpm-gpg/RPM-GPG-KEY-elrepo.org"])
         run_command(["rm", "-f", "/etc/yum.repos.d/elrepo.repo"])
+        
+        print("Устанавливаю ключи и репозиторий ELRepo...")
         run_command(["rpm", "--import", "https://www.elrepo.org/RPM-GPG-KEY-elrepo.org"])
         run_command(["dnf", "install", "-y", "https://www.elrepo.org/elrepo-release-8.el8.elrepo.noarch.rpm"])
+        
+        print("Обновляю репозитории и устанавливаю Tor...")
         run_command(["dnf", "clean", "all"])
         run_command(["dnf", "install", "-y", "epel-release"])
         run_command(["dnf", "update", "-y", "--refresh"])
@@ -66,17 +70,25 @@ def install_tor():
         print("Tor успешно установлен.")
         logger.info("Tor успешно установлен.")
         
+        print("Настраиваю firewalld...")
+        configure_firewall()
+    except Exception as e:
+        logger.error(f"Ошибка при установке Tor: {e}")
+        sys.exit(1)
+
+def configure_firewall():
+    try:
         firewall_services = run_command(["firewall-cmd", "--get-services"])
         if "tor" in firewall_services:
             run_command(["firewall-cmd", "--add-service=tor", "--permanent"])
         else:
-            print("Сервис 'tor' не найден в firewalld. Открываем порт 9050/tcp.")
+            logger.warning("Сервис 'tor' не найден в firewalld. Использую настройку порта.")
+            print("Открываю порт 9050/tcp...")
             run_command(["firewall-cmd", "--add-port=9050/tcp", "--permanent"])
-        
         run_command(["firewall-cmd", "--reload"])
-    except Exception as e:
-        logger.error(f"Ошибка при установке Tor: {e}")
-        sys.exit(1)
+        logger.info("Настройка firewalld завершена.")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Ошибка при настройке firewalld: {e}")
 
 def start_tor_service():
     logger.info("Запуск сервиса Tor.")
@@ -120,7 +132,7 @@ def restart_tor_and_check_ddgr():
                 ip_result = subprocess.run(["torsocks", "curl", "-m", "10", "https://api.ipify.org"], capture_output=True, text=True, timeout=3)
                 new_ip = ip_result.stdout.strip()
                 logger.info(f"Новый IP через TOR: {new_ip}")
-                print(f"Отладка: Новый IP через TOR: {new_ip}")
+                print(f"Новый IP через TOR: {new_ip}")
             except subprocess.CalledProcessError:
                 logger.warning("Не удалось получить IP через TOR.")
             return True
