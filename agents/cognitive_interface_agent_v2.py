@@ -146,13 +146,18 @@ def main():
 
                 logger.info("Попытка выполнения поиска.")
                 search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
-                logger.debug(f"Результаты поиска: {search_results}")
+
+                # Обязательный вывод перед отправкой в модель
+                print("\n### Данные для передачи в модель ###")
+                print(f"Инструкция для обработки: {preprocessed['instruction']}")
+                print(f"Результаты поиска: {search_results}\n")
 
                 if any(search_results):
                     logger.info("Информация найдена. Формируется ответ...")
                     user_language = detect_language(user_input)
-                    response = process_search_results(preprocessed['instruction'], search_results, user_language)
                     
+                    response = process_search_results(preprocessed['instruction'], search_results, user_language)
+
                     references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
                     report = f"""
 ### Тема ответа пользователю:
@@ -180,6 +185,7 @@ def main():
         logger.info("Сеанс завершён пользователем.")
         print(f"{Colors.RED}\nСеанс прерван пользователем. История сохранена.{Colors.RESET}")
         save_dialog_history(dialog_history)
+
 
 if __name__ == "__main__":
     main()
