@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # agents/install_tor.py
-# Версия: 1.4.0
+# Версия: 1.5.0
 
 import os
 import subprocess
@@ -11,6 +11,7 @@ import logging.config
 from pathlib import Path
 from itertools import cycle
 from threading import Event, Thread
+import readline
 
 # Добавление пути к settings
 project_root = Path(__file__).resolve().parent.parent
@@ -109,6 +110,49 @@ def configure_firewall():
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при настройке firewalld: {e}")
         print(f"Ошибка: {e.stderr.strip()}")
+
+def restart_tor_and_check_ddgr():
+    """
+    Перезапуск Tor и проверка ddgr.
+    """
+    logger.info("Перезапуск Tor и проверка ddgr.")
+    max_retries = 5
+    retries = 0
+
+    while retries < max_retries:
+        try:
+            logger.debug("Перезапуск TOR...")
+            subprocess.run(["sudo", "systemctl", "restart", "tor"], check=True, timeout=30)
+            time.sleep(5)
+
+            status = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True, timeout=10)
+            if status.stdout.strip() != "active":
+                logger.warning("TOR не активен. Повторная попытка...")
+                retries += 1
+                continue
+
+            try:
+                ip_result = subprocess.run(["torsocks", "curl", "-m", "10", "https://api.ipify.org"], capture_output=True, text=True, timeout=3)
+                new_ip = ip_result.stdout.strip()
+                logger.info(f"Новый IP через TOR: {new_ip}")
+                print(f"Новый IP через TOR: {new_ip}")
+            except subprocess.CalledProcessError:
+                logger.warning("Не удалось получить IP через TOR.")
+            return True
+
+        except subprocess.TimeoutExpired as te:
+            logger.error(f"Превышено время ожидания при выполнении команды. Попытка {retries + 1}: {te}")
+            retries += 1
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Ошибка при выполнении команды: {e}")
+            retries += 1
+        except Exception as e:
+            logger.error(f"Общая ошибка: {e}")
+            retries += 1
+        time.sleep(2)
+
+    logger.error("Не удалось настроить TOR после 5 попыток. Проверьте подключение.")
+    return False
 
 def start_tor_service():
     logger.info("Запуск сервиса Tor.")
