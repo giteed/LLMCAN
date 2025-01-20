@@ -69,30 +69,40 @@ def get_multiline_input():
         lines.append(line)
     return " ".join(lines)
 
-def perform_search(queries, use_tor):
+def perform_search(queries, use_tor, max_retries=3):
+    """
+    Выполняет поиск для каждого запроса. Добавляет повторные попытки при ошибке.
+    """
     results = []
     for query in queries:
+        logger.info(f"Начинаю обработку запроса: {query}")
         retries = 0
-        while retries < MAX_RETRIES:
-            command = ["torsocks", "ddgr", "--json", query] if use_tor else ["ddgr", "--json", query]
-            logger.debug(f"Выполнение поиска: {query} (TOR: {use_tor})")
+        while retries < max_retries:
             try:
+                command = ["torsocks", "ddgr", "--json", query] if use_tor else ["ddgr", "--json", query]
+                logger.debug(f"Выполняется команда поиска: {' '.join(command)} (попытка {retries + 1})")
                 output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT)
                 if output.strip():
-                    results.extend(json.loads(output))
+                    results.append(json.loads(output))
+                    logger.info(f"Успешно выполнен поиск по запросу: {query}")
+                else:
+                    logger.warning(f"Пустой результат для запроса: {query}")
                 break
             except subprocess.CalledProcessError as e:
-                logger.error(f"Ошибка выполнения команды ddgr: {e}")
+                logger.error(f"Ошибка выполнения команды: {e}. Попытка {retries + 1}/{max_retries}")
+                retries += 1
             except json.JSONDecodeError as e:
-                logger.error(f"Ошибка декодирования JSON: {e}")
-            retries += 1
-            if use_tor:
-                restart_tor_and_check_ddgr()
-            time.sleep(1)
+                logger.error(f"Ошибка декодирования JSON: {e}. Попытка {retries + 1}/{max_retries}")
+                retries += 1
+            except Exception as e:
+                logger.error(f"Неизвестная ошибка: {e}. Попытка {retries + 1}/{max_retries}")
+                retries += 1
+            time.sleep(2)  # Задержка перед повторной попыткой
         else:
-            logger.warning(f"Не удалось выполнить поиск по запросу: {query}")
+            logger.error(f"Не удалось найти информацию по запросу: {query} после {max_retries} попыток.")
             results.append(None)
     return results
+
 
 def main():
     global USE_TOR
