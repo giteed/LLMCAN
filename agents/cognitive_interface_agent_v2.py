@@ -36,23 +36,25 @@ if ENV_FILE.exists():
                 DEFAULT_LOG_LEVEL = line.strip().split("=")[1]
                 break
 
-# Настраиваем логирование
+# Настройка логирования
 logger = logging.getLogger(__name__)
 logger.setLevel(getattr(logging, DEFAULT_LOG_LEVEL, logging.INFO))
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-# Консольный обработчик
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
+if not logger.handlers:
+    # Консольный обработчик
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
 
-# Файловый обработчик
-log_dir = BASE_DIR / 'logs'
-log_dir.mkdir(parents=True, exist_ok=True)
-file_handler = logging.FileHandler(log_dir / f'cognitive_agent_{time.strftime("%Y%m%d")}.log', encoding='utf-8')
-file_handler.setFormatter(formatter)
-file_handler.setLevel(logging.DEBUG)
-logger.addHandler(file_handler)
+    # Файловый обработчик
+    log_dir = BASE_DIR / 'logs'
+    log_dir.mkdir(parents=True, exist_ok=True)
+    file_handler = logging.FileHandler(log_dir / f'cognitive_agent_{time.strftime("%Y%m%d")}.log', encoding='utf-8')
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.DEBUG)
+    logger.addHandler(file_handler)
+
 
 # Глобальная переменная для режима TOR
 USE_TOR = True
