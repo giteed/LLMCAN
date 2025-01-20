@@ -86,7 +86,6 @@ def get_multiline_input():
 def perform_search(queries, use_tor):
     """
     Выполняет поисковые запросы с использованием ddgr через TOR или напрямую.
-    Перезапускает TOR при возникновении ошибок и повторяет запросы.
     """
     results = []
     for query in queries:
@@ -116,6 +115,7 @@ def perform_search(queries, use_tor):
             results.append(None)
     logger.debug(f"Total results: {len(results)} for queries: {queries}")
     return results
+
 
 
 def main():
