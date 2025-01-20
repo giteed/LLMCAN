@@ -171,12 +171,35 @@ def pretty_print(data):
     """
     print(json.dumps(data, ensure_ascii=False, indent=2, separators=(',', ': ')))
 
-# INFO
+from datetime import datetime
+
+def get_current_datetime():
+    """
+    Возвращает текущую дату и время в удобном формате.
+    """
+    now = datetime.now()
+    formatted_datetime = now.strftime("%Y-%m-%d %H:%M:%S")
+    return formatted_datetime
+
+def preprocess_user_query(user_input):
+    """
+    Обрабатывает пользовательский запрос и добавляет текущую дату и время, если требуется.
+    """
+    # Ключевые слова, указывающие на необходимость вставки даты или времени
+    keywords = ["сегодня", "today", "сейчас", "now", "время", "time", "дата", "date"]
+    if any(keyword in user_input.lower() for keyword in keywords):
+        current_datetime = get_current_datetime()
+        user_input += f"\n\nТекущая дата и время: {current_datetime}"
+    return user_input
+
 def query_llm(prompt, include_history=True):
     """
     Выполняет запрос к LLM и возвращает отфильтрованный ответ.
     """
-    current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')
+    # Предобработка пользовательского запроса
+    prompt = preprocess_user_query(prompt)
+    
+    current_datetime = get_current_datetime()
     payload = {
         "model": MODEL,
         "prompt": prompt,
@@ -194,12 +217,12 @@ def query_llm(prompt, include_history=True):
             "done_reason": response_data.get("done_reason", "Неизвестно")
         }
 
-        # Логируем данные в одну строку для отладки
+        # Логируем данные
         logger.debug(f"Фильтрованный ответ от LLM: {filtered_response}")
 
-        # Логируем читаемую версию текста как INFO
+        # Логируем читаемую версию
         readable_response = response_data.get("response", "<Нет ответа>")
-        if logger.isEnabledFor(logging.INFO):  # Проверяем уровень логирования
+        if logger.isEnabledFor(logging.INFO):
             logger.info("\nОтвет модели:\n" + readable_response)
 
         # Возвращаем ключевую часть ответа
@@ -210,6 +233,7 @@ def query_llm(prompt, include_history=True):
     except json.JSONDecodeError as e:
         logger.error(f"Ошибка декодирования JSON: {e}")
         return None
+
 
 
 
