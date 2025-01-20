@@ -33,7 +33,7 @@ from agents.show_info_cognitive_interface_agent_v2 import show_info
 MODEL = "qwen2:7b"
 LOG_DIR = BASE_DIR / 'logs'
 # Настройка логирования
-#DEFAULT_LOG_LEVEL = "INFO"
+DEFAULT_LOG_LEVEL = "INFO"
 ENV_FILE = Path(".env")
 
 
