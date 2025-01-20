@@ -70,6 +70,9 @@ def get_multiline_input():
     return " ".join(lines)
 
 def perform_search(queries, use_tor, max_retries=3):
+    """
+    Выполняет поиск для каждого запроса. Добавляет повторные попытки при ошибке.
+    """
     results = []
     if not queries:
         logger.warning("Список запросов пуст. Поиск не будет выполнен.")
@@ -85,16 +88,15 @@ def perform_search(queries, use_tor, max_retries=3):
                 output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT)
                 logger.debug(f"Вывод команды ddgr: {output}")
                 if output.strip():
-                    parsed_results = json.loads(output)
-                    if not isinstance(parsed_results, list):
-                        logger.error(f"Некорректный формат результата: {parsed_results}")
-                        results.append(None)
-                    else:
-                        results.extend(parsed_results)
+                    json_results = json.loads(output)
+                    if isinstance(json_results, list) and json_results:
+                        results.extend(json_results)
                         logger.info(f"Успешно выполнен поиск по запросу: {query}")
+                        break
+                    else:
+                        logger.warning(f"Некорректный формат или пустой результат для запроса: {query}")
                 else:
                     logger.warning(f"Пустой результат для запроса: {query}")
-                break
             except subprocess.CalledProcessError as e:
                 logger.error(f"Ошибка выполнения команды: {e}. Попытка {retries + 1}/{max_retries}")
                 retries += 1
@@ -109,9 +111,10 @@ def perform_search(queries, use_tor, max_retries=3):
             logger.error(f"Не удалось найти информацию по запросу: {query} после {max_retries} попыток.")
             results.append(None)
 
-    print("Результаты поиска:")
-    pprint.pprint(results)  # Используем pprint для читаемого вывода
-    logger.debug(f"Итоговые результаты поиска: {results}")
+    if not any(results):
+        logger.warning("Все поисковые запросы вернули пустые результаты.")
+    else:
+        logger.debug(f"Итоговые результаты поиска: {results}")
     return results
 
 
