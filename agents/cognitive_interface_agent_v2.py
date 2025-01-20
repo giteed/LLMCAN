@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # Версия: 2.9.9
-# ==================================================
 
 import sys
 from pathlib import Path
@@ -12,11 +11,6 @@ import os
 import json
 import time
 import re
-
-# Добавляем корневую директорию проекта в sys.path
-project_root = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(project_root))
-
 from settings import BASE_DIR, LLM_API_URL, LOG_LEVEL
 from agents.install_tor import restart_tor_and_check_ddgr
 from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_language
@@ -24,12 +18,11 @@ from agents.colors import Colors
 from cognitive_logic import print_message, process_search_results
 from preprocess_query import preprocess_query, handle_command, show_help, set_log_level, ENV_FILE
 
-
-
 # Установка логирования
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
+# Создание обработчиков логов
 log_dir = BASE_DIR / 'logs'
 log_dir.mkdir(parents=True, exist_ok=True)
 file_handler = logging.FileHandler(log_dir / f'cognitive_agent_{time.strftime("%Y%m%d")}.log', encoding='utf-8')
@@ -43,12 +36,8 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
 # Установка уровня логирования из настроек
-try:
-    resolved_log_level = getattr(logging, LOG_LEVEL.upper(), logging.INFO)
-    logger.setLevel(resolved_log_level)
-except AttributeError:
-    logger.error(f"Некорректное значение LOG_LEVEL: {LOG_LEVEL}. Используется уровень INFO.")
-    logger.setLevel(logging.INFO)
+resolved_log_level = getattr(logging, LOG_LEVEL.upper(), logging.INFO)
+logger.setLevel(resolved_log_level)
 
 # Глобальная переменная для режима TOR
 USE_TOR = True
