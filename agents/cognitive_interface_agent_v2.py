@@ -5,23 +5,25 @@
 
 import sys
 from pathlib import Path
-import logging
+import readline
 import subprocess
+import logging
 import os
 import json
 import time
-#from settings import BASE_DIR, LLM_API_URL, LOG_LEVEL
-from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_language
-from preprocess_query import preprocess_query, handle_command, ENV_FILE
-from agents.install_tor import restart_tor_and_check_ddgr
-from agents.colors import Colors
-from cognitive_logic import print_message, process_search_results
+import re
 
-
+# Добавляем корневую директорию проекта в sys.path
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
-from LLMCAN.settings import BASE_DIR, LLM_API_URL, LOG_LEVEL
+from settings import BASE_DIR, LLM_API_URL, LOG_LEVEL
+from agents.install_tor import restart_tor_and_check_ddgr
+from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_language
+from agents.colors import Colors
+from cognitive_logic import print_message, process_search_results
+from preprocess_query import preprocess_query, handle_command, show_help, set_log_level, ENV_FILE
+
 
 
 # Установка логирования
