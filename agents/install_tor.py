@@ -11,6 +11,7 @@ import logging.config
 from pathlib import Path
 from itertools import cycle
 from threading import Thread
+import readline
 
 # Добавление пути к settings
 project_root = Path(__file__).resolve().parent.parent
