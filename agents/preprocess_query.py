@@ -178,25 +178,24 @@ def query_llm(prompt, include_history=True):
         response = requests.post(LLM_API_URL, json=payload, timeout=10)
         response.raise_for_status()
 
-        # Логируем весь сырой ответ для отладки
-        logger.debug(f"Сырой ответ от LLM: {response.text}")
+        # Парсим JSON и фильтруем данные
+        try:
+            response_data = response.json()
+            filtered_response = {
+                "response": response_data.get("response", "<Нет ответа>"),
+                "done_reason": response_data.get("done_reason", "Неизвестно")
+            }
+            logger.debug(f"Фильтрованный ответ от LLM: {filtered_response}")
+        except json.JSONDecodeError as e:
+            logger.error(f"Ошибка декодирования JSON: {e}")
+            return None
 
-        # Фильтруем только ключевые поля ответа
-        response_data = response.json()
-        filtered_response = {
-            "response": response_data.get("response", "<Нет ответа>"),
-            "done_reason": response_data.get("done_reason", "Неизвестно")
-        }
-        logger.debug(f"Фильтрованный ответ от LLM: {filtered_response}")
-
-        # Возвращаем только ключевую часть ответа для использования
+        # Возвращаем ключевую часть ответа
         return response_data.get("response", "<Нет ответа>")
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
-    except json.JSONDecodeError as e:
-        logger.error(f"Ошибка декодирования JSON из ответа LLM: {e}")
-        return None
+
 
 
 def preprocess_query(user_input):
