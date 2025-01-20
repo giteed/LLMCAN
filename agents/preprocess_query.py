@@ -171,7 +171,7 @@ def pretty_print(data):
     """
     print(json.dumps(data, ensure_ascii=False, indent=2, separators=(',', ': ')))
 
-
+# INFO
 def query_llm(prompt, include_history=True):
     """
     Выполняет запрос к LLM и возвращает отфильтрованный ответ.
@@ -194,22 +194,22 @@ def query_llm(prompt, include_history=True):
             "done_reason": response_data.get("done_reason", "Неизвестно")
         }
 
-        # Логируем данные в компактном формате
+        # Логируем данные в одну строку для отладки
         logger.debug(f"Фильтрованный ответ от LLM: {filtered_response}")
 
-        # Выводим только поле "response" в консоль в оригинальном формате
-        print("\nОтвет модели:")
-        print(response_data.get("response", "<Нет ответа>"))
+        # Логируем читаемую версию текста как INFO
+        readable_response = response_data.get("response", "<Нет ответа>")
+        if logger.isEnabledFor(logging.INFO):  # Проверяем уровень логирования
+            logger.info("\nОтвет модели:\n" + readable_response)
 
-        # Возвращаем только ключевую часть ответа
-        return response_data.get("response", "<Нет ответа>")
+        # Возвращаем ключевую часть ответа
+        return readable_response
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
     except json.JSONDecodeError as e:
         logger.error(f"Ошибка декодирования JSON: {e}")
         return None
-
 
 
 
