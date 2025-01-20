@@ -2,8 +2,9 @@
 # LLMCAN/agents/preprocess_query.py
 # ==================================================
 # Модуль для обработки пользовательских запросов
-# Версия: 1.1.0
+# Версия: 1.0.0
 # ==================================================
+
 
 import os
 import sys
@@ -22,18 +23,23 @@ import readline
 
 from settings import BASE_DIR, LLM_API_URL
 from agents.install_tor import restart_tor_and_check_ddgr
-from colors import Colors
+from colors import Colors  # Используем Colors из внешнего файла
 from agents.data_management import save_dialog_history, load_dialog_history
 from agents.show_info_cognitive_interface_agent_v2 import show_info
+
+
 
 # === Настройки ===
 MODEL = "qwen2:7b"
 LOG_DIR = BASE_DIR / 'logs'
+# Настройка логирования
+#DEFAULT_LOG_LEVEL = "INFO"
 ENV_FILE = Path(".env")
+
 
 # === Настройка логирования ===
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
@@ -50,10 +56,8 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
 
+
 def set_log_level(level):
-    """
-    Устанавливает уровень логирования.
-    """
     logger.setLevel(level)
     if level == logging.DEBUG:
         print(f"{Colors.YELLOW}Уровень логирования установлен на DEBUG.{Colors.RESET}")
@@ -64,9 +68,6 @@ def set_log_level(level):
 
 
 def show_help():
-    """
-    Отображает справку по доступным командам.
-    """
     print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
     print(f"  {Colors.CYAN}/help, /h{Colors.RESET} - показать эту справку")
     print(f"  {Colors.CYAN}/tor, /t{Colors.RESET} - показать статус TOR")
@@ -80,9 +81,6 @@ def show_help():
 
 
 def parse_preprocessing_response(response):
-    """
-    Парсинг ответа от модели для получения поисковых запросов.
-    """
     lines = response.split('\n')
     queries = []
     instruction = ""
@@ -105,51 +103,69 @@ def parse_preprocessing_response(response):
         "instruction": instruction.strip()
     }
 
-
 def handle_command(command, use_tor):
     """
     Обработка команды пользователя.
     """
-    command = command.strip().lower()
+    command = command.strip().lower()  # Приводим команду к нижнему регистру для унификации
 
-    if command in ["/tor", "/t"]:
+    if command in ["/tor", "/t", ".т", ".е", ".тор"]:
+        # Показать текущий статус TOR
         status = "включен" if use_tor else "выключен"
         print(f"Режим опроса через TOR: {status}")
 
-    elif command in ["/tn"]:
+    elif command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
+        # Включение TOR
         if not use_tor:
             use_tor = True
-            logger.info("TOR mode enabled")
+            logger.info("TOR mode enabled")  # Логирование
             print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
 
-    elif command in ["/tf"]:
+    elif command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
+        # Выключение TOR
         if use_tor:
             use_tor = False
-            logger.info("TOR mode disabled")
+            logger.info("TOR mode disabled")  # Логирование
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
 
-    elif command in ["/debug", "/info", "/error"]:
+    elif command in ["/debug","/d", "/info", "/i", "/error", "/e", ".дебаг", ".д", ".инфо", ".и", ".ошибка", ".о", ".ошибки"]:
+        # Установка уровня логирования
         levels = {
             "/debug": logging.DEBUG,
+            "/d": logging.DEBUG,
             "/info": logging.INFO,
+            "/i": logging.INFO,
             "/error": logging.ERROR,
+            "/e": logging.ERROR,
+            ".дебаг": logging.DEBUG,
+            ".д": logging.DEBUG,
+            ".инфо": logging.INFO,
+            ".и": logging.INFO,
+            ".ошибка": logging.ERROR,
+            ".о": logging.ERROR,
+            ".ошибки": logging.ERROR,
         }
         level = levels.get(command.lower(), logging.INFO)
         set_log_level(level)
 
-    elif command in ["/log", "/l"]:
+    elif command in ["/log", "/l", ".лог", ".л", ".д", ".дщп"]:
+        # Показ текущего уровня логирования
         current_level = logging.getLevelName(logger.level)
         print(f"{Colors.CYAN}Текущий уровень логирования: {Colors.BOLD}{current_level}{Colors.RESET}")
 
-    elif command in ["/help", "/h"]:
+    elif command in ["/help", "/h", ".р", ".х", ".п", ".с", ".помощь", ".справка"]:
+        # Показать справку
         show_help()
 
-    elif command in ["/exit", "/q"]:
+    elif command in ["/exit", "/q", ".й", ".в", ".выход"]:
+        # Выход из программы
         save_dialog_history(load_dialog_history())
         print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
         sys.exit()
 
-    elif command in ["/show", "/s"]:
+    elif command in ["/show", "/s", ".покажи", ".п", ".покаж"]:
+        # Показать дополнительную информацию о системе
+        from agents.show_info_cognitive_interface_agent_v2 import show_info
         log_level = logging.getLevelName(logger.level)
         show_info(use_tor, log_level)
 
@@ -159,25 +175,33 @@ def handle_command(command, use_tor):
     return use_tor
 
 
+def get_current_datetime():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')
+
 def query_llm(prompt, include_history=True):
-    """
-    Выполняет запрос к LLM и возвращает ответ.
-    """
-    current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')
+    global dialog_history
+    
+    current_datetime = get_current_datetime()
+    
+    if include_history:
+        context = "\n".join([f"{entry['role']}: {entry['content']}" for entry in dialog_history[-5:]])
+        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{context}\n\nСистемная инструкция: {generate_system_instruction(dialog_history)}\n\nТекущий запрос: {prompt}"
+    else:
+        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{prompt}"
+
     payload = {
         "model": MODEL,
-        "prompt": prompt,
+        "prompt": full_prompt,
         "stream": False
     }
+
     try:
-        response = requests.post(LLM_API_URL, json=payload, timeout=10)
+        response = requests.post(LLM_API_URL, json=payload)
         response.raise_for_status()
-        logger.debug(f"Ответ от LLM: {response.text}")
         return response.json().get("response", "<Нет ответа>")
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
-
 
 def preprocess_query(user_input):
     print(f"{Colors.YELLOW}Запрос пользователя получен. Начинаю анализ и формирование поисковых запросов...{Colors.RESET}")
