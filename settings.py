@@ -20,9 +20,9 @@
 # Версия: 1.2 (2025-01-09)
 
 import logging
+import logging.config
 import os
 from pathlib import Path
-
 
 # Определяем базовый путь к корню проекта LLMCAN
 BASE_DIR = Path(__file__).resolve().parent
