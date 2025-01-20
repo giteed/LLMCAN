@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 # agents/data_management.py
-# Version: 1.5.2
+# Version: 1.6.0
 # Purpose: Handle data and dialog history management for the cognitive agent.
 
 import json
 import logging
+import logging.config
 from pathlib import Path
+from settings import LOGGING_CONFIG
 
+# Настройка логирования
+logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
+
 HISTORY_FILE = Path("history/dialog_history.json")
 MAX_HISTORY_LENGTH = 100
 
@@ -15,6 +20,9 @@ MAX_HISTORY_LENGTH = 100
 dialog_history_cache = None
 
 def save_dialog_history(dialog_history):
+    """
+    Сохраняет историю диалога в файл.
+    """
     global dialog_history_cache
     try:
         if not isinstance(dialog_history, list):
@@ -38,6 +46,9 @@ def save_dialog_history(dialog_history):
         return False
 
 def load_dialog_history():
+    """
+    Загружает историю диалога из файла.
+    """
     global dialog_history_cache
 
     if dialog_history_cache is not None:
@@ -65,6 +76,9 @@ def load_dialog_history():
     return dialog_history_cache
 
 def append_to_dialog_history(entry):
+    """
+    Добавляет запись в историю диалога.
+    """
     global dialog_history_cache
 
     if dialog_history_cache is None:
@@ -79,8 +93,10 @@ def append_to_dialog_history(entry):
     else:
         logger.error("Cannot append to dialog history. Cache is not a list.")
 
-# Ensure save_dialog_history is called only once at program end
 def finalize_history_saving():
+    """
+    Сохраняет историю диалога перед завершением работы программы.
+    """
     global dialog_history_cache
     if dialog_history_cache is not None:
         logger.debug("Finalizing dialog history saving...")
@@ -88,6 +104,9 @@ def finalize_history_saving():
             logger.error("Failed to finalize dialog history saving.")
 
 def save_temp_result(result, query_number, temp_dir=Path("temp")):
+    """
+    Сохраняет временные результаты в файл.
+    """
     try:
         temp_dir.mkdir(exist_ok=True)
         file_path = temp_dir / f"result_{query_number}.json"
@@ -98,6 +117,9 @@ def save_temp_result(result, query_number, temp_dir=Path("temp")):
         logger.error(f"Error saving temporary result: {e}")
 
 def detect_language(text):
+    """
+    Определяет язык текста.
+    """
     import re
     logger.debug(f"Detecting language for text: {text[:30]}...")
     if re.search('[а-яА-Я]', text):
@@ -106,9 +128,3 @@ def detect_language(text):
     else:
         logger.info("Detected language: English")
         return 'en'
-
-#def print_message(role, message):
-#    color = "\033[94m" if role == "User" else "\033[92m"
-#    reset = "\033[0m"
-#    logger.debug(f"{role}: {message}")
-#    print(f"{color}{role}: {message}{reset}")
