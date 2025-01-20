@@ -2,9 +2,8 @@
 # LLMCAN/agents/preprocess_query.py
 # ==================================================
 # Модуль для обработки пользовательских запросов
-# Версия: 1.0.0
+# Версия: 1.0.1
 # ==================================================
-
 
 import os
 import sys
@@ -21,43 +20,25 @@ import socket
 import socks
 import readline
 
-from settings import BASE_DIR, LLM_API_URL
+from settings import BASE_DIR, LLM_API_URL, LOGGING_CONFIG
 from agents.install_tor import restart_tor_and_check_ddgr
-from colors import Colors  # Используем Colors из внешнего файла
+from colors import Colors
 from agents.data_management import save_dialog_history, load_dialog_history
 from agents.show_info_cognitive_interface_agent_v2 import show_info
 
-
+# === Настройка логирования ===
+logging.config.dictConfig(LOGGING_CONFIG)
+logger = logging.getLogger(__name__)
 
 # === Настройки ===
 MODEL = "qwen2:7b"
 LOG_DIR = BASE_DIR / 'logs'
-# Настройка логирования
-#DEFAULT_LOG_LEVEL = "INFO"
 ENV_FILE = Path(".env")
 
-
-# === Настройка логирования ===
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.INFO)
-console_handler.setFormatter(formatter)
-
-LOG_DIR.mkdir(exist_ok=True)
-file_handler = logging.FileHandler(LOG_DIR / f'cognitive_agent_{datetime.now().strftime("%Y%m%d")}.log', encoding='utf-8')
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
-
-logger.addHandler(console_handler)
-logger.addHandler(file_handler)
-
-
-
 def set_log_level(level):
+    """
+    Устанавливает уровень логирования.
+    """
     logger.setLevel(level)
     if level == logging.DEBUG:
         print(f"{Colors.YELLOW}Уровень логирования установлен на DEBUG.{Colors.RESET}")
@@ -68,6 +49,9 @@ def set_log_level(level):
 
 
 def show_help():
+    """
+    Отображает справку по доступным командам.
+    """
     print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
     print(f"  {Colors.CYAN}/help, /h{Colors.RESET} - показать эту справку")
     print(f"  {Colors.CYAN}/tor, /t{Colors.RESET} - показать статус TOR")
@@ -81,6 +65,9 @@ def show_help():
 
 
 def parse_preprocessing_response(response):
+    """
+    Парсинг ответа от модели для получения поисковых запросов.
+    """
     lines = response.split('\n')
     queries = []
     instruction = ""
@@ -102,6 +89,7 @@ def parse_preprocessing_response(response):
         "queries": queries[:3],
         "instruction": instruction.strip()
     }
+
 
 def handle_command(command, use_tor):
     """
@@ -128,7 +116,7 @@ def handle_command(command, use_tor):
             logger.info("TOR mode disabled")  # Логирование
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
 
-    elif command in ["/debug","/d", "/info", "/i", "/error", "/e", ".дебаг", ".д", ".инфо", ".и", ".ошибка", ".о", ".ошибки"]:
+    elif command in ["/debug", "/d", "/info", "/i", "/error", "/e", ".дебаг", ".д", ".инфо", ".и", ".ошибка", ".о", ".ошибки"]:
         # Установка уровня логирования
         levels = {
             "/debug": logging.DEBUG,
@@ -175,33 +163,26 @@ def handle_command(command, use_tor):
     return use_tor
 
 
-def get_current_datetime():
-    return datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')
-
 def query_llm(prompt, include_history=True):
-    global dialog_history
-    
-    current_datetime = get_current_datetime()
-    
-    if include_history:
-        context = "\n".join([f"{entry['role']}: {entry['content']}" for entry in dialog_history[-5:]])
-        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{context}\n\nСистемная инструкция: {generate_system_instruction(dialog_history)}\n\nТекущий запрос: {prompt}"
-    else:
-        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{prompt}"
-
+    """
+    Выполняет запрос к LLM и возвращает ответ.
+    """
+    current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')
     payload = {
         "model": MODEL,
-        "prompt": full_prompt,
+        "prompt": prompt,
         "stream": False
     }
 
     try:
-        response = requests.post(LLM_API_URL, json=payload)
+        response = requests.post(LLM_API_URL, json=payload, timeout=10)
         response.raise_for_status()
+        logger.debug(f"Ответ от LLM: {response.text}")
         return response.json().get("response", "<Нет ответа>")
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
+
 
 def preprocess_query(user_input):
     print(f"{Colors.YELLOW}Запрос пользователя получен. Начинаю анализ и формирование поисковых запросов...{Colors.RESET}")
