@@ -112,6 +112,7 @@ def main():
     tor_installed = check_tor_installation()
     if not tor_installed:
         USE_TOR = False
+        logger.warning("TOR не установлен. Все запросы будут выполняться без TOR.")
     else:
         logger.info("TOR установлен. Использование TOR включено по умолчанию.")
         print(f"{Colors.BLUE}TOR готов к использованию.{Colors.RESET}")
@@ -124,16 +125,22 @@ def main():
                 logger.info("Пустой ввод пользователя. Ожидание следующего ввода.")
                 continue
 
-            logger.info("Обработка пользовательского запроса.")
+            logger.info(f"Получен пользовательский запрос: {user_input}")
             print(f"{Colors.BLUE}Обрабатываю запрос пользователя...{Colors.RESET}")
             append_to_dialog_history({"role": "user", "content": user_input})
-            preprocessed = preprocess_query(user_input)
-            search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
-            if search_results:
-                user_language = detect_language(user_input)
-                response = process_search_results(preprocessed['instruction'], search_results, user_language)
-                references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
-                report = f"""
+
+            try:
+                preprocessed = preprocess_query(user_input)
+                logger.debug(f"Предобработанный запрос: {preprocessed}")
+
+                search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
+                if any(search_results):
+                    logger.info("Информация найдена. Формируется ответ...")
+                    user_language = detect_language(user_input)
+                    response = process_search_results(preprocessed['instruction'], search_results, user_language)
+                    
+                    references = [result.get('url', '') for result in search_results if isinstance(result, dict) and 'url' in result]
+                    report = f"""
 ### Тема ответа пользователю:
 {response}
 
@@ -145,14 +152,19 @@ def main():
 
 ## Источники:
 """ + "\n".join([f"{i + 1}. {url}" for i, url in enumerate(references[:15])])
-                logger.info("Успешная обработка запроса. Отправка ответа пользователю.")
-                print_message("Агент", report)
-                append_to_dialog_history({"role": "assistant", "content": report})
-            else:
-                logger.warning("Не удалось найти информацию по запросу пользователя.")
-                print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
+
+                    logger.info("Ответ успешно сформирован.")
+                    print_message("Агент", report)
+                    append_to_dialog_history({"role": "assistant", "content": report})
+                else:
+                    logger.warning("Поиск завершён без результата.")
+                    print_message("Агент", "Извините, не удалось найти информацию по вашему запросу.")
+            except Exception as e:
+                logger.error(f"Ошибка обработки запроса: {e}")
+                print_message("Агент", "Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте снова.")
+
     except KeyboardInterrupt:
-        logger.info("Сеанс завершен пользователем.")
+        logger.info("Сеанс завершён пользователем.")
         print(f"{Colors.RED}\nСеанс прерван пользователем. История сохранена.{Colors.RESET}")
         save_dialog_history(dialog_history)
 
