@@ -41,19 +41,26 @@ ENV_FILE = Path(".env")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+# Форматтер для логов
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.INFO)
-console_handler.setFormatter(formatter)
-
+# Убедитесь, что директория для логов существует
 LOG_DIR.mkdir(exist_ok=True)
-file_handler = logging.FileHandler(LOG_DIR / f'cognitive_agent_{datetime.now().strftime("%Y%m%d")}.log', encoding='utf-8')
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
 
-logger.addHandler(console_handler)
-logger.addHandler(file_handler)
+# Проверяем, есть ли обработчики, и добавляем только при их отсутствии
+if not logger.handlers:
+    # Консольный обработчик
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    # Файловый обработчик
+    file_handler = logging.FileHandler(LOG_DIR / f'cognitive_agent_{datetime.now().strftime("%Y%m%d")}.log', encoding='utf-8')
+    file_handler.setLevel(logging.DEBUG)  # Логирование всех уровней в файл
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
 
 
 
@@ -72,7 +79,11 @@ def set_log_level(level):
         print(f"{Colors.GREEN}Уровень логирования установлен на INFO.{Colors.RESET}")
     elif level == logging.ERROR:
         print(f"{Colors.RED}Уровень логирования установлен на ERROR.{Colors.RESET}")
+    else:
+        print(f"{Colors.CYAN}Уровень логирования установлен на {Colors.BOLD}{level_name}{Colors.RESET}")
+
     logger.debug(f"Текущий уровень логирования: {level_name}")
+
 
 
 
@@ -119,26 +130,19 @@ def handle_command(command, use_tor):
     command = command.strip().lower()  # Приводим команду к нижнему регистру для унификации
 
     if command in ["/tor", "/t", ".т", ".е", ".тор"]:
-        # Показать текущий статус TOR
         status = "включен" if use_tor else "выключен"
         print(f"Режим опроса через TOR: {status}")
-
     elif command in ["/tn", ".ет", ".тв", ".твк", ".твкл"]:
-        # Включение TOR
         if not use_tor:
             use_tor = True
             logger.info("TOR mode enabled")
             print(f"{Colors.GREEN}Режим опроса через TOR включён.{Colors.RESET}")
-
     elif command in ["/tf", ".еа", ".твы", ".твык", ".твыкл"]:
-        # Выключение TOR
         if use_tor:
             use_tor = False
             logger.info("TOR mode disabled")
             print(f"{Colors.YELLOW}Режим опроса через TOR отключён.{Colors.RESET}")
-
     elif command in ["/debug", "/d", "/info", "/i", "/error", "/e", ".дебаг", ".инфо", ".ошибка"]:
-        # Установка уровня логирования
         levels = {
             "/debug": logging.DEBUG,
             "/d": logging.DEBUG,
@@ -152,33 +156,24 @@ def handle_command(command, use_tor):
         }
         level = levels.get(command.lower(), logging.INFO)
         set_log_level(level)
-
+        logger.debug(f"Текущий уровень логирования: {logging.getLevelName(logger.level)}")
     elif command in ["/log", "/l", ".лог", ".л"]:
-        # Показ текущего уровня логирования
         current_level = logging.getLevelName(logger.level)
         print(f"{Colors.CYAN}Текущий уровень логирования: {Colors.BOLD}{current_level}{Colors.RESET}")
-
     elif command in ["/help", "/h", ".р", ".х", ".помощь", ".справка"]:
-        # Показ справки
         show_help()
-
     elif command in ["/exit", "/q", ".й", ".в", ".выход"]:
-        # Завершение работы
         save_dialog_history(load_dialog_history())
         print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
         sys.exit()
-
     elif command in ["/show", "/s", ".покажи", ".п", ".покаж"]:
-        # Показ дополнительной информации
         from agents.show_info_cognitive_interface_agent_v2 import show_info
         log_level = logging.getLevelName(logger.level)
         show_info(use_tor, log_level)
-
     else:
         print(f"{Colors.RED}Неизвестная команда: {command}{Colors.RESET}")
 
     return use_tor
-
 
 def get_current_datetime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')
