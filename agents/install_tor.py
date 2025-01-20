@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # agents/install_tor.py
-# Версия: 1.2.0
+# Версия: 1.3.0
 
 import os
 import subprocess
@@ -9,6 +9,8 @@ import time
 import logging
 import logging.config
 from pathlib import Path
+from itertools import cycle
+from threading import Thread
 
 # Добавление пути к settings
 project_root = Path(__file__).resolve().parent.parent
@@ -34,6 +36,29 @@ def run_command(command):
         logger.error(f"Вывод ошибки: {e.stderr}")
         sys.exit(1)
 
+def progress_loader(message, stop_event):
+    """
+    Простая функция для отображения индикатора прогресса.
+    """
+    spinner = cycle(["|", "/", "-", "\\"])
+    while not stop_event.is_set():
+        print(f"\r{message} {next(spinner)}", end="")
+        time.sleep(0.2)
+    print("\r" + " " * (len(message) + 2) + "\r", end="")
+
+def execute_with_progress(message, func, *args):
+    """
+    Выполняет функцию с индикатором прогресса.
+    """
+    stop_event = Thread.Event()
+    loader_thread = Thread(target=progress_loader, args=(message, stop_event))
+    loader_thread.start()
+    try:
+        func(*args)
+    finally:
+        stop_event.set()
+        loader_thread.join()
+
 def check_tor_installed():
     logger.info("Проверка, установлен ли Tor.")
     try:
@@ -51,25 +76,19 @@ def install_tor():
         if choice.lower() != 'yes':
             print("Пропускаю установку Tor.")
             return
-    
+
     try:
         logger.info("Запуск процесса установки Tor.")
-        print("Удаляю старые репозитории...")
-        run_command(["rm", "-f", "/etc/pki/rpm-gpg/RPM-GPG-KEY-elrepo.org"])
-        run_command(["rm", "-f", "/etc/yum.repos.d/elrepo.repo"])
-        
-        print("Устанавливаю ключи и репозиторий ELRepo...")
-        run_command(["rpm", "--import", "https://www.elrepo.org/RPM-GPG-KEY-elrepo.org"])
-        run_command(["dnf", "install", "-y", "https://www.elrepo.org/elrepo-release-8.el8.elrepo.noarch.rpm"])
-        
-        print("Обновляю репозитории и устанавливаю Tor...")
-        run_command(["dnf", "clean", "all"])
-        run_command(["dnf", "install", "-y", "epel-release"])
-        run_command(["dnf", "update", "-y", "--refresh"])
-        run_command(["dnf", "install", "-y", "tor"])
+        execute_with_progress("Удаляю старые репозитории...", run_command, ["rm", "-f", "/etc/pki/rpm-gpg/RPM-GPG-KEY-elrepo.org"])
+        execute_with_progress("Удаляю старые репозитории...", run_command, ["rm", "-f", "/etc/yum.repos.d/elrepo.repo"])
+        execute_with_progress("Устанавливаю ключи и репозиторий ELRepo...", run_command, ["rpm", "--import", "https://www.elrepo.org/RPM-GPG-KEY-elrepo.org"])
+        execute_with_progress("Устанавливаю репозиторий ELRepo...", run_command, ["dnf", "install", "-y", "https://www.elrepo.org/elrepo-release-8.el8.elrepo.noarch.rpm"])
+        execute_with_progress("Обновляю репозитории...", run_command, ["dnf", "clean", "all"])
+        execute_with_progress("Устанавливаю epel-release...", run_command, ["dnf", "install", "-y", "epel-release"])
+        execute_with_progress("Обновляю пакеты...", run_command, ["dnf", "update", "-y", "--refresh"])
+        execute_with_progress("Устанавливаю Tor...", run_command, ["dnf", "install", "-y", "tor"])
         print("Tor успешно установлен.")
         logger.info("Tor успешно установлен.")
-        
         print("Настраиваю firewalld...")
         configure_firewall()
     except Exception as e:
@@ -89,6 +108,7 @@ def configure_firewall():
         logger.info("Настройка firewalld завершена.")
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при настройке firewalld: {e}")
+        print(f"Ошибка: {e.stderr.strip()}")
 
 def start_tor_service():
     logger.info("Запуск сервиса Tor.")
@@ -109,47 +129,6 @@ def check_tor_status():
             logger.warning(f"Сервис Tor не активен. Статус: {status}")
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при проверке статуса Tor: {e}")
-
-def restart_tor_and_check_ddgr():
-    logger.info("Перезапуск Tor и проверка ddgr.")
-    max_retries = 5
-    retries = 0
-
-    while retries < max_retries:
-        try:
-            print("Перезапуск TOR...")
-            logger.debug("Перезапуск TOR...")
-            subprocess.run(["sudo", "systemctl", "restart", "tor"], check=True, timeout=30)
-            time.sleep(5)
-
-            status = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True, timeout=10)
-            if status.stdout.strip() != "active":
-                logger.warning("TOR не активен. Повторная попытка...")
-                retries += 1
-                continue
-
-            try:
-                ip_result = subprocess.run(["torsocks", "curl", "-m", "10", "https://api.ipify.org"], capture_output=True, text=True, timeout=3)
-                new_ip = ip_result.stdout.strip()
-                logger.info(f"Новый IP через TOR: {new_ip}")
-                print(f"Новый IP через TOR: {new_ip}")
-            except subprocess.CalledProcessError:
-                logger.warning("Не удалось получить IP через TOR.")
-            return True
-
-        except subprocess.TimeoutExpired as te:
-            logger.error(f"Превышено время ожидания при выполнении команды. Попытка {retries + 1}: {te}")
-            retries += 1
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Ошибка при выполнении команды: {e}")
-            retries += 1
-        except Exception as e:
-            logger.error(f"Общая ошибка: {e}")
-            retries += 1
-        time.sleep(2)
-
-    logger.error("Не удалось настроить TOR после 5 попыток. Проверьте подключение.")
-    return False
 
 def main():
     logger.info("Запуск основного процесса установки Tor.")
