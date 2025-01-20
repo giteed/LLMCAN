@@ -10,12 +10,19 @@ import subprocess
 import os
 import json
 import time
-from settings import BASE_DIR, LLM_API_URL, LOG_LEVEL
+#from settings import BASE_DIR, LLM_API_URL, LOG_LEVEL
 from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_language
 from preprocess_query import preprocess_query, handle_command, ENV_FILE
 from agents.install_tor import restart_tor_and_check_ddgr
 from agents.colors import Colors
 from cognitive_logic import print_message, process_search_results
+
+
+project_root = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(project_root))
+
+from LLMCAN.settings import BASE_DIR, LLM_API_URL, LOG_LEVEL
+
 
 # Установка логирования
 logger = logging.getLogger(__name__)
