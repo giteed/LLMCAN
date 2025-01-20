@@ -37,14 +37,27 @@ if ENV_FILE.exists():
                 DEFAULT_LOG_LEVEL = line.strip().split("=")[1]
                 break
 
-logging.basicConfig(level=getattr(logging, DEFAULT_LOG_LEVEL, logging.INFO),
-                    format="%(asctime)s - %(levelname)s - %(message)s")
+# Настраиваем логирование
 logger = logging.getLogger(__name__)
+logger.setLevel(getattr(logging, DEFAULT_LOG_LEVEL, logging.INFO))
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Консольный обработчик
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+# Файловый обработчик
+log_dir = BASE_DIR / 'logs'
+log_dir.mkdir(parents=True, exist_ok=True)
+file_handler = logging.FileHandler(log_dir / f'cognitive_agent_{time.strftime("%Y%m%d")}.log', encoding='utf-8')
+file_handler.setFormatter(formatter)
+file_handler.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
 
 # Глобальная переменная для режима TOR
 USE_TOR = True
 MAX_RETRIES = 3  # Максимальное количество попыток для запросов
-
 
 
 def check_tor_installation():
@@ -54,6 +67,7 @@ def check_tor_installation():
     except FileNotFoundError:
         print(f"{Colors.RED}torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
         return False
+
 
 def print_header():
     print(f"{Colors.CYAN}{Colors.BOLD}")
@@ -82,7 +96,7 @@ def get_multiline_input():
         lines.append(line)
     return " ".join(lines)
 
-    
+
 def perform_search(queries, use_tor):
     """
     Выполняет поисковые запросы с использованием ddgr через TOR или напрямую.
@@ -115,7 +129,6 @@ def perform_search(queries, use_tor):
             results.append(None)
     logger.debug(f"Total results: {len(results)} for queries: {queries}")
     return results
-
 
 
 def main():
@@ -164,6 +177,7 @@ def main():
         logger.warning("KeyboardInterrupt detected. Saving dialog history and exiting.")
         print(f"{Colors.RED}\nСеанс прерван пользователем. История сохранена.{Colors.RESET}")
         save_dialog_history(dialog_history)
+
 
 if __name__ == "__main__":
     main()
