@@ -18,6 +18,7 @@ import time
 import uuid
 import socket
 import socks
+import pprint
 import readline
 
 from settings import BASE_DIR, LLM_API_URL, LOGGING_CONFIG
@@ -163,7 +164,6 @@ def handle_command(command, use_tor):
     return use_tor
 
 
-import pprint
 
 def query_llm(prompt, include_history=True):
     """
