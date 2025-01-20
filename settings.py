@@ -28,8 +28,6 @@ PROJECT_DIR = BASE_DIR  # Путь к директории LLMCAN
 # URL для API LLM модели
 LLM_API_URL = "http://10.67.67.2:11434/api/generate"
 
-# Другие настройки проекта
-LOG_LEVEL = "DEBUG"
+# Логирование
+LOG_LEVEL = "DEBUG"  # Установите уровень логирования ("DEBUG", "INFO", "WARNING", "ERROR")
 LOG_FILE_PATH = PROJECT_DIR / "logs" / "llmcan.log"
-
-# Добавьте здесь другие необходимые настройки вашего проекта
