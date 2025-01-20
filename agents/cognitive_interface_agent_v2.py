@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.9.7
+# Версия: 2.9.8
 # ==================================================
 
 import sys
@@ -22,14 +22,13 @@ sys.path.insert(0, str(project_root))
 from settings import BASE_DIR, LLM_API_URL
 from agents.install_tor import restart_tor_and_check_ddgr
 from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_language
-from agents.colors import Colors  # Используем Colors из внешнего файла
+from agents.colors import Colors
 from cognitive_logic import print_message, process_search_results
 from preprocess_query import preprocess_query, handle_command, show_help, set_log_level, ENV_FILE
 
 # Настройка логирования
 DEFAULT_LOG_LEVEL = "INFO"
 
-# Загрузка уровня логирования из .env
 if ENV_FILE.exists():
     with open(ENV_FILE, "r") as file:
         for line in file:
@@ -89,7 +88,7 @@ def get_multiline_input():
     while True:
         line = input(f"{Colors.CYAN}Вы: {Colors.RESET}").strip()
         if line.startswith(("/", ".")):
-            USE_TOR = handle_command(line, USE_TOR)  # Передача USE_TOR как аргумента
+            USE_TOR = handle_command(line, USE_TOR)
             continue
         if line == "":
             break
@@ -110,9 +109,9 @@ def perform_search(queries, use_tor):
             try:
                 output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT)
                 logger.debug(f"Search output for query '{query}': {output[:500]}")
-                if output.strip():  # Проверяем, есть ли данные в выводе
+                if output.strip():
                     results.extend(json.loads(output))
-                break  # Успешное выполнение команды
+                break
             except subprocess.CalledProcessError as e:
                 logger.error(f"Search command failed with CalledProcessError: {e.output}")
             except json.JSONDecodeError as e:
@@ -123,7 +122,7 @@ def perform_search(queries, use_tor):
             if use_tor:
                 logger.info("Restarting TOR and trying again.")
                 restart_tor_and_check_ddgr()
-            time.sleep(1)  # Задержка перед повтором
+            time.sleep(1)
         else:
             logger.error(f"Failed to complete search for query: {query} after {MAX_RETRIES} attempts.")
             results.append(None)
@@ -140,7 +139,7 @@ def main():
         USE_TOR = False
     else:
         print(f"{Colors.BLUE}TOR готов к использованию.{Colors.RESET}")
-    print(f"{Colors.YELLOW}ℹ Режим опроса через TOR по умолчанию {'включен' if USE_TOR else 'выключен'}.{Colors.RESET}")
+        print(f"{Colors.YELLOW}ℹ Режим опроса через TOR по умолчанию {'включен' if USE_TOR else 'выключен'}.{Colors.RESET}")
 
     try:
         while True:
