@@ -9,6 +9,7 @@ import os
 import sys
 from agents.colors import Colors
 import logging
+import readline
 
 # Настройка логирования для меню
 logger = logging.getLogger(__name__)
