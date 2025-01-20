@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # agents/install_tor.py
-# Версия: 1.1.0
+# Версия: 1.1.1
 
 import os
 import subprocess
@@ -8,7 +8,13 @@ import sys
 import time
 import re
 import logging
-import requests
+import logging.config
+from pathlib import Path
+
+# Добавление пути к settings
+project_root = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(project_root))
+
 from settings import LOGGING_CONFIG
 
 # Настройка логирования
