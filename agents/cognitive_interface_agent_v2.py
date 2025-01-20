@@ -2,7 +2,7 @@
 # LLMCAN/agents/cognitive_interface_agent_v2.py
 # ==================================================
 # Когнитивный интерфейсный агент для проекта LLMCAN
-# Версия: 2.9.8
+# Версия: 2.9.9
 # ==================================================
 
 import sys
@@ -30,12 +30,8 @@ from preprocess_query import preprocess_query, handle_command, show_help, set_lo
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-# Настройка логирования
-from settings import BASE_DIR, LLM_API_URL, LOG_LEVEL  # Добавляем LOG_LEVEL из settings.py
-
-logger = logging.getLogger(__name__)
-logger.setLevel(getattr(logging, LOG_LEVEL, logging.DEBUG))  # Используем LOG_LEVEL из settings.py
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+# Используем LOG_LEVEL из settings.py
+logger.setLevel(getattr(logging, LOG_LEVEL, logging.DEBUG))
 
 if not logger.handlers:
     # Консольный обработчик
@@ -50,7 +46,6 @@ if not logger.handlers:
     file_handler.setFormatter(formatter)
     file_handler.setLevel(logging.DEBUG)
     logger.addHandler(file_handler)
-
 
 # Глобальная переменная для режима TOR
 USE_TOR = True
