@@ -70,9 +70,6 @@ def get_multiline_input():
     return " ".join(lines)
 
 def perform_search(queries, use_tor, max_retries=3):
-    """
-    Выполняет поиск для каждого запроса. Добавляет повторные попытки при ошибке.
-    """
     results = []
     for query in queries:
         logger.info(f"Начинаю обработку запроса: {query}")
@@ -82,8 +79,9 @@ def perform_search(queries, use_tor, max_retries=3):
                 command = ["torsocks", "ddgr", "--json", query] if use_tor else ["ddgr", "--json", query]
                 logger.debug(f"Выполняется команда поиска: {' '.join(command)} (попытка {retries + 1})")
                 output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT)
+                logger.debug(f"Вывод команды ddgr: {output}")
                 if output.strip():
-                    results.append(json.loads(output))
+                    results.extend(json.loads(output))
                     logger.info(f"Успешно выполнен поиск по запросу: {query}")
                 else:
                     logger.warning(f"Пустой результат для запроса: {query}")
@@ -101,7 +99,9 @@ def perform_search(queries, use_tor, max_retries=3):
         else:
             logger.error(f"Не удалось найти информацию по запросу: {query} после {max_retries} попыток.")
             results.append(None)
+    logger.debug(f"Итоговые результаты поиска: {results}")
     return results
+
 
 
 def main():
