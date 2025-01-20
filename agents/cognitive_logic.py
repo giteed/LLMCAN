@@ -56,34 +56,25 @@ def preprocess_query(user_input):
     return {"queries": queries, "instruction": instruction}
 
 def process_search_results(instruction, search_results, user_language="ru"):
-    """
-    Обрабатывает результаты поиска и формирует окончательный ответ для пользователя.
-    """
     logger.debug(f"Начинается обработка результатов поиска.")
-    logger.debug(f"Инструкция для обработки: {instruction}")
-    logger.debug(f"Полученные результаты поиска: {search_results}")
-    logger.debug(f"Язык пользователя: {user_language}")
+    logger.debug(f"Инструкция: {instruction}")
+    logger.debug(f"Сырые результаты поиска: {search_results}")
 
-    # Симуляция обработки данных. Здесь вы можете реализовать анализ результатов.
+    # Ваш существующий код обработки данных
     try:
-        # Логируем каждый результат
+        processed_results = []
         for i, result in enumerate(search_results, 1):
-            logger.debug(f"Результат {i}: {result}")
+            logger.debug(f"Обработка результата {i}: {result}")
+            processed_results.append(result.get('title', 'Нет заголовка'))
 
-        # Пример: создаём итоговый текстовый ответ
-        processed_results = "\n".join(
-            f"{i}. {result.get('title', 'Нет заголовка')} - {result.get('url', 'Нет ссылки')}"
-            for i, result in enumerate(search_results, 1)
-            if isinstance(result, dict)
-        )
-        logger.debug(f"Сформированный текст ответа: {processed_results}")
+        logger.debug(f"Обработанные результаты: {processed_results}")
 
-        # Итоговый текстовый ответ
-        response = f"### Результаты поиска:\n{processed_results}"
+        response = f"### Результаты поиска:\n" + "\n".join(processed_results)
         return response
     except Exception as e:
-        logger.error(f"Ошибка обработки результатов поиска: {e}")
-        return "Извините, произошла ошибка при обработке данных."
+        logger.error(f"Ошибка обработки результатов: {e}")
+        return "Ошибка при обработке данных."
+
 
 
 def print_message(role, message):
