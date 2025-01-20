@@ -194,14 +194,14 @@ def query_llm(prompt, include_history=True):
             "done_reason": response_data.get("done_reason", "Неизвестно")
         }
 
-        # Логируем данные в одну строку
+        # Логируем данные в компактном формате
         logger.debug(f"Фильтрованный ответ от LLM: {filtered_response}")
 
-        # Красивый вывод в консоль
-        print("\nФильтрованный ответ от LLM (читаемая версия):")
-        pretty_print(filtered_response)
+        # Выводим только поле "response" в консоль в оригинальном формате
+        print("\nОтвет модели:")
+        print(response_data.get("response", "<Нет ответа>"))
 
-        # Возвращаем только ключевой ответ
+        # Возвращаем только ключевую часть ответа
         return response_data.get("response", "<Нет ответа>")
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
@@ -209,6 +209,7 @@ def query_llm(prompt, include_history=True):
     except json.JSONDecodeError as e:
         logger.error(f"Ошибка декодирования JSON: {e}")
         return None
+
 
 
 
