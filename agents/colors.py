@@ -1,4 +1,13 @@
-# colors.py
+#!/usr/bin/env python3
+# Путь: ./agents/colors.py
+# Версия: 1.2.0
+# Назначение: Поддержка цветов для консольного вывода.
+# Описание: Модуль определяет ANSI коды цветов, функции для применения цветов и стилизации сообщений.
+
+import logging
+
+# Подключение логгера
+logger = logging.getLogger(__name__)
 
 class Colors:
     # Основные цвета
@@ -53,31 +62,23 @@ class Colors:
             style += Colors.BOLD
         if underline:
             style += Colors.UNDERLINE
-        return f"{style}{color}{message}{Colors.RESET}"
+        formatted_message = f"{style}{color}{message}{Colors.RESET}"
+        logger.debug(f"Formatted message: {formatted_message}")
+        return formatted_message
 
     @staticmethod
     def print_with_divider(message, divider=HORIZONTAL_LINE):
         """Печатает сообщение с разделителем."""
+        logger.info(f"Printing message with divider: {divider}")
         print(divider)
         print(message)
         print(divider)
 
 
-
-
-
-
-
-
-
 # Пример использования
 if __name__ == "__main__":
-    # Примеры использования серого цвета
-    print(Colors.format_message(Colors.GRAY, "Это светло-серое сообщение."))
-    print(Colors.format_message(Colors.DARK_GRAY, "Это темно-серое сообщение."))
-
-# Пример использования
-if __name__ == "__main__":
+    logger.info("Запуск тестов модуля Colors.")
+    
     # 1. Простое сообщение в зеленом цвете
     print(Colors.format_message(Colors.GREEN, "1. Это зеленое сообщение!", bold=True))
 
@@ -111,7 +112,7 @@ if __name__ == "__main__":
     # 11. Сообщение с огнем
     print(f"{Colors.RED}11. Внимание! {Colors.FIRE} Это сообщение с огнем!{Colors.RESET}")
 
-        # 12. Сообщение с звездой
+    # 12. Сообщение с звездой
     print(f"{Colors.YELLOW}12. Поздравляем! {Colors.STAR} Вы выиграли приз!{Colors.RESET}")
 
     # 13. Сообщение с разделителем из звездочек
