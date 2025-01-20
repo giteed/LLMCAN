@@ -46,7 +46,7 @@ LOGGING_CONFIG = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'default',
-            'level': logging.DEBUG,
+            'level': logging.ERROR,
         },
         'file': {
             'class': 'logging.FileHandler',
