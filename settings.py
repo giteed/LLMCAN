@@ -19,7 +19,10 @@
 #
 # Версия: 1.2 (2025-01-09)
 
+# settings.py
+
 from pathlib import Path
+import os
 
 # Определяем базовый путь к корню проекта LLMCAN
 BASE_DIR = Path(__file__).resolve().parent
@@ -29,5 +32,6 @@ PROJECT_DIR = BASE_DIR  # Путь к директории LLMCAN
 LLM_API_URL = "http://10.67.67.2:11434/api/generate"
 
 # Логирование
-LOG_LEVEL = "DEBUG"  # Установите уровень логирования ("DEBUG", "INFO", "WARNING", "ERROR")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()  # Загружаем из .env, если не найдено, используем INFO
 LOG_FILE_PATH = PROJECT_DIR / "logs" / "llmcan.log"
+
