@@ -153,11 +153,11 @@ def handle_command(command, use_tor):
         levels = {
             "/debug": logging.DEBUG,
             "/d": logging.DEBUG,
+            ".дебаг": logging.DEBUG,
             "/info": logging.INFO,
             "/i": logging.INFO,
             "/error": logging.ERROR,
             "/e": logging.ERROR,
-            ".дебаг": logging.DEBUG,
             ".инфо": logging.INFO,
             ".ошибка": logging.ERROR,
         }
