@@ -2,23 +2,15 @@
 # LLMCAN/agents/menu.py
 # ==================================================
 # Главное меню для проекта LLMCAN
-# Версия: 1.0.1
+# Версия: 1.0.2
 # ==================================================
 
 import os
 import sys
 from agents.colors import Colors
 import logging
-import readline
 
-from pathlib import Path
-import subprocess
-import json
-import time
-import re
-
-
-# Настройка логгирования
+# Настройка логирования для меню
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.WARNING)
 
@@ -33,19 +25,17 @@ SCRIPTS = {
 
 def show_menu():
     print(f"{Colors.CYAN}\n=== Главное меню LLMCAN ==={Colors.RESET}")
-    print(f"{Colors.GREEN}1.{Colors.RESET} Запустить cognitive_interface_agent_v2.py")
-    print(f"{Colors.GREEN}2.{Colors.RESET} Запустить cognitive_interface_agent.py")
-    print(f"{Colors.GREEN}3.{Colors.RESET} Запустить chat_with_ddgr_context.py")
-    print(f"{Colors.GREEN}4.{Colors.RESET} Запустить ddgr_agent.py")
-    print(f"{Colors.GREEN}5.{Colors.RESET} Запустить install_tor.py")
+    for key, script in SCRIPTS.items():
+        print(f"{Colors.GREEN}{key}.{Colors.RESET} Запустить {script}")
     print(f"{Colors.RED}q или exit{Colors.RESET} - Выйти из программы\n")
 
 def execute_script(choice):
     script_path = SCRIPTS.get(choice)
     if script_path:
+        log_level = os.getenv("LOG_LEVEL", "INFO")
         print(f"{Colors.YELLOW}[INFO] Запуск: {script_path}{Colors.RESET}")
         try:
-            os.system(f"python3 {script_path}")
+            os.system(f"python3 {script_path} --log-level={log_level}")
         except Exception as e:
             print(f"{Colors.RED}[ERROR] Не удалось запустить {script_path}: {e}{Colors.RESET}")
     else:
@@ -56,7 +46,7 @@ if __name__ == "__main__":
         while True:
             show_menu()
             choice = input(f"{Colors.CYAN}Выберите действие (1-5, q/exit): {Colors.RESET}").strip().lower()
-            if choice in ["q", "exit", "й", ".й"]:
+            if choice in ["q", "exit"]:
                 print(f"{Colors.GREEN}\n[INFO] Выход из программы. До свидания!{Colors.RESET}")
                 sys.exit(0)
             else:
@@ -64,4 +54,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         logger.warning("KeyboardInterrupt detected. Exiting.")
         print(f"{Colors.RED}\nСеанс прерван пользователем.{Colors.RESET}")
-        sys.exit(0)  # Завершение программы с кодом 0 (успешно)
+        sys.exit(0)
