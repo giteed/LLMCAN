@@ -70,7 +70,14 @@ def get_multiline_input():
     return " ".join(lines)
 
 def perform_search(queries, use_tor, max_retries=3):
+    """
+    Выполняет поиск для каждого запроса. Добавляет повторные попытки при ошибке.
+    """
     results = []
+    if not queries:
+        logger.warning("Список запросов пуст. Поиск не будет выполнен.")
+        return results
+
     for query in queries:
         logger.info(f"Начинаю обработку запроса: {query}")
         retries = 0
@@ -99,7 +106,11 @@ def perform_search(queries, use_tor, max_retries=3):
         else:
             logger.error(f"Не удалось найти информацию по запросу: {query} после {max_retries} попыток.")
             results.append(None)
-    logger.debug(f"Итоговые результаты поиска: {results}")
+
+    if not any(results):
+        logger.warning("Все поисковые запросы вернули пустые результаты.")
+    else:
+        logger.debug(f"Итоговые результаты поиска: {results}")
     return results
 
 
