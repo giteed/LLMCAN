@@ -148,16 +148,35 @@ def preprocess_query(user_input):
     logger.info("Запрос успешно обработан.")
     return preprocessed
 
-def query_llm(prompt):
+def query_llm(prompt, include_history=True):
     """
-    Выполняет запрос к LLM.
+    Выполняет запрос к LLM и возвращает ответ.
     """
-    logger.info("Выполнение запроса к LLM.")
-    payload = {"model": MODEL, "prompt": prompt}
+    global dialog_history
+    
+    current_datetime = get_current_datetime()
+    if include_history:
+        context = "\n".join([f"{entry['role']}: {entry['content']}" for entry in dialog_history[-5:]])
+        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{context}\n\nСистемная инструкция: {generate_system_instruction(dialog_history)}\n\nТекущий запрос: {prompt}"
+    else:
+        full_prompt = f"Текущая дата и время: {current_datetime}\n\n{prompt}"
+
+    payload = {
+        "model": MODEL,
+        "prompt": full_prompt,
+        "stream": False
+    }
+
     try:
-        response = requests.post(LLM_API_URL, json=payload)
+        response = requests.post(LLM_API_URL, json=payload, timeout=10)
         response.raise_for_status()
-        return response.json().get("response", "")
+        logger.debug(f"Сырой ответ от LLM: {response.text}")
+        return json.loads(response.text)  # Пытаемся декодировать JSON
+    except json.JSONDecodeError as e:
+        logger.error(f"Ошибка декодирования JSON-ответа от LLM: {e}")
+        logger.error(f"Ответ сервера: {response.text[:200]}")  # Логируем первые 200 символов ответа
+        return None
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к LLM: {e}")
         return None
+
