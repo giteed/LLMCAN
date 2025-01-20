@@ -41,8 +41,13 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
 # Установка уровня логирования из настроек
-resolved_log_level = getattr(logging, LOG_LEVEL.upper(), logging.INFO)
-logger.setLevel(resolved_log_level)
+try:
+    resolved_log_level = getattr(logging, LOG_LEVEL, logging.INFO)
+    logger.setLevel(resolved_log_level)
+except AttributeError:
+    logger.error(f"Некорректное значение LOG_LEVEL: {LOG_LEVEL}. Используется уровень INFO.")
+    logger.setLevel(logging.INFO)
+
 
 # Глобальная переменная для режима TOR
 USE_TOR = True
