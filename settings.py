@@ -19,10 +19,10 @@
 #
 # Версия: 1.2 (2025-01-09)
 
-# settings.py
-
-from pathlib import Path
+import logging
 import os
+from pathlib import Path
+
 
 # Определяем базовый путь к корню проекта LLMCAN
 BASE_DIR = Path(__file__).resolve().parent
@@ -31,7 +31,44 @@ PROJECT_DIR = BASE_DIR  # Путь к директории LLMCAN
 # URL для API LLM модели
 LLM_API_URL = "http://10.67.67.2:11434/api/generate"
 
-# Логирование
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()  # Загружаем из .env, если не найдено, используем INFO
-LOG_FILE_PATH = PROJECT_DIR / "logs" / "llmcan.log"
+# Указать путь для логов
+LOG_FILE_PATH = os.getenv("LLMCAN_LOG_PATH", "./data/logs/llmcan.log")
 
+# Конфигурация логирования
+LOGGING_CONFIG = {
+    'version': 1,
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+            'level': logging.DEBUG,
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'formatter': 'default',
+            'filename': LOG_FILE_PATH,
+            'level': logging.DEBUG,
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': logging.DEBUG,
+    },
+}
+
+# Применение конфигурации
+logging.config.dictConfig(LOGGING_CONFIG)
+
+# Указание уровня логирования для дополнительных модулей
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+# Проверка логгера
+if __name__ == "__main__":
+    logger = logging.getLogger(__name__)
+    logger.info("Логирование успешно настроено.")
