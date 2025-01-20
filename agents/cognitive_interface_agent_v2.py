@@ -146,6 +146,9 @@ def main():
 
                 logger.info("Попытка выполнения поиска.")
                 search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
+                print("\n### Данные для передачи в модель ###")
+                print(f"Инструкция для обработки: {preprocessed['instruction']}")
+                print(f"Результаты поиска: {search_results}")
 
                 # Обязательный вывод перед отправкой в модель
                 print("\n### Данные для передачи в модель ###")
