@@ -19,7 +19,7 @@ import re
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
-from settings import BASE_DIR, LLM_API_URL
+from settings import BASE_DIR, LLM_API_URL, LOG_LEVEL
 from agents.install_tor import restart_tor_and_check_ddgr
 from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_language
 from agents.colors import Colors
@@ -27,24 +27,17 @@ from cognitive_logic import print_message, process_search_results
 from preprocess_query import preprocess_query, handle_command, show_help, set_log_level, ENV_FILE
 
 # Настройка логирования
-DEFAULT_LOG_LEVEL = "DEBUG"
-
-if ENV_FILE.exists():
-    with open(ENV_FILE, "r") as file:
-        for line in file:
-            if line.startswith("LOG_LEVEL"):
-                DEFAULT_LOG_LEVEL = line.strip().split("=")[1]
-                break
-
-# Настройка логирования
 logger = logging.getLogger(__name__)
-logger.setLevel(getattr(logging, DEFAULT_LOG_LEVEL, logging.INFO))
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Установим уровень логирования из settings.py
+logger.setLevel(getattr(logging, LOG_LEVEL, logging.INFO))
 
 if not logger.handlers:
     # Консольный обработчик
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
+    console_handler.setLevel(getattr(logging, LOG_LEVEL, logging.INFO))
     logger.addHandler(console_handler)
 
     # Файловый обработчик
@@ -54,7 +47,6 @@ if not logger.handlers:
     file_handler.setFormatter(formatter)
     file_handler.setLevel(logging.DEBUG)
     logger.addHandler(file_handler)
-
 
 # Глобальная переменная для режима TOR
 USE_TOR = True
