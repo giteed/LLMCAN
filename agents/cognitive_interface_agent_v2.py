@@ -1,54 +1,49 @@
 #!/usr/bin/env python3
 # LLMCAN/agents/cognitive_interface_agent_v2.py
-# ==================================================
-# Когнитивный интерфейсный агент для проекта LLMCAN
 # Версия: 2.9.9
 # ==================================================
 
 import sys
 from pathlib import Path
-import readline
-import subprocess
 import logging
+import subprocess
 import os
 import json
 import time
-import re
-
-# Добавляем корневую директорию проекта в sys.path
-project_root = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(project_root))
-
 from settings import BASE_DIR, LLM_API_URL, LOG_LEVEL
-from agents.install_tor import restart_tor_and_check_ddgr
 from agents.data_management import append_to_dialog_history, save_dialog_history, load_dialog_history, detect_language
+from preprocess_query import preprocess_query, handle_command, ENV_FILE
+from agents.install_tor import restart_tor_and_check_ddgr
 from agents.colors import Colors
 from cognitive_logic import print_message, process_search_results
-from preprocess_query import preprocess_query, handle_command, show_help, set_log_level, ENV_FILE
 
-# Настройка логирования
+# Установка логирования
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-logger.setLevel(getattr(logging, LOG_LEVEL, logging.DEBUG))
+log_dir = BASE_DIR / 'logs'
+log_dir.mkdir(parents=True, exist_ok=True)
+file_handler = logging.FileHandler(log_dir / f'cognitive_agent_{time.strftime("%Y%m%d")}.log', encoding='utf-8')
+file_handler.setFormatter(formatter)
+file_handler.setLevel(logging.DEBUG)
 
-if not logger.handlers:
-    # Консольный обработчик
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
 
-    # Файловый обработчик
-    log_dir = BASE_DIR / 'logs'
-    log_dir.mkdir(parents=True, exist_ok=True)
-    file_handler = logging.FileHandler(log_dir / f'cognitive_agent_{time.strftime("%Y%m%d")}.log', encoding='utf-8')
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(logging.DEBUG)
-    logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+
+# Установка уровня логирования из настроек
+try:
+    resolved_log_level = getattr(logging, LOG_LEVEL.upper(), logging.INFO)
+    logger.setLevel(resolved_log_level)
+except AttributeError:
+    logger.error(f"Некорректное значение LOG_LEVEL: {LOG_LEVEL}. Используется уровень INFO.")
+    logger.setLevel(logging.INFO)
 
 # Глобальная переменная для режима TOR
 USE_TOR = True
-MAX_RETRIES = 3  # Максимальное количество попыток для запросов
+MAX_RETRIES = 3
 
 def check_tor_installation():
     try:
@@ -85,9 +80,6 @@ def get_multiline_input():
     return " ".join(lines)
 
 def perform_search(queries, use_tor):
-    """
-    Выполняет поисковые запросы с использованием ddgr через TOR или напрямую.
-    """
     results = []
     for query in queries:
         retries = 0
