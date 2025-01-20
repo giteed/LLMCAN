@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # agents/install_tor.py
-# Версия: 1.3.0
+# Версия: 1.4.0
 
 import os
 import subprocess
@@ -10,8 +10,7 @@ import logging
 import logging.config
 from pathlib import Path
 from itertools import cycle
-from threading import Thread
-import readline
+from threading import Event, Thread
 
 # Добавление пути к settings
 project_root = Path(__file__).resolve().parent.parent
@@ -51,7 +50,7 @@ def execute_with_progress(message, func, *args):
     """
     Выполняет функцию с индикатором прогресса.
     """
-    stop_event = Thread.Event()
+    stop_event = Event()
     loader_thread = Thread(target=progress_loader, args=(message, stop_event))
     loader_thread.start()
     try:
@@ -100,9 +99,9 @@ def configure_firewall():
     try:
         firewall_services = run_command(["firewall-cmd", "--get-services"])
         if "tor" in firewall_services:
-            run_command(["firewall-cmd", "--add-service=tor", "--permanent"])
+            logger.info("Сервис 'tor' уже существует в firewalld. Пропускаю добавление.")
         else:
-            logger.warning("Сервис 'tor' не найден в firewalld. Использую настройку порта.")
+            logger.info("Сервис 'tor' отсутствует. Настраиваю порт 9050.")
             print("Открываю порт 9050/tcp...")
             run_command(["firewall-cmd", "--add-port=9050/tcp", "--permanent"])
         run_command(["firewall-cmd", "--reload"])
