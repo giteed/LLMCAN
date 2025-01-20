@@ -27,7 +27,7 @@ from cognitive_logic import print_message, process_search_results
 from preprocess_query import preprocess_query, handle_command, show_help, set_log_level, ENV_FILE
 
 # Настройка логирования
-DEFAULT_LOG_LEVEL = "INFO"
+DEFAULT_LOG_LEVEL = "DEBUG"
 
 if ENV_FILE.exists():
     with open(ENV_FILE, "r") as file:
