@@ -26,20 +26,30 @@ from agents.colors import Colors  # Используем Colors из внешн�
 from cognitive_logic import print_message, process_search_results
 from preprocess_query import preprocess_query, handle_command, show_help, set_log_level, ENV_FILE
 
-# Настройка логирования
-DEFAULT_LOG_LEVEL = "INFO"
-
-# Загрузка уровня логирования из .env
-if ENV_FILE.exists():
-    with open(ENV_FILE, "r") as file:
-        for line in file:
-            if line.startswith("LOG_LEVEL"):
-                DEFAULT_LOG_LEVEL = line.strip().split("=")[1]
-                break
-
-logging.basicConfig(level=getattr(logging, DEFAULT_LOG_LEVEL, logging.INFO),
-                    format="%(asctime)s - %(levelname)s - %(message)s")
+# === Настройка логирования ===
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# Форматтер для логов
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Убедитесь, что директория для логов существует
+LOG_DIR.mkdir(exist_ok=True)
+
+# Проверяем, есть ли обработчики, и добавляем только при их отсутствии
+if not logger.handlers:
+    # Консольный обработчик
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    # Файловый обработчик
+    file_handler = logging.FileHandler(LOG_DIR / f'cognitive_agent_{datetime.now().strftime("%Y%m%d")}.log', encoding='utf-8')
+    file_handler.setLevel(logging.DEBUG)  # Логирование всех уровней в файл
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
 
 # Глобальная переменная для режима TOR
 USE_TOR = True
