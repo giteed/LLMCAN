@@ -216,11 +216,20 @@ def preprocess_query(user_input):
     context = f"Запрос пользователя: {user_input}\n\n{system_prompt}"
     response = query_llm(context, include_history=False)
     if response is None:
+        logger.debug("Ответ от LLM отсутствует или некорректен. Используется исходный запрос.")
         print(f"{Colors.RED}Не удалось получить ответ от LLM. Использую исходный запрос пользователя.{Colors.RESET}")
         return {"queries": [user_input], "instruction": "Обработайте результаты поиска и предоставьте краткий ответ."}
+
     preprocessed = parse_preprocessing_response(response)
     
+    if not preprocessed['queries']:
+        logger.debug("Сформированный запрос пуст. Проверьте ввод пользователя.")
+        print(f"{Colors.RED}Не удалось сформировать поисковые запросы. Проверьте ввод.{Colors.RESET}")
+        return {"queries": [user_input], "instruction": "Обработайте результаты поиска и предоставьте краткий ответ."}
+
+    logger.info(f"Запрос обработан. Сформировано {len(preprocessed['queries'])} поисковых запросов.")
     print(f"{Colors.YELLOW}Анализ завершен. Сформированы следующие запросы:{Colors.RESET}")
     for i, query in enumerate(preprocessed['queries'], 1):
         print(f"{Colors.YELLOW}{i}. {query}{Colors.RESET}")
+
     return preprocessed
