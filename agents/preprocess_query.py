@@ -178,24 +178,28 @@ def query_llm(prompt, include_history=True):
         response = requests.post(LLM_API_URL, json=payload, timeout=10)
         response.raise_for_status()
 
-        # Парсим JSON и фильтруем данные
-        try:
-            response_data = response.json()
-            filtered_response = {
-                "response": response_data.get("response", "<Нет ответа>"),
-                "done_reason": response_data.get("done_reason", "Неизвестно")
-            }
-            logger.debug(f"Фильтрованный ответ от LLM: {filtered_response}")
-        except json.JSONDecodeError as e:
-            logger.error(f"Ошибка декодирования JSON: {e}")
-            return None
+        # Декодируем JSON и фильтруем данные
+        response_data = response.json()
+        filtered_response = {
+            "response": response_data.get("response", "<Нет ответа>"),
+            "done_reason": response_data.get("done_reason", "Неизвестно")
+        }
+
+        # Логируем отфильтрованные данные в одну строку
+        logger.debug(f"Фильтрованный ответ от LLM: {filtered_response}")
+
+        # Выводим в консоль с форматированием для удобства чтения
+        print("\nФильтрованный ответ от LLM (читаемая версия):")
+        print(json.dumps(filtered_response, ensure_ascii=False, indent=2))
 
         # Возвращаем ключевую часть ответа
         return response_data.get("response", "<Нет ответа>")
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
-
+    except json.JSONDecodeError as e:
+        logger.error(f"Ошибка декодирования JSON: {e}")
+        return None
 
 
 def preprocess_query(user_input):
@@ -227,8 +231,11 @@ def preprocess_query(user_input):
         return {"queries": [user_input], "instruction": "Обработайте результаты поиска и предоставьте краткий ответ."}
 
     logger.info(f"Запрос обработан. Сформировано {len(preprocessed['queries'])} поисковых запросов.")
-    print(f"{Colors.YELLOW}Анализ завершен. Сформированы следующие запросы:{Colors.RESET}")
+
+    # Добавляем пропуск строки для читаемости
+    print("\nАнализ завершен. Сформированы следующие запросы:")
     for i, query in enumerate(preprocessed['queries'], 1):
         print(f"{Colors.YELLOW}{i}. {query}{Colors.RESET}")
 
     return preprocessed
+
