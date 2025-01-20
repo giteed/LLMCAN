@@ -56,24 +56,32 @@ def preprocess_query(user_input):
     return {"queries": queries, "instruction": instruction}
 
 def process_search_results(instruction, search_results, user_language="ru"):
-    logger.debug(f"Начинается обработка результатов поиска.")
-    logger.debug(f"Инструкция: {instruction}")
-    logger.debug(f"Сырые результаты поиска: {search_results}")
+    """
+    Обрабатывает результаты поиска и формирует окончательный ответ для пользователя.
+    """
+    logger.debug("Начинается обработка данных для модели.")
+    logger.debug(f"Инструкция для обработки данных: {instruction}")
+    logger.debug(f"Сырые результаты поиска перед анализом: {search_results}")
+    logger.debug(f"Язык пользователя: {user_language}")
 
-    # Ваш существующий код обработки данных
     try:
-        processed_results = []
-        for i, result in enumerate(search_results, 1):
-            logger.debug(f"Обработка результата {i}: {result}")
-            processed_results.append(result.get('title', 'Нет заголовка'))
+        # Пример обработки: собираем заголовки и ссылки
+        processed_results = [
+            f"{i + 1}. {result.get('title', 'Нет заголовка')} - {result.get('url', 'Нет ссылки')}"
+            for i, result in enumerate(search_results)
+            if isinstance(result, dict)
+        ]
 
-        logger.debug(f"Обработанные результаты: {processed_results}")
+        logger.debug(f"Обработанные данные для формирования ответа: {processed_results}")
 
         response = f"### Результаты поиска:\n" + "\n".join(processed_results)
+        logger.debug(f"Формируемый текст для модели: {response}")
+
         return response
     except Exception as e:
-        logger.error(f"Ошибка обработки результатов: {e}")
+        logger.error(f"Ошибка при обработке результатов: {e}")
         return "Ошибка при обработке данных."
+
 
 
 
