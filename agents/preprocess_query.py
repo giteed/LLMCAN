@@ -93,6 +93,7 @@ def set_log_level(level):
 
 
 
+
 def show_help():
     print(f"{Colors.CYAN}Доступные команды:{Colors.RESET}")
     print(f"  {Colors.CYAN}/help, /h{Colors.RESET} - показать эту справку")
