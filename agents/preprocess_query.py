@@ -177,8 +177,14 @@ def query_llm(prompt, include_history=True):
     try:
         response = requests.post(LLM_API_URL, json=payload, timeout=10)
         response.raise_for_status()
-        logger.debug(f"Ответ от LLM: {response.text}")
-        return response.json().get("response", "<Нет ответа>")
+        # Сырой ответ логируем для отладки
+        logger.debug(f"Сырой ответ от LLM: {response.text}")
+        
+        # Декодируем JSON и логируем только нужные данные
+        response_data = response.json()
+        logger.debug(f"Ответ модели: {response_data.get('response', '<Нет ответа>')} (Причина завершения: {response_data.get('done_reason', 'Неизвестно')})")
+
+        return response_data.get("response", "<Нет ответа>")
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
