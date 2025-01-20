@@ -186,7 +186,25 @@ def preprocess_user_query(user_input):
     Обрабатывает пользовательский запрос и добавляет текущую дату и время, если требуется.
     """
     # Ключевые слова, указывающие на необходимость вставки даты или времени
-    keywords = ["сегодня", "today", "сейчас", "now", "время", "time", "дата", "date"]
+
+    keywords = [
+    "сегодня", "today",
+    "сейчас", "now",
+    "время", "time",
+    "дата", "date",
+    "завтра", "tomorrow",
+    "вчера", "yesterday",
+    "неделя", "week",
+    "месяц", "month",
+    "год", "year",
+    "час", "hour",
+    "минуты", "minutes",
+    "секунды", "seconds",
+    "время суток", "time of day",
+    "прошлый", "past",
+    "будущий", "future"
+]
+    
     if any(keyword in user_input.lower() for keyword in keywords):
         current_datetime = get_current_datetime()
         user_input += f"\n\nТекущая дата и время: {current_datetime}"
