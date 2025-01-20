@@ -165,6 +165,13 @@ def handle_command(command, use_tor):
 
 
 
+def pretty_print(data):
+    """
+    Выводит данные в читаемом формате в консоли.
+    """
+    print(json.dumps(data, ensure_ascii=False, indent=2, separators=(',', ': ')))
+
+
 def query_llm(prompt, include_history=True):
     """
     Выполняет запрос к LLM и возвращает отфильтрованный ответ.
@@ -187,14 +194,14 @@ def query_llm(prompt, include_history=True):
             "done_reason": response_data.get("done_reason", "Неизвестно")
         }
 
-        # Логируем отфильтрованные данные в одну строку
+        # Логируем данные в одну строку
         logger.debug(f"Фильтрованный ответ от LLM: {filtered_response}")
 
-        # Выводим в консоль читаемый формат
+        # Красивый вывод в консоль
         print("\nФильтрованный ответ от LLM (читаемая версия):")
-        pprint.pprint(filtered_response, indent=2, width=80)
+        pretty_print(filtered_response)
 
-        # Возвращаем ключевую часть ответа
+        # Возвращаем только ключевой ответ
         return response_data.get("response", "<Нет ответа>")
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
@@ -202,6 +209,7 @@ def query_llm(prompt, include_history=True):
     except json.JSONDecodeError as e:
         logger.error(f"Ошибка декодирования JSON: {e}")
         return None
+
 
 
 def preprocess_query(user_input):
