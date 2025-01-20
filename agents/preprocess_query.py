@@ -68,10 +68,14 @@ def set_log_level(level):
     """
     Устанавливает уровень логирования для всех обработчиков.
     """
+    # Устанавливаем уровень логирования для основного логгера
     logger.setLevel(level)
+    
+    # Обновляем уровень логирования для всех обработчиков
     for handler in logger.handlers:
         handler.setLevel(level)
 
+    # Генерируем сообщение о текущем уровне логирования
     level_name = logging.getLevelName(level)
     if level == logging.DEBUG:
         print(f"{Colors.YELLOW}Уровень логирования установлен на DEBUG.{Colors.RESET}")
@@ -82,7 +86,9 @@ def set_log_level(level):
     else:
         print(f"{Colors.CYAN}Уровень логирования установлен на {Colors.BOLD}{level_name}{Colors.RESET}")
 
+    # Выводим сообщение уровня DEBUG, если уровень установлен корректно
     logger.debug(f"Текущий уровень логирования: {level_name}")
+
 
 
 
