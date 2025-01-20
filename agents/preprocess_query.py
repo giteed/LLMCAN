@@ -163,6 +163,8 @@ def handle_command(command, use_tor):
     return use_tor
 
 
+import pprint
+
 def query_llm(prompt, include_history=True):
     """
     Выполняет запрос к LLM и возвращает отфильтрованный ответ.
@@ -188,9 +190,9 @@ def query_llm(prompt, include_history=True):
         # Логируем отфильтрованные данные в одну строку
         logger.debug(f"Фильтрованный ответ от LLM: {filtered_response}")
 
-        # Выводим в консоль с форматированием для удобства чтения
+        # Выводим в консоль читаемый формат
         print("\nФильтрованный ответ от LLM (читаемая версия):")
-        print(json.dumps(filtered_response, ensure_ascii=False, indent=2))
+        pprint.pprint(filtered_response, indent=2, width=80)
 
         # Возвращаем ключевую часть ответа
         return response_data.get("response", "<Нет ответа>")
