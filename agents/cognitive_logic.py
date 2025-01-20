@@ -55,37 +55,35 @@ def preprocess_query(user_input):
     logger.debug(f"Generated queries: {queries}, Instruction: {instruction}")
     return {"queries": queries, "instruction": instruction}
 
-def process_search_results(instruction, search_results, user_language):
+def process_search_results(instruction, search_results, user_language="ru"):
     """
-    Обрабатывает результаты поиска и возвращает сформулированный ответ.
-    
-    Args:
-        instruction (str): Инструкция для обработки.
-        search_results (list): Список результатов поиска.
-        user_language (str): Язык пользователя ('ru' или 'en').
-    
-    Returns:
-        str: Сформулированный ответ.
+    Обрабатывает результаты поиска и формирует окончательный ответ для пользователя.
     """
+    logger.debug(f"Начинается обработка результатов поиска.")
+    logger.debug(f"Инструкция для обработки: {instruction}")
+    logger.debug(f"Полученные результаты поиска: {search_results}")
+    logger.debug(f"Язык пользователя: {user_language}")
+
+    # Симуляция обработки данных. Здесь вы можете реализовать анализ результатов.
     try:
-        if not search_results:
-            return "Результаты поиска отсутствуют." if user_language == 'ru' else "No search results found."
+        # Логируем каждый результат
+        for i, result in enumerate(search_results, 1):
+            logger.debug(f"Результат {i}: {result}")
 
-        # Формирование ответа
-        response = []
-        for i, result in enumerate(search_results[:10], start=1):
-            title = result.get("title", "Без названия") if user_language == 'ru' else result.get("title", "No title")
-            url = result.get("url", "URL отсутствует") if user_language == 'ru' else result.get("url", "URL missing")
-            response.append(f"{i}. {title} - {url}")
+        # Пример: создаём итоговый текстовый ответ
+        processed_results = "\n".join(
+            f"{i}. {result.get('title', 'Нет заголовка')} - {result.get('url', 'Нет ссылки')}"
+            for i, result in enumerate(search_results, 1)
+            if isinstance(result, dict)
+        )
+        logger.debug(f"Сформированный текст ответа: {processed_results}")
 
-        formatted_response = "\n".join(response)
-        if user_language == 'ru':
-            return f"Обработанные результаты:\n{formatted_response}"
-        else:
-            return f"Processed results:\n{formatted_response}"
+        # Итоговый текстовый ответ
+        response = f"### Результаты поиска:\n{processed_results}"
+        return response
     except Exception as e:
-        logger.error(f"Ошибка обработки результатов: {e}")
-        return "Ошибка обработки данных." if user_language == 'ru' else "Error processing data."
+        logger.error(f"Ошибка обработки результатов поиска: {e}")
+        return "Извините, произошла ошибка при обработке данных."
 
 
 def print_message(role, message):
