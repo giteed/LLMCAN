@@ -133,7 +133,10 @@ def main():
                 preprocessed = preprocess_query(user_input)
                 logger.debug(f"Предобработанный запрос: {preprocessed}")
 
+                logger.info("Попытка выполнения поиска.")
                 search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
+                logger.debug(f"Результаты поиска: {search_results}")
+
                 if any(search_results):
                     logger.info("Информация найдена. Формируется ответ...")
                     user_language = detect_language(user_input)
@@ -162,7 +165,6 @@ def main():
             except Exception as e:
                 logger.error(f"Ошибка обработки запроса: {e}")
                 print_message("Агент", "Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте снова.")
-
     except KeyboardInterrupt:
         logger.info("Сеанс завершён пользователем.")
         print(f"{Colors.RED}\nСеанс прерван пользователем. История сохранена.{Colors.RESET}")
