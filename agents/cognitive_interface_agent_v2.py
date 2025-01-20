@@ -70,9 +70,6 @@ def get_multiline_input():
     return " ".join(lines)
 
 def perform_search(queries, use_tor, max_retries=3):
-    """
-    Выполняет поиск для каждого запроса. Добавляет повторные попытки при ошибке.
-    """
     results = []
     if not queries:
         logger.warning("Список запросов пуст. Поиск не будет выполнен.")
@@ -88,8 +85,13 @@ def perform_search(queries, use_tor, max_retries=3):
                 output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT)
                 logger.debug(f"Вывод команды ddgr: {output}")
                 if output.strip():
-                    results.extend(json.loads(output))
-                    logger.info(f"Успешно выполнен поиск по запросу: {query}")
+                    parsed_results = json.loads(output)
+                    if not isinstance(parsed_results, list):
+                        logger.error(f"Некорректный формат результата: {parsed_results}")
+                        results.append(None)
+                    else:
+                        results.extend(parsed_results)
+                        logger.info(f"Успешно выполнен поиск по запросу: {query}")
                 else:
                     logger.warning(f"Пустой результат для запроса: {query}")
                 break
@@ -107,12 +109,10 @@ def perform_search(queries, use_tor, max_retries=3):
             logger.error(f"Не удалось найти информацию по запросу: {query} после {max_retries} попыток.")
             results.append(None)
 
-    if not any(results):
-        logger.warning("Все поисковые запросы вернули пустые результаты.")
-    else:
-        logger.debug(f"Итоговые результаты поиска: {results}")
+    print("Результаты поиска:")
+    pprint.pprint(results)  # Используем pprint для читаемого вывода
+    logger.debug(f"Итоговые результаты поиска: {results}")
     return results
-
 
 
 def main():
