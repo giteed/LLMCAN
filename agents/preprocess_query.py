@@ -196,9 +196,6 @@ def query_llm(prompt, include_history=True):
     """
     Выполняет запрос к LLM и возвращает отфильтрованный ответ.
     """
-    # Предобработка пользовательского запроса
-    prompt = preprocess_user_query(prompt)
-    
     current_datetime = get_current_datetime()
     payload = {
         "model": MODEL,
@@ -217,23 +214,15 @@ def query_llm(prompt, include_history=True):
             "done_reason": response_data.get("done_reason", "Неизвестно")
         }
 
-        # Логируем данные
         logger.debug(f"Фильтрованный ответ от LLM: {filtered_response}")
-
-        # Логируем читаемую версию
-        readable_response = response_data.get("response", "<Нет ответа>")
-        if logger.isEnabledFor(logging.INFO):
-            logger.info("\nОтвет модели:\n" + readable_response)
-
-        # Возвращаем ключевую часть ответа
-        return readable_response
+        logger.info(f"Ответ модели: {response_data.get('response', '<Нет ответа>')}")
+        return response_data.get("response", "<Нет ответа>")
     except requests.RequestException as e:
         logger.error(f"Ошибка запроса к модели: {e}")
         return None
     except json.JSONDecodeError as e:
         logger.error(f"Ошибка декодирования JSON: {e}")
         return None
-
 
 
 
