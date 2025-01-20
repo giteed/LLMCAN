@@ -30,7 +30,6 @@ from preprocess_query import preprocess_query, handle_command, show_help, set_lo
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-# Используем LOG_LEVEL из settings.py
 logger.setLevel(getattr(logging, LOG_LEVEL, logging.DEBUG))
 
 if not logger.handlers:
@@ -51,7 +50,6 @@ if not logger.handlers:
 USE_TOR = True
 MAX_RETRIES = 3  # Максимальное количество попыток для запросов
 
-
 def check_tor_installation():
     try:
         subprocess.run(["torsocks", "--version"], check=True, capture_output=True)
@@ -59,7 +57,6 @@ def check_tor_installation():
     except FileNotFoundError:
         print(f"{Colors.RED}torsocks не найден. Установите его для использования TOR.{Colors.RESET}")
         return False
-
 
 def print_header():
     print(f"{Colors.CYAN}{Colors.BOLD}")
@@ -72,7 +69,6 @@ def print_header():
     print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
     print(f"{Colors.CYAN}Введите /help для справки по командам.{Colors.RESET}")
     print(f"{Colors.GRAY}----------------------------------------------{Colors.RESET}")
-
 
 def get_multiline_input():
     global USE_TOR
@@ -87,7 +83,6 @@ def get_multiline_input():
             break
         lines.append(line)
     return " ".join(lines)
-
 
 def perform_search(queries, use_tor):
     """
@@ -121,7 +116,6 @@ def perform_search(queries, use_tor):
             results.append(None)
     logger.debug(f"Total results: {len(results)} for queries: {queries}")
     return results
-
 
 def main():
     global USE_TOR
@@ -169,7 +163,6 @@ def main():
         logger.warning("KeyboardInterrupt detected. Saving dialog history and exiting.")
         print(f"{Colors.RED}\nСеанс прерван пользователем. История сохранена.{Colors.RESET}")
         save_dialog_history(dialog_history)
-
 
 if __name__ == "__main__":
     main()
