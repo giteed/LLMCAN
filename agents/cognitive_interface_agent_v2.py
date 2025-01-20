@@ -41,7 +41,7 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
 # Установка уровня логирования из настроек
-resolved_log_level = getattr(logging, LOG_LEVEL.upper(), logging.DEBUG)
+resolved_log_level = getattr(logging, LOG_LEVEL.upper(), logging.INFO)
 logger.setLevel(resolved_log_level)
 
 # Глобальная переменная для режима TOR
