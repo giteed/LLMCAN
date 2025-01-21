@@ -55,7 +55,7 @@ def preprocess_query(user_input):
     logger.debug(f"Generated queries: {queries}, Instruction: {instruction}")
     return {"queries": queries, "instruction": instruction}
 
-def process_search_results(instruction, search_results, user_language="ru"):
+def process_search_results(search_results, instruction, user_language="ru"):
     print("\n### Начинается обработка результатов ###")
     print(f"Инструкция для обработки данных: {instruction}")
     print(f"Сырые результаты поиска: {search_results}")
