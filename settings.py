@@ -32,7 +32,6 @@ PROJECT_DIR = BASE_DIR  # Путь к директории LLMCAN
 # Настройки Ollama / LLM API
 # ---------------------------
 # URL для API LLM модели
- "http://10.67.67.2:11434/api/generate"
 
 LLM_API_BASE      = "http://10.67.67.2:11434"
 LLM_API_TAGS      = f"{LLM_API_BASE}/api/tags"
