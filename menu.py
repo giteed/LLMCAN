@@ -22,6 +22,8 @@ SCRIPTS = {
     "3": "agents/chat_with_ddgr_context.py",
     "4": "agents/ddgr_agent.py",
     "5": "agents/install_tor.py",
+    "s": "settings.py",
+    
 }
 
 def show_menu():
@@ -47,7 +49,7 @@ if __name__ == "__main__":
         while True:
             show_menu()
             choice = input(f"{Colors.CYAN}Выберите действие (1-5, q/exit): {Colors.RESET}").strip().lower()
-            if choice in ["q", "exit"]:
+            if choice in ["q", "exit", ".й", "0"]:
                 print(f"{Colors.GREEN}\n[INFO] Выход из программы. До свидания!{Colors.RESET}")
                 sys.exit(0)
             else:
