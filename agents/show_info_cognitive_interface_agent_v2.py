@@ -32,14 +32,32 @@ def check_tor_ip():
         return f"{Colors.RED}Ошибка получения IP TOR: {str(e)}{Colors.RESET}"
 
 def check_llm_api_status():
-    """Проверяет доступность API LLM."""
+    """Проверяет доступность API LLM с детализацией."""
     try:
-        response = requests.get(LLM_API_URL, timeout=5)
+        base_url = "http://10.67.67.2:11434/"
+        response = requests.get(base_url, timeout=5)
         if response.status_code == 200:
-            return f"{Colors.GREEN}API доступен. Ollama работает.{Colors.RESET}"
-        return f"{Colors.YELLOW}API доступен, но вернул код {response.status_code}.{Colors.RESET}"
+            logger.info("LLM API доступен и отвечает корректно.")
+            return f"{Colors.GREEN}API доступен. Ollama работает корректно.{Colors.RESET}"
+        elif 400 <= response.status_code < 500:
+            logger.warning(f"API доступен, но вернул ошибку клиента: {response.status_code}")
+            return f"{Colors.YELLOW}API доступен, но вернул ошибку клиента: {response.status_code}{Colors.RESET}"
+        elif 500 <= response.status_code < 600:
+            logger.error(f"API доступен, но вернул ошибку сервера: {response.status_code}")
+            return f"{Colors.RED}API доступен, но вернул ошибку сервера: {response.status_code}{Colors.RESET}"
+        else:
+            logger.warning(f"API доступен, но вернул неизвестный статус: {response.status_code}")
+            return f"{Colors.YELLOW}API доступен, но вернул неизвестный статус: {response.status_code}{Colors.RESET}"
+    except requests.exceptions.Timeout:
+        logger.error("Таймаут при подключении к API.")
+        return f"{Colors.RED}API недоступен: Таймаут подключения.{Colors.RESET}"
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Ошибка подключения к API: {e}")
+        return f"{Colors.RED}API недоступен: Ошибка подключения.{Colors.RESET}"
     except Exception as e:
-        return f"{Colors.RED}Сервер недоступен: {str(e)}{Colors.RESET}"
+        logger.error(f"Общая ошибка при проверке API: {e}")
+        return f"{Colors.RED}API недоступен: {str(e)}{Colors.RESET}"
+
 
 def get_ollama_models():
     """Получает список доступных моделей Ollama."""
