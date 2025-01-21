@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # LLMCAN/agents/cognitive_interface_agent_v2.py
-# Версия: 3.1.0
+# Версия: 3.1.0 (тест)
 
 import sys
 from pathlib import Path
