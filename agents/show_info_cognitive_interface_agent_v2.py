@@ -9,6 +9,7 @@ import socket
 import requests
 from pathlib import Path
 from colors import Colors
+import requests
 from settings import LLM_API_URL
 
 def get_ip_address():
@@ -30,29 +31,38 @@ def check_tor_ip():
     except Exception as e:
         return f"{Colors.RED}Ошибка получения IP TOR: {str(e)}{Colors.RESET}"
 
+
+
+from settings import (
+    LLM_API_HEALTH,   # для check_llm_api_status
+    LLM_API_TAGS,     # для get_ollama_models
+    LLM_API_GENERATE  # для test_ollama_query
+)
+
 def check_llm_api_status():
     """Проверяет доступность API LLM."""
     try:
-        base_url = "http://10.67.67.2:11434/"
-        response = requests.get(base_url, timeout=5)
+        response = requests.get(LLM_API_HEALTH, timeout=5)
         if response.status_code == 200:
             return f"{Colors.GREEN}API доступен. Ollama работает.{Colors.RESET}"
-        return f"{Colors.YELLOW}Базовый URL доступен, но эндпоинт вернул код {response.status_code}{Colors.RESET}"
+        return (
+            f"{Colors.YELLOW}Базовый URL доступен, но эндпоинт вернул код "
+            f"{response.status_code}{Colors.RESET}"
+        )
     except Exception as e:
         return f"{Colors.RED}API недоступен: {str(e)}{Colors.RESET}"
 
 def get_ollama_models():
     """Получает список доступных моделей Ollama и форматирует их."""
     try:
-        response = requests.get(f"{LLM_API_URL}/api/tags", timeout=5)
+        # Используем LLM_API_TAGS из settings
+        response = requests.get(LLM_API_TAGS, timeout=5)
         if response.status_code == 200:
-            # Парсим тело ответа как JSON
             data = response.json()  # {'models': [ {...}, {...}, ... ] }
             models_list = data.get("models", [])
 
-            # Формируем удобный вывод
             if not models_list:
-                return f"{Colors.YELLOW}Список моделей пуст или не найден.{Colors.RESET}"
+                return f"{Colors.YELLOW}Список моделей пуст.{Colors.RESET}"
 
             lines = []
             for model_info in models_list:
@@ -60,7 +70,6 @@ def get_ollama_models():
                 size = model_info.get("size", "—")
                 modified = model_info.get("modified_at", "—")
 
-                # 'details' может быть вложенным словарём
                 details = model_info.get("details", {})
                 family = details.get("family", "—")
                 param_size = details.get("parameter_size", "—")
@@ -75,7 +84,6 @@ def get_ollama_models():
                     f"  - Изменено: {modified}\n"
                 )
 
-            # Склеиваем все блоки
             pretty_output = "\n".join(lines)
             return f"{Colors.GREEN}Список моделей Ollama:{Colors.RESET}\n{pretty_output}"
 
@@ -84,9 +92,35 @@ def get_ollama_models():
                 f"{Colors.RED}Ошибка получения моделей: "
                 f"{response.status_code}, {response.text}{Colors.RESET}"
             )
-
     except Exception as e:
         return f"{Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
+
+def test_ollama_query():
+    """Выполняет тестовый запрос к API LLM."""
+    try:
+        payload = {
+            "model": "qwen2:7b",
+            "prompt": "Hello, world!",
+            "stream": False
+        }
+        # Используем LLM_API_GENERATE из settings
+        response = requests.post(LLM_API_GENERATE, json=payload, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            model_name = payload.get("model", "—")
+            prompt_text = payload.get("prompt", "—")
+            answer_text = data.get("response", "Нет ответа")
+
+            output = (
+                f"{Colors.GREEN}Тестовый запрос к модели: {Colors.RESET}{model_name}\n"
+                f"{Colors.MAGENTA}Запрос (prompt):{Colors.RESET} {prompt_text}\n"
+                f"{Colors.CYAN}Ответ (response):{Colors.RESET} {answer_text}"
+            )
+            return output
+        else:
+            return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}{Colors.RESET}"
+    except Exception as e:
+        return f"{Colors.RED}Ошибка тестового запроса: {str(e)}{Colors.RESET}"
 
 
 
