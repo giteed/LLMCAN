@@ -21,7 +21,7 @@ import re
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, project_root)
 
-from settings import BASE_DIR, LLM_API_URL
+from settings import BASE_DIR, LLM_API_GENERATE
 
 # === Настройки ===
 MODEL = "qwen2:7b"  # Имя модели для обработки
@@ -128,7 +128,7 @@ def query_llm_with_context(user_input, search_results=None):
     }
 
     try:
-        response = requests.post(LLM_API_URL, json=payload)
+        response = requests.post(LLM_API_GENERATE, json=payload)
         response.raise_for_status()
 
         # Получаем ответ от модели
