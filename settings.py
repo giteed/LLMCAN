@@ -31,10 +31,14 @@ PROJECT_DIR = BASE_DIR  # Путь к директории LLMCAN
 # ---------------------------
 # Настройки Ollama / LLM API
 # ---------------------------
+# URL для API LLM модели
+ "http://10.67.67.2:11434/api/generate"
+
 LLM_API_BASE      = "http://10.67.67.2:11434"
 LLM_API_TAGS      = f"{LLM_API_BASE}/api/tags"
 LLM_API_GENERATE  = f"{LLM_API_BASE}/api/generate"
 LLM_API_HEALTH    = LLM_API_BASE  # Если нужно проверить "жив" ли сервер (статус 200)
+LLM_API_URL       = LLM_API_GENERATE # Старое представление нужно для совместимости в скриптах, потом можно заменить везде в скрипта переменную LLM_API_URL на LLM_API_GENERATE.
 
 # Указать путь для логов
 LOG_FILE_PATH = os.getenv("LLMCAN_LOG_PATH", "./data/logs/llmcan.log")
