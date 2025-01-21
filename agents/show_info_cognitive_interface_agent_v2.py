@@ -7,31 +7,19 @@
 
 import socket
 import requests
-import logging
-import subprocess
 from pathlib import Path
 from colors import Colors
 from settings import LLM_API_URL
 
-# Настройка логирования
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
-
 def get_ip_address():
     """Получает локальный IP-адрес."""
     try:
-        ip_address = socket.gethostbyname(socket.gethostname())
-        return ip_address
+        return socket.gethostbyname(socket.gethostname())
     except Exception as e:
-        logger.error(f"Ошибка получения локального IP-адреса: {e}")
         return f"{Colors.RED}Ошибка получения IP: {str(e)}{Colors.RESET}"
 
 def check_tor_ip():
-    """Возвращает текущий IP-адрес, используемый TOR."""
+    """Возвращает текущий IP-адрес через TOR."""
     try:
         response = requests.get(
             "https://api.ipify.org",
@@ -40,63 +28,49 @@ def check_tor_ip():
         )
         return response.text
     except Exception as e:
-        logger.error(f"Ошибка получения IP через TOR: {e}")
-        return f"{Colors.RED}Ошибка получения IP TOR: {str(e)}{Colors.RESET}"
+        return f"{Colors.RED}Ошибка получения IP через TOR: {str(e)}{Colors.RESET}"
 
-def check_llm_api_status():
-    """Проверяет доступность API LLM."""
+def ping_server(server_url, count=3):
+    """Пингует сервер и возвращает статистику."""
+    import subprocess
     try:
-        response = requests.get(LLM_API_URL, timeout=5)
-        if response.status_code == 200:
-            return f"{Colors.GREEN}API доступен. Ollama работает.{Colors.RESET}"
-        return f"{Colors.YELLOW}API вернул код {response.status_code}{Colors.RESET}"
+        result = subprocess.run(
+            ["ping", "-c", str(count), server_url.split("//")[-1].split("/")[0]],
+            text=True, capture_output=True
+        )
+        return result.stdout if result.returncode == 0 else f"{Colors.RED}Сервер недоступен{Colors.RESET}"
     except Exception as e:
-        logger.error(f"API недоступен: {e}")
-        return f"{Colors.RED}API недоступен: {str(e)}{Colors.RESET}"
-
-def ping_server(server_ip):
-    """Выполняет пинг сервера."""
-    try:
-        result = subprocess.run(["ping", "-c", "3", server_ip], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if result.returncode == 0:
-            return f"{Colors.GREEN}Сервер {server_ip} доступен.{Colors.RESET}\n{result.stdout}"
-        return f"{Colors.RED}Сервер {server_ip} недоступен.{Colors.RESET}\n{result.stderr}"
-    except Exception as e:
-        logger.error(f"Ошибка пинга сервера {server_ip}: {e}")
-        return f"{Colors.RED}Ошибка пинга: {str(e)}{Colors.RESET}"
+        return f"{Colors.RED}Ошибка выполнения пинга: {str(e)}{Colors.RESET}"
 
 def list_available_models():
-    """Возвращает список доступных моделей Ollama."""
+    """Выводит список доступных моделей API Ollama."""
     try:
-        response = requests.get(f"{LLM_API_URL}/models", timeout=5)
+        response = requests.get(f"{LLM_API_URL}models", timeout=5)
         if response.status_code == 200:
             models = response.json()
-            return f"{Colors.GREEN}Доступные модели: {', '.join(models)}{Colors.RESET}"
-        return f"{Colors.YELLOW}Не удалось получить список моделей. Код: {response.status_code}{Colors.RESET}"
+            return models if models else f"{Colors.YELLOW}Нет доступных моделей{Colors.RESET}"
+        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}{Colors.RESET}"
     except Exception as e:
-        logger.error(f"Ошибка получения списка моделей: {e}")
-        return f"{Colors.RED}Ошибка: {str(e)}{Colors.RESET}"
+        return f"{Colors.RED}Ошибка при запросе моделей: {str(e)}{Colors.RESET}"
 
-def test_llm_response():
-    """Отправляет тестовый запрос к модели Ollama."""
+def test_model_request():
+    """Тестовый запрос к модели."""
     try:
-        payload = {"model": "test-model", "prompt": "Hello, world!"}
+        payload = {"model": "default", "prompt": "Привет, как дела?"}
         response = requests.post(LLM_API_URL, json=payload, timeout=5)
         if response.status_code == 200:
-            return f"{Colors.GREEN}Ответ модели: {response.json().get('response', '<Нет ответа>')}{Colors.RESET}"
-        return f"{Colors.YELLOW}Ошибка запроса. Код: {response.status_code}{Colors.RESET}"
+            return response.json().get("response", f"{Colors.YELLOW}Ответа нет{Colors.RESET}")
+        return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}{Colors.RESET}"
     except Exception as e:
-        logger.error(f"Ошибка тестового запроса: {e}")
-        return f"{Colors.RED}Ошибка: {str(e)}{Colors.RESET}"
+        return f"{Colors.RED}Ошибка выполнения тестового запроса: {str(e)}{Colors.RESET}"
 
 def show_info(use_tor, log_level):
-    """Отображает информацию об агенте в разделах."""
+    """Отображает информацию об агенте."""
     print(Colors.CYAN + Colors.BOLD)
     print("╔═══════════════════════════════════════════════╗")
     print("║                Информация о сервере           ║")
     print("╚═══════════════════════════════════════════════╝")
     print(Colors.RESET)
-
     print(f"{Colors.GREEN}Локальный IP-адрес: {Colors.RESET}{get_ip_address()}")
     print(f"{Colors.GREEN}IP TOR: {Colors.RESET}{check_tor_ip()}")
     print(f"{Colors.GREEN}Режим TOR: {Colors.RESET}{'Включен' if use_tor else 'Отключен'}")
@@ -107,11 +81,9 @@ def show_info(use_tor, log_level):
     print("║              Информация о LLM и API           ║")
     print("╚═══════════════════════════════════════════════╝")
     print(Colors.RESET)
-
-    print(f"{Colors.GREEN}Доступность LLM API: {Colors.RESET}{check_llm_api_status()}")
-    print(f"{Colors.GREEN}Пинг сервера: {Colors.RESET}{ping_server('10.67.67.2')}")
-    print(f"{Colors.GREEN}Список моделей: {Colors.RESET}{list_available_models()}")
-    print(f"{Colors.GREEN}Тестовый запрос: {Colors.RESET}{test_llm_response()}")
+    print(f"{Colors.GREEN}Доступность LLM API: {Colors.RESET}{ping_server(LLM_API_URL)}")
+    print(f"{Colors.GREEN}Модели Ollama: {Colors.RESET}{list_available_models()}")
+    print(f"{Colors.GREEN}Тестовый запрос к модели: {Colors.RESET}{test_model_request()}")
 
     print(Colors.YELLOW + Colors.BOLD)
     print("\n╔═══════════════════════════════════════════════╗")
@@ -119,9 +91,21 @@ def show_info(use_tor, log_level):
     print("╚═══════════════════════════════════════════════╝")
     print(Colors.RESET)
 
-    print(f"{Colors.BOLD}Версии скриптов:{Colors.RESET}")
-    for script, version in get_script_versions().items():
-        print(f"{Colors.YELLOW}{script}: {Colors.RESET}{version}")
+    script_files = {
+        "cognitive_interface_agent_v2.py": "./agents/cognitive_interface_agent_v2.py",
+        "cognitive_logic.py": "./agents/cognitive_logic.py",
+        "data_management.py": "./agents/data_management.py",
+        "preprocess_query.py": "./agents/preprocess_query.py",
+    }
+    for script, path in script_files.items():
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                version = next((line.split(":")[1].strip() for line in f if "Версия:" in line), "Версия не указана")
+                print(f"{Colors.YELLOW}{script}: {Colors.RESET}{version}")
+        except FileNotFoundError:
+            print(f"{Colors.RED}{script}: Файл не найден{Colors.RESET}")
+        except Exception as e:
+            print(f"{Colors.RED}{script}: Ошибка: {str(e)}{Colors.RESET}")
 
     print(Colors.GRAY + Colors.HORIZONTAL_LINE + Colors.RESET)
 
