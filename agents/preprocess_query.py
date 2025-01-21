@@ -146,17 +146,17 @@ def handle_command(command, use_tor):
         current_level = logging.getLevelName(logger.level)
         print(f"{Colors.CYAN}Текущий уровень логирования: {Colors.BOLD}{current_level}{Colors.RESET}")
 
-    elif command in ["/help", "/h", ".р", ".х", ".п", ".с", ".помощь", ".справка"]:
+    elif command in ["/help", "/h", ".р", ".х", ".п", ".с", ".помощь", ".справка", ".рудз"]:
         # Показать справку
         show_help()
 
-    elif command in ["/exit", "/q", ".й", ".в", ".выход"]:
+    elif command in ["/exit", "/q", ".й", ".в", ".выход", ".учше"]:
         # Выход из программы
         save_dialog_history(load_dialog_history())
         print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
         sys.exit()
 
-    elif command in ["/show", "/s", ".покажи", ".п", ".покаж"]:
+    elif command in ["/show", "/view", "/s", ".мшуц",".покажи", ".п", ".покаж"/ ".ырщц"]:
         # Показать дополнительную информацию о системе
         from agents.show_info_cognitive_interface_agent_v2 import show_info
         log_level = logging.getLevelName(logger.level)
