@@ -4,10 +4,10 @@ import socket
 import logging
 import subprocess
 import readline
-
+from pathlib import Path
 
 # Импортируем нужную переменную из settings.py
-from LLMCAN.settings import LLM_API_GENERATE
+from settings import LLM_API_GENERATE
 
 # Настройка логирования
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
