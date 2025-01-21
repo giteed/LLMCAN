@@ -32,7 +32,11 @@ logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
 
 # === Настройки ===
-MODEL = "qwen2:7b"
+# Хорошо понимают поисковые результаты от ggdr
+# MODEL = "llama3:latest"
+MODEL = "gemma:7b"
+# Слабые ответы:
+# MODEL = "qwen2:7b"
 LOG_DIR = BASE_DIR / 'logs'
 ENV_FILE = Path(".env")
 
@@ -245,7 +249,7 @@ def preprocess_query(user_input):
 3. [запрос 3]
 
 Инструкция для обработки результатов:
-[Детальная инструкция по обработке и форматированию результатов поиска. В начале инструкции передай в системный промпт модели текущую дату и время {current_datetime} чтобы модель их точно знала]"""
+[Детальная инструкция по обработке и форматированию результатов поиска.]"""
 
     context = f"Запрос пользователя: {user_input}\n\n{system_prompt}"
     response = query_llm(context, include_history=False)
