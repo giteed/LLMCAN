@@ -2,7 +2,7 @@
 # LLMCAN/agents/menu.py
 # ==================================================
 # Главное меню для проекта LLMCAN
-# Версия: 1.0.2
+# Версия: 1.0.3
 # ==================================================
 
 import os
@@ -21,9 +21,9 @@ SCRIPTS = {
     "2": "agents/cognitive_interface_agent.py",
     "3": "agents/chat_with_ddgr_context.py",
     "4": "agents/ddgr_agent.py",
-    "5": "agents/install_tor.py",
+    "5": "agents/test_local_llm_api_and_tor.py",  # <-- новый пункт (перед установкой TOR)
+    "6": "agents/install_tor.py",
     "s": "settings.py",
-    
 }
 
 def show_menu():
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     try:
         while True:
             show_menu()
-            choice = input(f"{Colors.CYAN}Выберите действие (1-5, q/exit): {Colors.RESET}").strip().lower()
+            choice = input(f"{Colors.CYAN}Выберите действие (1-6, s, q/exit): {Colors.RESET}").strip().lower()
             if choice in ["q", "exit", ".й", "0"]:
                 print(f"{Colors.GREEN}\n[INFO] Выход из программы. До свидания!{Colors.RESET}")
                 sys.exit(0)
