@@ -110,15 +110,15 @@ def show_info(use_tor, log_level):
     print(f"{Colors.GREEN}Модели Ollama: {Colors.RESET}{get_ollama_models()}")
     print(f"{Colors.GREEN}Тестовый запрос к модели: {Colors.RESET}{test_ollama_query()}")
 
-    print(Colors.YELLOW + Colors.BOLD)
+    print(Colors.BLUE + Colors.BOLD)
     print("\n╔═══════════════════════════════════════════════╗")
-    print("║       Информация о скриптах и настройках      ║")
+    print("║              Информация о LLM и API           ║")
     print("╚═══════════════════════════════════════════════╝")
     print(Colors.RESET)
-
-    print(f"{Colors.BOLD}Версии скриптов:{Colors.RESET}")
-    for script, version in get_script_versions().items():
-        print(f"{Colors.YELLOW}{script}: {Colors.RESET}{version}")
+    
+    print(f"{Colors.GREEN}Доступность LLM API: {Colors.RESET}{check_llm_api_status()}")
+    print(f"{Colors.GREEN}Модели Ollama: {Colors.RESET}{get_ollama_models()}")
+    print(f"{Colors.GREEN}Тестовый запрос к модели: {Colors.RESET}{test_ollama_query()}")
 
     print(Colors.GRAY + Colors.HORIZONTAL_LINE + Colors.RESET)
 
