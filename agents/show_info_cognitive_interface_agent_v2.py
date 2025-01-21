@@ -7,6 +7,7 @@
 
 import socket
 import subprocess
+import requests
 import json
 from pathlib import Path
 from colors import Colors
