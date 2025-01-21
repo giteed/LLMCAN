@@ -21,7 +21,7 @@ import socks
 import pprint
 import readline
 
-from settings import BASE_DIR, LLM_API_URL, LOGGING_CONFIG
+from settings import BASE_DIR, LOGGING_CONFIG
 from agents.install_tor import restart_tor_and_check_ddgr
 from colors import Colors
 from agents.data_management import save_dialog_history, load_dialog_history
