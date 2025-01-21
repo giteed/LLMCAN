@@ -225,7 +225,7 @@ def query_llm(prompt, include_history=True):
     }
 
     try:
-        response = requests.post(LLM_API_URL, json=payload)
+        response = requests.post(LLM_API_GENERATE, json=payload)
         response.raise_for_status()
         return response.json().get("response", "<Нет ответа>")
     except requests.RequestException as e:
