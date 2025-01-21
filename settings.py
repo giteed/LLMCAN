@@ -28,12 +28,13 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR  # Путь к директории LLMCAN
 
-# Базовый URL для Ollama API
-LLM_API_URL = "http://10.67.67.2:11434"
-
-# Для удобства можно указать отдельные переменные на каждый эндпоинт:
-LLM_API_GENERATE = f"{LLM_API_URL}/api/generate"
-LLM_API_TAGS     = f"{LLM_API_URL}/api/tags"
+# ---------------------------
+# Настройки Ollama / LLM API
+# ---------------------------
+LLM_API_BASE      = "http://10.67.67.2:11434"
+LLM_API_TAGS      = f"{LLM_API_BASE}/api/tags"
+LLM_API_GENERATE  = f"{LLM_API_BASE}/api/generate"
+LLM_API_HEALTH    = LLM_API_BASE  # Если нужно проверить "жив" ли сервер (статус 200)
 
 # Указать путь для логов
 LOG_FILE_PATH = os.getenv("LLMCAN_LOG_PATH", "./data/logs/llmcan.log")
