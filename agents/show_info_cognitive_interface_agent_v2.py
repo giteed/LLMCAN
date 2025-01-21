@@ -91,14 +91,13 @@ def get_ollama_models():
 
 
 def test_ollama_query():
-    """Выполняет тестовый запрос к API LLM."""
+    """Выполняет тестовый запрос к API LLM и красиво выводит результат."""
     import json
     try:
-        # Обязательно укажите "stream": False либо в корне, либо внутри "options".
         payload = {
             "model": "qwen2:7b",
-            "prompt": "Как ты себя чувствуешь? Готов к работе?!",
-            "stream": False  # или "options": {"stream": False}
+            "prompt": "Готов к работе?",
+            "stream": False
         }
         response = requests.post(
             f"{LLM_API_URL}/api/generate",
@@ -106,17 +105,25 @@ def test_ollama_query():
             timeout=5
         )
         if response.status_code == 200:
-            # Смотрим, что приходит в raw-виде:
-            # print(response.text)
-
-            # Парсим полученный JSON:
             data = response.json()
-            # Предположим, что сам сгенерированный ответ лежит в data["response"]
-            return f"{Colors.GREEN}Ответ: {data.get('response', 'Нет ответа')}{Colors.RESET}"
+
+            # Получаем имя модели, сам prompt и ответ
+            model_name = payload.get("model", "—")
+            prompt_text = payload.get("prompt", "—")
+            answer_text = data.get("response", "Нет ответа")
+
+            # Красиво форматируем вывод
+            output = (
+                f"{Colors.GREEN}Тестовый запрос к модели: {Colors.RESET}{model_name}\n"
+                f"{Colors.MAGENTA}Запрос (prompt):{Colors.RESET} {prompt_text}\n"
+                f"{Colors.CYAN}Ответ (response):{Colors.RESET} {answer_text}"
+            )
+            return output
         else:
             return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Ошибка тестового запроса: {str(e)}{Colors.RESET}"
+
 
 
 def get_script_versions():
