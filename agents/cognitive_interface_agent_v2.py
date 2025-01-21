@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # LLMCAN/agents/cognitive_interface_agent_v2.py
-# Версия: 3.1.0 (тест)
+# Версия: 3.1.0
 
 import sys
 from pathlib import Path
@@ -92,7 +92,6 @@ def perform_search(queries, use_tor, max_retries=3):
                     if isinstance(json_results, list) and json_results:
                         results.extend(json_results)
                         logger.info(f"Успешно выполнен поиск по запросу: {query}")
-                        print(f"Успешно выполнен поиск по запросу: {query}{Colors.RESET}")
                         break
                     else:
                         logger.warning(f"Некорректный формат или пустой результат для запроса: {query}")
@@ -100,19 +99,16 @@ def perform_search(queries, use_tor, max_retries=3):
                     logger.warning(f"Пустой результат для запроса: {query}")
             except subprocess.CalledProcessError as e:
                 logger.error(f"Ошибка выполнения команды: {e}. Попытка {retries + 1}/{max_retries}")
-                print(f"Ошибка выполнения команды: {e}. Попытка {retries + 1}/{max_retries}{Colors.RESET}")
                 retries += 1
             except json.JSONDecodeError as e:
                 logger.error(f"Ошибка декодирования JSON: {e}. Попытка {retries + 1}/{max_retries}")
                 retries += 1
             except Exception as e:
                 logger.error(f"Неизвестная ошибка: {e}. Попытка {retries + 1}/{max_retries}")
-                print(f"Неизвестная ошибка: {Colors.RED} {e}. Попытка {retries + 1}/{max_retries}{Colors.RESET}")
                 retries += 1
             time.sleep(2)  # Задержка перед повторной попыткой
         else:
             logger.error(f"Не удалось найти информацию по запросу: {query} после {max_retries} попыток.")
-            print(f"{Colors.RED}Не удалось найти информацию по запросу: {query} после {max_retries} попыток.{Colors.RESET}")
             results.append(None)
 
     if not any(results):
@@ -153,9 +149,9 @@ def main():
 
                 logger.info("Попытка выполнения поиска.")
                 search_results = perform_search(preprocessed['queries'], use_tor=USE_TOR)
-                #print("\n### Данные для передачи в модель ###")
-                #print(f"Инструкция для обработки: {preprocessed['instruction']}")
-                #print(f"Результаты поиска: {search_results}")
+                print("\n### Данные для передачи в модель ###")
+                print(f"Инструкция для обработки: {preprocessed['instruction']}")
+                print(f"Результаты поиска: {search_results}")
 
                 # Обязательный вывод перед отправкой в модель
                 print("\n### Данные для передачи в модель ###")
