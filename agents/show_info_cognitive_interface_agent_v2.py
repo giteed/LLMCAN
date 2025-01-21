@@ -11,7 +11,7 @@ from pathlib import Path
 from colors import Colors
 import requests
 import socket
-from settings import LLM_API_URL
+#from settings import LLM_API_URL
 
 # LLM_API_HEALTH для check_llm_api_status.
 # LLM_API_TAGS, # для get_ollama_models.
