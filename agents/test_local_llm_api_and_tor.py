@@ -5,16 +5,20 @@ import logging
 import subprocess
 import readline
 
+
+# Импортируем нужную переменную из settings.py
+from settings import LLM_API_GENERATE
+
 # Настройка логирования
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Конфигурация
-LLM_API_URL = "http://10.67.67.2:11434/api/generate"
 USE_TOR = False
 original_socket = None
 
 def toggle_tor(enable=True):
+    """Включает или выключает проксирование через TOR."""
     global USE_TOR, original_socket
     if enable:
         if not USE_TOR:
@@ -31,6 +35,7 @@ def toggle_tor(enable=True):
             logger.info("TOR выключен")
 
 def test_llm_connection():
+    """Отправляет тестовый запрос к LLM API и выводит результат."""
     logger.info("Начало теста подключения к LLM API")
     
     payload = {
@@ -40,11 +45,14 @@ def test_llm_connection():
     }
 
     try:
-        logger.info(f"Отправка запроса к {LLM_API_URL}")
+        logger.info(f"Отправка запроса к {LLM_API_GENERATE}")
         with requests.Session() as session:
+            # Если вы хотите отключить тор именно для этого запроса,
+            # можно обнулить proxies (но тогда TOR не будет использоваться):
             if USE_TOR:
-                session.proxies = {}  # Отключаем использование TOR для этого запроса
-            response = session.post(LLM_API_URL, json=payload, timeout=10)
+                session.proxies = {}  
+            response = session.post(LLM_API_GENERATE, json=payload, timeout=10)
+        
         logger.info(f"Статус ответа: {response.status_code}")
         logger.info(f"Содержимое ответа: {response.text[:100]}...")
         response.raise_for_status()
@@ -54,6 +62,7 @@ def test_llm_connection():
         return None
 
 def check_ip():
+    """Выводит текущий IP-адрес."""
     try:
         response = requests.get('https://api.ipify.org?format=json', timeout=5)
         ip = response.json()['ip']
@@ -62,6 +71,7 @@ def check_ip():
         logger.error(f"Не удалось получить IP-адрес: {e}")
 
 def check_tor_status():
+    """Проверяет, запущен ли TOR-служба в системе (systemd)."""
     try:
         result = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True)
         return result.stdout.strip() == "active"
