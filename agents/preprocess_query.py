@@ -208,8 +208,13 @@ def query_llm(prompt, include_history=True):
     }
 
     try:
-        response = requests.post(LLM_API_URL, json=payload, timeout=10)
+        from settings import LLM_API_GENERATE
+
+        response = requests.post(LLM_API_GENERATE, json=payload, timeout=10)
         response.raise_for_status()
+
+        #response = requests.post(LLM_API_URL, json=payload, timeout=10)
+        #response.raise_for_status()
 
         # Декодируем JSON и фильтруем данные
         response_data = response.json()
