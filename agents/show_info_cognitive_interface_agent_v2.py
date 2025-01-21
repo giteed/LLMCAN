@@ -42,14 +42,52 @@ def check_llm_api_status():
         return f"{Colors.RED}API недоступен: {str(e)}{Colors.RESET}"
 
 def get_ollama_models():
-    """Получает список доступных моделей Ollama."""
+    """Получает список доступных моделей Ollama и форматирует их."""
     try:
         response = requests.get(f"{LLM_API_URL}/api/tags", timeout=5)
         if response.status_code == 200:
-            return f"{Colors.GREEN}Ответ сервера:{Colors.RESET}\n{response.text}"
-        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}, {response.text}{Colors.RESET}"
+            # Парсим тело ответа как JSON
+            data = response.json()  # {'models': [ {...}, {...}, ... ] }
+            models_list = data.get("models", [])
+
+            # Формируем удобный вывод
+            if not models_list:
+                return f"{Colors.YELLOW}Список моделей пуст или не найден.{Colors.RESET}"
+
+            lines = []
+            for model_info in models_list:
+                name = model_info.get("name", "—")
+                size = model_info.get("size", "—")
+                modified = model_info.get("modified_at", "—")
+
+                # 'details' может быть вложенным словарём
+                details = model_info.get("details", {})
+                family = details.get("family", "—")
+                param_size = details.get("parameter_size", "—")
+                quant_level = details.get("quantization_level", "—")
+
+                lines.append(
+                    f"Модель: {Colors.BOLD}{name}{Colors.RESET}\n"
+                    f"  - Семейство: {family}\n"
+                    f"  - Параметры: {param_size}\n"
+                    f"  - Квант.: {quant_level}\n"
+                    f"  - Размер: {size}\n"
+                    f"  - Изменено: {modified}\n"
+                )
+
+            # Склеиваем все блоки
+            pretty_output = "\n".join(lines)
+            return f"{Colors.GREEN}Список моделей Ollama:{Colors.RESET}\n{pretty_output}"
+
+        else:
+            return (
+                f"{Colors.RED}Ошибка получения моделей: "
+                f"{response.status_code}, {response.text}{Colors.RESET}"
+            )
+
     except Exception as e:
         return f"{Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
+
 
 
 def test_ollama_query():
