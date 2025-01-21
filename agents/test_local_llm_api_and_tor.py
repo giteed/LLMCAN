@@ -53,9 +53,11 @@ def test_llm_connection():
     try:
         logger.info(f"Отправка запроса к {LLM_API_GENERATE}")
         with requests.Session() as session:
-            if USE_TOR:
-                session.proxies = {}
+            # Всегда отключаем прокси для локальных запросов:
+            session.proxies = {}
+            
             response = session.post(LLM_API_GENERATE, json=payload, timeout=10)
+        
         logger.info(f"Статус ответа: {response.status_code}")
         logger.info(f"Содержимое ответа: {response.text[:100]}...")
         response.raise_for_status()
@@ -63,6 +65,7 @@ def test_llm_connection():
     except requests.exceptions.RequestException as e:
         logger.error(f"Ошибка при отправке запроса: {e}")
         return None
+
 
 def check_ip():
     try:
