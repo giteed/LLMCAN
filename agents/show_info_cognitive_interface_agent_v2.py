@@ -9,11 +9,13 @@ import socket
 import requests
 from pathlib import Path
 from colors import Colors
-# LLM_API_HEALTH для check_llm_api_status.
-# LLM_API_TAGS, # для get_ollama_models.
-# LLM_API_GENERATE  # для test_ollama_query
-# LLM_API_URL       # LLM_API_URL
-from settings import LLM_API_HEALTH, LLM_API_TAGS, LLM_API_GENERATE, LLM_API_URL
+
+from settings import (
+    LLM_API_HEALTH,   # для check_llm_api_status
+    LLM_API_TAGS,     # для get_ollama_models
+    LLM_API_GENERATE  # для test_ollama_query
+    LLM_API_URL       # LLM_API_URL
+)
 
 
 def get_ip_address():
