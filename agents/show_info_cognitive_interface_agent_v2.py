@@ -97,7 +97,7 @@ def test_ollama_query():
         # Обязательно укажите "stream": False либо в корне, либо внутри "options".
         payload = {
             "model": "qwen2:7b",
-            "prompt": "Hello, world!",
+            "prompt": "Как ты себя чувствуешь? Готов к работе?!",
             "stream": False  # или "options": {"stream": False}
         }
         response = requests.post(
