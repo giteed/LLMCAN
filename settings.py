@@ -31,7 +31,7 @@ PROJECT_DIR = BASE_DIR  # Путь к директории LLMCAN
 
 # URL для API LLM модели
 # Старое представление нужно для совместимости в скриптах, потом можно заменить везде в скрипта переменную LLM_API_URL на LLM_API_GENERATE.
-LLM_API_URL = "http://10.67.67.2:11434/api/generate"
+#LLM_API_URL = "http://10.67.67.2:11434/api/generate"
 
 # ---------------------------
 # Настройки Ollama / LLM API
