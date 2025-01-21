@@ -6,10 +6,12 @@
 # ==================================================
 
 import socket
-import requests
+import subprocess
+import json
 from pathlib import Path
 from colors import Colors
 from settings import LLM_API_URL
+
 
 def get_ip_address():
     """Получает локальный IP-адрес."""
@@ -18,83 +20,70 @@ def get_ip_address():
     except Exception as e:
         return f"{Colors.RED}Ошибка получения IP: {str(e)}{Colors.RESET}"
 
+
 def check_tor_ip():
     """Возвращает текущий IP-адрес, используемый TOR."""
     try:
-        response = requests.get(
-            "https://api.ipify.org",
-            proxies={"http": "socks5h://127.0.0.1:9050", "https": "socks5h://127.0.0.1:9050"},
+        response = subprocess.check_output(
+            ["torsocks", "curl", "-s", "https://api.ipify.org"],
+            universal_newlines=True,
             timeout=10
         )
-        return response.text
+        return response.strip()
     except Exception as e:
         return f"{Colors.RED}Ошибка получения IP TOR: {str(e)}{Colors.RESET}"
+
 
 def check_llm_api_status():
     """Проверяет доступность API LLM."""
     try:
-        base_url = f"{LLM_API_URL}/"
-        response = requests.get(base_url, timeout=5)
-        if response.status_code == 200 and "Ollama is running" in response.text:
+        response = subprocess.check_output(
+            ["curl", "-s", f"{LLM_API_URL}"],
+            universal_newlines=True,
+            timeout=5
+        ).strip()
+        if "Ollama is running" in response:
             return f"{Colors.GREEN}API доступен. Ollama работает корректно.{Colors.RESET}"
-        elif 400 <= response.status_code < 500:
-            return f"{Colors.YELLOW}API доступен, но вернул ошибку клиента: {response.status_code}{Colors.RESET}"
-        elif 500 <= response.status_code < 600:
-            return f"{Colors.RED}API доступен, но вернул ошибку сервера: {response.status_code}{Colors.RESET}"
-        else:
-            return f"{Colors.YELLOW}API доступен, но вернул неизвестный статус: {response.status_code}{Colors.RESET}"
-    except requests.exceptions.Timeout:
-        return f"{Colors.RED}API недоступен: Таймаут подключения.{Colors.RESET}"
-    except requests.exceptions.ConnectionError as e:
-        return f"{Colors.RED}API недоступен: Ошибка подключения.{Colors.RESET}"
+        return f"{Colors.YELLOW}API доступен, но вернул неожиданный ответ: {response}{Colors.RESET}"
+    except subprocess.CalledProcessError as e:
+        return f"{Colors.RED}API недоступен: {e.output.strip()}{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}API недоступен: {str(e)}{Colors.RESET}"
 
-def get_ollama_models():
-    """Получает список доступных моделей Ollama."""
-    try:
-        response = requests.get(f"{LLM_API_URL}/api/tags", timeout=5)
-        if response.status_code == 200:
-            models = response.json().get("models", [])
-            return "\n".join([model["name"] for model in models]) if models else f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
-        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}{Colors.RESET}"
-    except Exception as e:
-        return f"{Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
-
-def test_ollama_query():
-    """Выполняет тестовый запрос к API LLM."""
-    try:
-        payload = {"model": "qwen2:7b", "prompt": "Hello, world!"}
-        response = requests.post(f"{LLM_API_URL}/api/generate", json=payload, timeout=5)
-        if response.status_code == 200:
-            return f"{Colors.GREEN}Ответ: {response.json().get('response', 'Нет ответа')}{Colors.RESET}"
-        return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}{Colors.RESET}"
-    except Exception as e:
-        return f"{Colors.RED}Ошибка тестового запроса: {str(e)}{Colors.RESET}"
-
 
 def get_ollama_models():
     """Получает список доступных моделей Ollama."""
     try:
-        response = requests.get(f"{LLM_API_URL}/api/tags", timeout=5)
-        if response.status_code == 200:
-            models_data = response.json()
-            models = [model.get("name", "Unnamed model") for model in models_data.get("models", [])]
-            return ", ".join(models) if models else f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
-        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}{Colors.RESET}"
+        response = subprocess.check_output(
+            ["curl", "-s", f"{LLM_API_URL}api/tags"],
+            universal_newlines=True,
+            timeout=5
+        )
+        models_data = json.loads(response)
+        models = [model.get("name", "Неизвестная модель") for model in models_data.get("models", [])]
+        return ", ".join(models) if models else f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
+    except json.JSONDecodeError:
+        return f"{Colors.RED}Ошибка разбора ответа сервера при получении моделей.{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
+
 
 def test_ollama_query():
     """Выполняет тестовый запрос к API LLM."""
     try:
-        payload = {"model": "qwen2:7b", "prompt": "Hello, world!"}
-        response = requests.post(f"{LLM_API_URL}/api/generate", json=payload, timeout=5)
-        if response.status_code == 200:
-            return f"{Colors.GREEN}Ответ: {response.json().get('response', 'Нет ответа')}{Colors.RESET}"
-        return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}{Colors.RESET}"
+        payload = json.dumps({"model": "test-model", "prompt": "Hello, world!"})
+        response = subprocess.check_output(
+            ["curl", "-s", "-X", "POST", "-H", "Content-Type: application/json", "-d", payload, f"{LLM_API_URL}api/generate"],
+            universal_newlines=True,
+            timeout=5
+        )
+        response_json = json.loads(response)
+        return f"{Colors.GREEN}Ответ: {response_json.get('response', 'Нет ответа')}{Colors.RESET}"
+    except json.JSONDecodeError:
+        return f"{Colors.RED}Ошибка разбора ответа сервера при выполнении тестового запроса.{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Ошибка тестового запроса: {str(e)}{Colors.RESET}"
+
 
 def get_script_versions():
     """Возвращает версии скриптов из их заголовков."""
@@ -119,6 +108,7 @@ def get_script_versions():
         except Exception as e:
             versions[name] = f"{Colors.RED}Ошибка: {str(e)}{Colors.RESET}"
     return versions
+
 
 def show_info(use_tor, log_level):
     """Отображает информацию об агенте в разделах."""
