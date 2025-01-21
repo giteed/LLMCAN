@@ -131,6 +131,7 @@ def show_info(use_tor, log_level):
 
     print(Colors.GRAY + Colors.HORIZONTAL_LINE + Colors.RESET)
 
+
 if __name__ == "__main__":
     USE_TOR = True  # Или False
     LOG_LEVEL = "INFO"
