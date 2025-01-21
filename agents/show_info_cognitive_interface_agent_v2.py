@@ -31,10 +31,11 @@ def check_tor_ip():
         return f"{Colors.RED}Ошибка получения IP TOR: {str(e)}{Colors.RESET}"
 
 def check_llm_api_status():
-    """Проверяет доступность API LLM с детализацией."""
+    """Проверяет доступность API LLM."""
     try:
-        response = requests.get(LLM_API_URL, timeout=5)
-        if response.status_code == 200:
+        base_url = f"{LLM_API_URL}/"
+        response = requests.get(base_url, timeout=5)
+        if response.status_code == 200 and "Ollama is running" in response.text:
             return f"{Colors.GREEN}API доступен. Ollama работает корректно.{Colors.RESET}"
         elif 400 <= response.status_code < 500:
             return f"{Colors.YELLOW}API доступен, но вернул ошибку клиента: {response.status_code}{Colors.RESET}"
@@ -48,6 +49,29 @@ def check_llm_api_status():
         return f"{Colors.RED}API недоступен: Ошибка подключения.{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}API недоступен: {str(e)}{Colors.RESET}"
+
+def get_ollama_models():
+    """Получает список доступных моделей Ollama."""
+    try:
+        response = requests.get(f"{LLM_API_URL}/api/tags", timeout=5)
+        if response.status_code == 200:
+            models = response.json().get("models", [])
+            return "\n".join([model["name"] for model in models]) if models else f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
+        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}{Colors.RESET}"
+    except Exception as e:
+        return f"{Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
+
+def test_ollama_query():
+    """Выполняет тестовый запрос к API LLM."""
+    try:
+        payload = {"model": "qwen2:7b", "prompt": "Hello, world!"}
+        response = requests.post(f"{LLM_API_URL}/api/generate", json=payload, timeout=5)
+        if response.status_code == 200:
+            return f"{Colors.GREEN}Ответ: {response.json().get('response', 'Нет ответа')}{Colors.RESET}"
+        return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}{Colors.RESET}"
+    except Exception as e:
+        return f"{Colors.RED}Ошибка тестового запроса: {str(e)}{Colors.RESET}"
+
 
 def get_ollama_models():
     """Получает список доступных моделей Ollama."""
