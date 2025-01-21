@@ -17,7 +17,7 @@
 # - ERROR: Только ошибки.
 # Логи записываются как в консоль, так и в файл, путь к которому указан в LOG_FILE_PATH.
 #
-# Версия: 1.2 (2025-01-09)
+# Версия: 1.3 (2025-01-21)
 
 import logging
 import logging.config
@@ -28,8 +28,12 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR  # Путь к директории LLMCAN
 
-# URL для API LLM модели
-LLM_API_URL = "http://10.67.67.2:11434/api/generate"
+# Базовый URL для Ollama API
+LLM_API_URL = "http://10.67.67.2:11434"
+
+# Для удобства можно указать отдельные переменные на каждый эндпоинт:
+LLM_API_GENERATE = f"{LLM_API_URL}/api/generate"
+LLM_API_TAGS     = f"{LLM_API_URL}/api/tags"
 
 # Указать путь для логов
 LOG_FILE_PATH = os.getenv("LLMCAN_LOG_PATH", "./data/logs/llmcan.log")
