@@ -210,7 +210,7 @@ def preprocess_query(user_input):
 3. [запрос 3]
 4. [Детальная инструкция по обработке и форматированию результатов поиска для LLM модели]"""
 
-    context = f"Запрос пользователя: {user_input}\n\n{system_prompt}"
+    context = f"Текущая дата и время: {current_datetime}\nЗапрос пользователя: {user_input}\n\n{system_prompt}"
     
     logger.debug(f"Сгенерированный системный промпт:\n{system_prompt}")
 
