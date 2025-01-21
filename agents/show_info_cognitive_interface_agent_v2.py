@@ -2,7 +2,7 @@
 # LLMCAN/agents/show_info_cognitive_interface_agent_v2.py
 # ==================================================
 # Сценарий для отображения текущей информации об агенте
-# Версия: 1.2.2
+# Версия: 1.2.3
 # ==================================================
 
 import socket
@@ -13,14 +13,12 @@ from pathlib import Path
 from colors import Colors
 from settings import LLM_API_URL
 
-
 def get_ip_address():
     """Получает локальный IP-адрес."""
     try:
         return socket.gethostbyname(socket.gethostname())
     except Exception as e:
         return f"{Colors.RED}Ошибка получения IP: {str(e)}{Colors.RESET}"
-
 
 def check_tor_ip():
     """Возвращает текущий IP-адрес, используемый TOR."""
@@ -34,22 +32,14 @@ def check_tor_ip():
     except Exception as e:
         return f"{Colors.RED}Ошибка получения IP TOR: {str(e)}{Colors.RESET}"
 
-
 def check_llm_api_status():
     """Проверяет доступность API LLM с детализацией."""
     try:
-        base_url = f"{LLM_API_URL}/"
-        response = requests.get(base_url, timeout=5)
+        response = requests.get(f"{LLM_API_URL}/", timeout=5)
         if response.status_code == 200 and "Ollama is running" in response.text:
-            return f"{Colors.GREEN}API доступен: {response.text.strip()}{Colors.RESET}"
-        elif response.status_code == 404:
-            return f"{Colors.RED}API недоступен: 404 (Ресурс не найден).{Colors.RESET}"
-        return f"{Colors.YELLOW}API доступен, но вернул код: {response.status_code}, {response.text.strip()}{Colors.RESET}"
-    except requests.exceptions.Timeout:
-        return f"{Colors.RED}API недоступен: Таймаут подключения.{Colors.RESET}"
-    except requests.exceptions.ConnectionError as e:
-        return f"{Colors.RED}API недоступен: Ошибка подключения ({str(e)}).{Colors.RESET}"
-    except Exception as e:
+            return f"{Colors.GREEN}API доступен: {response.text}{Colors.RESET}"
+        return f"{Colors.RED}API недоступен: {response.status_code} ({response.text}).{Colors.RESET}"
+    except requests.exceptions.RequestException as e:
         return f"{Colors.RED}API недоступен: {str(e)}{Colors.RESET}"
 
 def get_ollama_models():
@@ -58,15 +48,8 @@ def get_ollama_models():
         response = requests.get(f"{LLM_API_URL}/api/tags", timeout=5)
         if response.status_code == 200:
             models = response.json().get("models", [])
-            if models:
-                return "\n".join([f"{model['name']} ({model['details'].get('parameter_size', 'N/A')})"
-                                  for model in models])
-            return f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
-        elif response.status_code == 404:
-            return f"{Colors.RED}Эндпоинт для получения моделей не найден: 404.{Colors.RESET}"
-        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}, {response.text.strip()}{Colors.RESET}"
-    except requests.exceptions.Timeout:
-        return f"{Colors.RED}Ошибка получения моделей: Таймаут подключения.{Colors.RESET}"
+            return "\n".join([model["name"] for model in models]) if models else f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
+        return f"{Colors.RED}Эндпоинт для получения моделей не найден: {response.status_code}.{Colors.RESET}"
     except ValueError:
         return f"{Colors.RED}Ошибка разбора ответа сервера при получении моделей.{Colors.RESET}"
     except Exception as e:
@@ -79,16 +62,11 @@ def test_ollama_query():
         response = requests.post(f"{LLM_API_URL}/api/generate", json=payload, timeout=5)
         if response.status_code == 200:
             return f"{Colors.GREEN}Ответ: {response.json().get('response', 'Нет ответа')}{Colors.RESET}"
-        elif response.status_code == 404:
-            return f"{Colors.RED}Тестовый эндпоинт не найден: 404.{Colors.RESET}"
-        return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}, {response.text.strip()}{Colors.RESET}"
-    except requests.exceptions.Timeout:
-        return f"{Colors.RED}Ошибка тестового запроса: Таймаут подключения.{Colors.RESET}"
+        return f"{Colors.RED}Тестовый эндпоинт не найден: {response.status_code}.{Colors.RESET}"
     except ValueError:
         return f"{Colors.RED}Ошибка разбора ответа сервера при выполнении тестового запроса.{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Ошибка тестового запроса: {str(e)}{Colors.RESET}"
-
 
 def get_script_versions():
     """Возвращает версии скриптов из их заголовков."""
@@ -113,7 +91,6 @@ def get_script_versions():
         except Exception as e:
             versions[name] = f"{Colors.RED}Ошибка: {str(e)}{Colors.RESET}"
     return versions
-
 
 def show_info(use_tor, log_level):
     """Отображает информацию об агенте в разделах."""
@@ -152,6 +129,6 @@ def show_info(use_tor, log_level):
 
 
 if __name__ == "__main__":
-    USE_TOR = True  # Или False
+    USE_TOR = True
     LOG_LEVEL = "INFO"
     show_info(USE_TOR, LOG_LEVEL)
