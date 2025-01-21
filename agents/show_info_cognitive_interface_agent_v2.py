@@ -46,13 +46,11 @@ def get_ollama_models():
     try:
         response = requests.get(f"{LLM_API_URL}/api/tags", timeout=5)
         if response.status_code == 200:
-            models = response.json().get("models", [])
-            if models:
-                return "\n".join([model["name"] for model in models])
-            return f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
-        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}{Colors.RESET}"
+            return f"{Colors.GREEN}Ответ сервера:{Colors.RESET}\n{response.text}"
+        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}, {response.text}{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
+
 
 def test_ollama_query():
     """Выполняет тестовый запрос к API LLM."""
