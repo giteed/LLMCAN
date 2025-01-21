@@ -1,30 +1,13 @@
-
-import os
+import requests
+import socks
+import socket
+import logging
+import subprocess
+import readline
+from pathlib import Path
 import sys
-import requests
-import json
-import subprocess
-from pathlib import Path
-from datetime import datetime
-import logging
-import re
-import time
-import uuid
-import socket
-import socks
-import pprint
-import readline
-
-
-
-import requests
-import socks
-import socket
-import logging
-import subprocess
-import readline
-from pathlib import Path
-
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Импортируем нужную переменную из settings.py
 from settings import LLM_API_GENERATE
 
