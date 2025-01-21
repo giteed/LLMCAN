@@ -105,10 +105,12 @@ def perform_search(queries, use_tor, max_retries=3):
                 retries += 1
             except Exception as e:
                 logger.error(f"Неизвестная ошибка: {e}. Попытка {retries + 1}/{max_retries}")
+                print(f"Неизвестная ошибка: {Colors.RED} {e}. Попытка {retries + 1}/{max_retries}{Colors.RESET}")
                 retries += 1
             time.sleep(2)  # Задержка перед повторной попыткой
         else:
             logger.error(f"Не удалось найти информацию по запросу: {query} после {max_retries} попыток.")
+            print(f"{Colors.RED}Не удалось найти информацию по запросу: {query} после {max_retries} попыток.{Colors.RESET}")
             results.append(None)
 
     if not any(results):
