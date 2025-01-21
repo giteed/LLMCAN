@@ -41,52 +41,40 @@ def check_llm_api_status():
     except Exception as e:
         return f"{Colors.RED}API недоступен: {str(e)}{Colors.RESET}"
 
-def get_ollama_models():
-    """Получает список доступных моделей Ollama и форматирует их."""
+def test_ollama_query():
+    """Выполняет тестовый запрос к API LLM и красиво выводит результат."""
+    import json
     try:
-        response = requests.get(f"{LLM_API_URL}/api/tags", timeout=5)
+        payload = {
+            "model": "qwen2:7b",
+            "prompt": "Hello, world!",
+            "stream": False
+        }
+        response = requests.post(
+            f"{LLM_API_URL}/api/generate",
+            json=payload,
+            timeout=5
+        )
         if response.status_code == 200:
-            # Парсим тело ответа как JSON
-            data = response.json()  # {'models': [ {...}, {...}, ... ] }
-            models_list = data.get("models", [])
+            data = response.json()
 
-            # Формируем удобный вывод
-            if not models_list:
-                return f"{Colors.YELLOW}Список моделей пуст или не найден.{Colors.RESET}"
+            # Получаем имя модели, сам prompt и ответ
+            model_name = payload.get("model", "—")
+            prompt_text = payload.get("prompt", "—")
+            answer_text = data.get("response", "Нет ответа")
 
-            lines = []
-            for model_info in models_list:
-                name = model_info.get("name", "—")
-                size = model_info.get("size", "—")
-                modified = model_info.get("modified_at", "—")
-
-                # 'details' может быть вложенным словарём
-                details = model_info.get("details", {})
-                family = details.get("family", "—")
-                param_size = details.get("parameter_size", "—")
-                quant_level = details.get("quantization_level", "—")
-
-                lines.append(
-                    f"Модель: {Colors.BOLD}{name}{Colors.RESET}\n"
-                    f"  - Семейство: {family}\n"
-                    f"  - Параметры: {param_size}\n"
-                    f"  - Квант.: {quant_level}\n"
-                    f"  - Размер: {size}\n"
-                    f"  - Изменено: {modified}\n"
-                )
-
-            # Склеиваем все блоки
-            pretty_output = "\n".join(lines)
-            return f"{Colors.GREEN}Список моделей Ollama:{Colors.RESET}\n{pretty_output}"
-
-        else:
-            return (
-                f"{Colors.RED}Ошибка получения моделей: "
-                f"{response.status_code}, {response.text}{Colors.RESET}"
+            # Красиво форматируем вывод
+            output = (
+                f"{Colors.GREEN}Тестовый запрос к модели: {Colors.RESET}{model_name}\n"
+                f"{Colors.MAGENTA}Запрос (prompt):{Colors.RESET} {prompt_text}\n"
+                f"{Colors.CYAN}Ответ (response):{Colors.RESET} {answer_text}"
             )
-
+            return output
+        else:
+            return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}{Colors.RESET}"
     except Exception as e:
-        return f"{Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
+        return f"{Colors.RED}Ошибка тестового запроса: {str(e)}{Colors.RESET}"
+
 
 
 
