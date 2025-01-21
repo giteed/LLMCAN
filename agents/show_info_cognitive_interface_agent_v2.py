@@ -2,7 +2,7 @@
 # LLMCAN/agents/show_info_cognitive_interface_agent_v2.py
 # ==================================================
 # Сценарий для отображения текущей информации об агенте
-# Версия: 1.2.1
+# Версия: 1.2.2
 # ==================================================
 
 import socket
@@ -33,8 +33,7 @@ def check_tor_ip():
 def check_llm_api_status():
     """Проверяет доступность API LLM с детализацией."""
     try:
-        base_url = f"{LLM_API_URL}/"
-        response = requests.get(base_url, timeout=5)
+        response = requests.get(LLM_API_URL, timeout=5)
         if response.status_code == 200:
             return f"{Colors.GREEN}API доступен. Ollama работает корректно.{Colors.RESET}"
         elif 400 <= response.status_code < 500:
@@ -53,9 +52,10 @@ def check_llm_api_status():
 def get_ollama_models():
     """Получает список доступных моделей Ollama."""
     try:
-        response = requests.get(f"{LLM_API_URL}/models", timeout=5)
+        response = requests.get(f"{LLM_API_URL}/api/tags", timeout=5)
         if response.status_code == 200:
-            models = response.json()
+            models_data = response.json()
+            models = [model.get("name", "Unnamed model") for model in models_data.get("models", [])]
             return ", ".join(models) if models else f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
         return f"{Colors.RED}Ошибка получения моделей: {response.status_code}{Colors.RESET}"
     except Exception as e:
@@ -64,8 +64,8 @@ def get_ollama_models():
 def test_ollama_query():
     """Выполняет тестовый запрос к API LLM."""
     try:
-        payload = {"model": "test-model", "prompt": "Hello, world!"}
-        response = requests.post(f"{LLM_API_URL}/generate", json=payload, timeout=5)
+        payload = {"model": "qwen2:7b", "prompt": "Hello, world!"}
+        response = requests.post(f"{LLM_API_URL}/api/generate", json=payload, timeout=5)
         if response.status_code == 200:
             return f"{Colors.GREEN}Ответ: {response.json().get('response', 'Нет ответа')}{Colors.RESET}"
         return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}{Colors.RESET}"
