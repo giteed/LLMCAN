@@ -1,26 +1,31 @@
+#!/usr/bin/env python3
+# LLMCAN/agents/test_local_llm_api_and_tor.py
+# ============================================
+
+import os
+import sys
+
+# Добавляем верхнюю папку в PYTHONPATH
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 import requests
 import socks
 import socket
 import logging
 import subprocess
-import readline
-from pathlib import Path
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# Импортируем нужную переменную из settings.py
-from settings import LLM_API_GENERATE
+
+from settings import LLM_API_GENERATE  # <-- теперь сработает
 
 # Настройка логирования
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Конфигурация
 USE_TOR = False
 original_socket = None
 
 def toggle_tor(enable=True):
-    """Включает или выключает проксирование через TOR."""
     global USE_TOR, original_socket
     if enable:
         if not USE_TOR:
@@ -37,7 +42,6 @@ def toggle_tor(enable=True):
             logger.info("TOR выключен")
 
 def test_llm_connection():
-    """Отправляет тестовый запрос к LLM API и выводит результат."""
     logger.info("Начало теста подключения к LLM API")
     
     payload = {
@@ -49,12 +53,9 @@ def test_llm_connection():
     try:
         logger.info(f"Отправка запроса к {LLM_API_GENERATE}")
         with requests.Session() as session:
-            # Если вы хотите отключить тор именно для этого запроса,
-            # можно обнулить proxies (но тогда TOR не будет использоваться):
             if USE_TOR:
-                session.proxies = {}  
+                session.proxies = {}
             response = session.post(LLM_API_GENERATE, json=payload, timeout=10)
-        
         logger.info(f"Статус ответа: {response.status_code}")
         logger.info(f"Содержимое ответа: {response.text[:100]}...")
         response.raise_for_status()
@@ -64,7 +65,6 @@ def test_llm_connection():
         return None
 
 def check_ip():
-    """Выводит текущий IP-адрес."""
     try:
         response = requests.get('https://api.ipify.org?format=json', timeout=5)
         ip = response.json()['ip']
@@ -73,7 +73,6 @@ def check_ip():
         logger.error(f"Не удалось получить IP-адрес: {e}")
 
 def check_tor_status():
-    """Проверяет, запущен ли TOR-служба в системе (systemd)."""
     try:
         result = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True)
         return result.stdout.strip() == "active"
