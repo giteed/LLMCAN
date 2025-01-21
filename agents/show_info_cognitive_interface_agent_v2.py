@@ -6,9 +6,7 @@
 # ==================================================
 
 import socket
-import subprocess
 import requests
-import json
 from pathlib import Path
 from colors import Colors
 from settings import LLM_API_URL
@@ -23,23 +21,24 @@ def get_ip_address():
 def check_tor_ip():
     """Возвращает текущий IP-адрес, используемый TOR."""
     try:
-        response = subprocess.check_output(
-            ["torsocks", "curl", "-s", "https://api.ipify.org"],
-            universal_newlines=True,
+        response = requests.get(
+            "https://api.ipify.org",
+            proxies={"http": "socks5h://127.0.0.1:9050", "https": "socks5h://127.0.0.1:9050"},
             timeout=10
         )
-        return response.strip()
+        return response.text
     except Exception as e:
         return f"{Colors.RED}Ошибка получения IP TOR: {str(e)}{Colors.RESET}"
 
 def check_llm_api_status():
-    """Проверяет доступность API LLM с детализацией."""
+    """Проверяет доступность API LLM."""
     try:
-        response = requests.get(f"{LLM_API_URL}/", timeout=5)
-        if response.status_code == 200 and "Ollama is running" in response.text:
-            return f"{Colors.GREEN}API доступен: {response.text}{Colors.RESET}"
-        return f"{Colors.RED}API недоступен: {response.status_code} ({response.text}).{Colors.RESET}"
-    except requests.exceptions.RequestException as e:
+        base_url = "http://10.67.67.2:11434/"
+        response = requests.get(base_url, timeout=5)
+        if response.status_code == 200:
+            return f"{Colors.GREEN}API доступен. Ollama работает.{Colors.RESET}"
+        return f"{Colors.YELLOW}Базовый URL доступен, но эндпоинт вернул код {response.status_code}{Colors.RESET}"
+    except Exception as e:
         return f"{Colors.RED}API недоступен: {str(e)}{Colors.RESET}"
 
 def get_ollama_models():
@@ -48,10 +47,10 @@ def get_ollama_models():
         response = requests.get(f"{LLM_API_URL}/api/tags", timeout=5)
         if response.status_code == 200:
             models = response.json().get("models", [])
-            return "\n".join([model["name"] for model in models]) if models else f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
-        return f"{Colors.RED}Эндпоинт для получения моделей не найден: {response.status_code}.{Colors.RESET}"
-    except ValueError:
-        return f"{Colors.RED}Ошибка разбора ответа сервера при получении моделей.{Colors.RESET}"
+            if models:
+                return "\n".join([model["name"] for model in models])
+            return f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
+        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
 
@@ -62,9 +61,7 @@ def test_ollama_query():
         response = requests.post(f"{LLM_API_URL}/api/generate", json=payload, timeout=5)
         if response.status_code == 200:
             return f"{Colors.GREEN}Ответ: {response.json().get('response', 'Нет ответа')}{Colors.RESET}"
-        return f"{Colors.RED}Тестовый эндпоинт не найден: {response.status_code}.{Colors.RESET}"
-    except ValueError:
-        return f"{Colors.RED}Ошибка разбора ответа сервера при выполнении тестового запроса.{Colors.RESET}"
+        return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Ошибка тестового запроса: {str(e)}{Colors.RESET}"
 
@@ -127,8 +124,7 @@ def show_info(use_tor, log_level):
 
     print(Colors.GRAY + Colors.HORIZONTAL_LINE + Colors.RESET)
 
-
 if __name__ == "__main__":
-    USE_TOR = True
+    USE_TOR = True  # Или False
     LOG_LEVEL = "INFO"
     show_info(USE_TOR, LOG_LEVEL)
