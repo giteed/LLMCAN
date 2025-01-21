@@ -2,23 +2,20 @@
 # LLMCAN/agents/test_local_llm_api_and_tor.py
 # ===========================================
 # Сценарий тестирования локального LLM API (Ollama) 
-# с проверкой IP и включением/выключением Tor
+# + проверка IP и включение/выключение TOR через session-level proxy
 # ===========================================
 
 import os
 import sys
 import requests
-import socks
-import socket
 import logging
 import subprocess
 
-# Если у вас есть модуль colors.py (как в других скриптах),
-# Подключаем для цветного вывода:
+# Если colors.py есть в вашем проекте, подключаем его
 try:
     from colors import Colors
 except ImportError:
-    # Если нет - создадим простой заглушечный класс
+    # Заглушка, если нет colors.py
     class Colors:
         RESET   = ""
         BOLD    = ""
@@ -35,38 +32,37 @@ sys.path.append(parent_dir)
 
 from settings import LLM_API_GENERATE
 
-# Настройка логирования
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-USE_TOR = False
-original_socket = None
+USE_TOR = False  # Флаг, указывающий, хотим ли мы пользоваться TOR для внешних запросов
 
-def toggle_tor(enable=True):
-    """
-    Включает или отключает проксирование через TOR на уровне socket.
-    """
-    global USE_TOR, original_socket
+def toggle_tor(enable: bool):
+    """Устанавливаем флаг USE_TOR."""
+    global USE_TOR
+    USE_TOR = enable
     if enable:
-        if not USE_TOR:
-            original_socket = socket.socket
-            socks.set_default_proxy(socks.SOCKS5, "localhost", 9050)
-            socket.socket = socks.socksocket
-            USE_TOR = True
-            logger.info(Colors.MAGENTA + "TOR включен" + Colors.RESET)
+        logger.info(Colors.MAGENTA + "TOR: теперь включен (session-level)" + Colors.RESET)
     else:
-        if USE_TOR and original_socket:
-            socket.socket = original_socket
-            socks.set_default_proxy()
-            USE_TOR = False
-            logger.info(Colors.MAGENTA + "TOR выключен" + Colors.RESET)
+        logger.info(Colors.MAGENTA + "TOR: теперь выключен (session-level)" + Colors.RESET)
+
+def get_session_for_external_requests() -> requests.Session:
+    """
+    Возвращаем session, которая либо использует TOR (socks5://127.0.0.1:9050),
+    либо обычное прямое подключение, в зависимости от USE_TOR.
+    """
+    s = requests.Session()
+    if USE_TOR:
+        s.proxies = {
+            "http": "socks5://127.0.0.1:9050",
+            "https": "socks5://127.0.0.1:9050"
+        }
+    else:
+        s.proxies = {}
+    return s
 
 def check_tor_status():
-    """
-    Проверяем, запущен ли сервис Tor (systemd).
-    Если нет systemd, можете убрать эту функцию или 
-    заменить другим методом.
-    """
+    """Смотрим, запущен ли tor (systemd)."""
     try:
         result = subprocess.run(["systemctl", "is-active", "tor"], capture_output=True, text=True)
         return result.stdout.strip() == "active"
@@ -75,81 +71,74 @@ def check_tor_status():
 
 def check_ip():
     """
-    Запрашивает текущий внешний IP-адрес 
-    (через https://api.ipify.org?format=json) и выводит в лог.
+    Показывает текущий внешний IP (через ipify).
+    Здесь решаем, используем ли мы TOR или нет, 
+    исходя из флага USE_TOR.
     """
+    logger.info(Colors.GREEN + "Проверка текущего IP" + Colors.RESET)
+    s = get_session_for_external_requests()
     try:
-        response = requests.get('https://api.ipify.org?format=json', timeout=5)
-        ip = response.json()['ip']
+        resp = s.get("https://api.ipify.org?format=json", timeout=5)
+        ip = resp.json().get("ip")
         logger.info(Colors.CYAN + f"Текущий IP-адрес: {ip}" + Colors.RESET)
     except requests.RequestException as e:
         logger.error(Colors.RED + f"Не удалось получить IP-адрес: {e}" + Colors.RESET)
 
 def test_llm_connection():
     """
-    Тестовое обращение к локальному LLM (Ollama) по адресу LLM_API_GENERATE.
-    Важно: session.proxies = {} отключает любой прокси для этого запроса,
-    чтобы не ломиться через TOR к 10.x.x.x (что даст General SOCKS failure).
+    Делаем запрос к локальному Ollama (http://10.x.x.x:11434).
+    Здесь нам TOR не нужен, поэтому session.proxies = {}.
     """
-    logger.info(Colors.YELLOW + "Начало теста подключения к LLM API (Ollama)" + Colors.RESET)
-    
+    logger.info(Colors.YELLOW + "Тест подключения к локальному LLM (Ollama)" + Colors.RESET)
     payload = {
         "model": "qwen2:7b",
         "prompt": "Тестовый запрос",
         "stream": False
     }
-
     try:
-        logger.info(Colors.YELLOW + f"Отправка запроса к {LLM_API_GENERATE}" + Colors.RESET)
-        with requests.Session() as session:
-            # Всегда отключаем прокси для локальных запросов:
-            session.proxies = {}
-            response = session.post(LLM_API_GENERATE, json=payload, timeout=10)
-
-        logger.info(Colors.YELLOW + f"Статус ответа: {response.status_code}" + Colors.RESET)
-        # Показываем только первые 100 символов ответа:
-        logger.info(Colors.YELLOW + f"Содержимое ответа: {response.text[:100]}..." + Colors.RESET)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
+        with requests.Session() as s:
+            # Всегда без прокси для локального адреса:
+            s.proxies = {}
+            logger.info(Colors.YELLOW + f"Отправка запроса к {LLM_API_GENERATE}" + Colors.RESET)
+            r = s.post(LLM_API_GENERATE, json=payload, timeout=10)
+        
+        logger.info(Colors.YELLOW + f"Статус ответа: {r.status_code}" + Colors.RESET)
+        logger.info(Colors.YELLOW + f"Содержимое ответа: {r.text[:100]}..." + Colors.RESET)
+        r.raise_for_status()
+        return r.json()
+    except requests.RequestException as e:
         logger.error(Colors.RED + f"Ошибка при отправке запроса: {e}" + Colors.RESET)
         return None
 
 if __name__ == "__main__":
-    # 1) Проверяем, активен ли TOR в системе
-    logger.info(Colors.GREEN + "Проверка статуса TOR" + Colors.RESET)
-    tor_is_active = check_tor_status()
-    logger.info(Colors.GREEN + f"Статус TOR (systemd): {'включен' if tor_is_active else 'выключен'}" + Colors.RESET)
-    
-    # Если TOR уже активен, выключим его, чтобы сначала проверить без TOR
-    if tor_is_active:
-        logger.info(Colors.GREEN + "Выключаем TOR для первого теста" + Colors.RESET)
-        toggle_tor(False)
-    else:
-        logger.info(Colors.GREEN + "TOR неактивен, всё ок" + Colors.RESET)
+    # 0) Проверяем, запущен ли TOR
+    tor_systemd_status = check_tor_status()
+    logger.info(Colors.BOLD + f"TOR (systemd) сейчас: {'активен' if tor_systemd_status else 'неактивен'}" + Colors.RESET)
 
-    # 2) Проверка без TOR
-    logger.info(Colors.BOLD + "\n=== Тест без использования TOR ===" + Colors.RESET)
-    check_ip()  # Покажет внешний IP (скорее всего реальный)
-    result = test_llm_connection()
-    if result:
+    # 1) Отключаем TOR (session-level) и тестируем IP + локальный LLM
+    logger.info(Colors.BOLD + "\n=== Тест без TOR ===" + Colors.RESET)
+    toggle_tor(False)
+    check_ip()
+    result_no_tor = test_llm_connection()
+    if result_no_tor:
         logger.info(Colors.GREEN + "Тест без TOR успешно завершен" + Colors.RESET)
     else:
         logger.error(Colors.RED + "Тест без TOR завершился с ошибкой" + Colors.RESET)
 
-    # 3) Включаем TOR
-    logger.info(Colors.BOLD + "\n=== Включение TOR ===" + Colors.RESET)
+    # 2) Включаем TOR (session-level) и снова проверяем IP
+    logger.info(Colors.BOLD + "\n=== Включаем TOR ===" + Colors.RESET)
     toggle_tor(True)
-    check_ip()  # Покажет IP через TOR exit node
+    check_ip()
 
-    logger.info(Colors.BOLD + "\n=== Тест c TOR (но локальный Ollama идёт без прокси) ===" + Colors.RESET)
-    result = test_llm_connection()
-    if result:
-        logger.info(Colors.GREEN + "Тест с TOR успешно завершен" + Colors.RESET)
+    # 3) Тестим локальный LLM (но всё равно без прокси) 
+    logger.info(Colors.BOLD + "\n=== Тест локального LLM при включенном TOR ===" + Colors.RESET)
+    result_tor = test_llm_connection()
+    if result_tor:
+        logger.info(Colors.GREEN + "Тест с TOR (локальный LLM) успешно завершен" + Colors.RESET)
     else:
         logger.error(Colors.RED + "Тест с TOR завершился с ошибкой" + Colors.RESET)
 
-    # 4) Отключаем TOR в конце (если нужно)
-    logger.info(Colors.BOLD + "\n=== Выключение TOR ===" + Colors.RESET)
+    # 4) Выключаем TOR напоследок
+    logger.info(Colors.BOLD + "\n=== Выключаем TOR ===" + Colors.RESET)
     toggle_tor(False)
-    check_ip()  # Вернётся реальный IP
+    check_ip()
