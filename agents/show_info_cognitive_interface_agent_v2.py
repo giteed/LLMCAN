@@ -40,14 +40,11 @@ def check_llm_api_status():
     try:
         base_url = f"{LLM_API_URL}/"
         response = requests.get(base_url, timeout=5)
-        if response.status_code == 200:
-            return f"{Colors.GREEN}API доступен: {response.text}{Colors.RESET}"
-        elif 400 <= response.status_code < 500:
-            return f"{Colors.YELLOW}API доступен, но вернул ошибку клиента: {response.status_code}, {response.text}{Colors.RESET}"
-        elif 500 <= response.status_code < 600:
-            return f"{Colors.RED}API доступен, но вернул ошибку сервера: {response.status_code}, {response.text}{Colors.RESET}"
-        else:
-            return f"{Colors.YELLOW}API доступен, но вернул неожиданный статус: {response.status_code}, {response.text}{Colors.RESET}"
+        if response.status_code == 200 and "Ollama is running" in response.text:
+            return f"{Colors.GREEN}API доступен: {response.text.strip()}{Colors.RESET}"
+        elif response.status_code == 404:
+            return f"{Colors.RED}API недоступен: 404 (Ресурс не найден).{Colors.RESET}"
+        return f"{Colors.YELLOW}API доступен, но вернул код: {response.status_code}, {response.text.strip()}{Colors.RESET}"
     except requests.exceptions.Timeout:
         return f"{Colors.RED}API недоступен: Таймаут подключения.{Colors.RESET}"
     except requests.exceptions.ConnectionError as e:
@@ -62,9 +59,14 @@ def get_ollama_models():
         if response.status_code == 200:
             models = response.json().get("models", [])
             if models:
-                return "\n".join([model["name"] for model in models])
+                return "\n".join([f"{model['name']} ({model['details'].get('parameter_size', 'N/A')})"
+                                  for model in models])
             return f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
-        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}, {response.text}{Colors.RESET}"
+        elif response.status_code == 404:
+            return f"{Colors.RED}Эндпоинт для получения моделей не найден: 404.{Colors.RESET}"
+        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}, {response.text.strip()}{Colors.RESET}"
+    except requests.exceptions.Timeout:
+        return f"{Colors.RED}Ошибка получения моделей: Таймаут подключения.{Colors.RESET}"
     except ValueError:
         return f"{Colors.RED}Ошибка разбора ответа сервера при получении моделей.{Colors.RESET}"
     except Exception as e:
@@ -77,7 +79,11 @@ def test_ollama_query():
         response = requests.post(f"{LLM_API_URL}/api/generate", json=payload, timeout=5)
         if response.status_code == 200:
             return f"{Colors.GREEN}Ответ: {response.json().get('response', 'Нет ответа')}{Colors.RESET}"
-        return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}, {response.text}{Colors.RESET}"
+        elif response.status_code == 404:
+            return f"{Colors.RED}Тестовый эндпоинт не найден: 404.{Colors.RESET}"
+        return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}, {response.text.strip()}{Colors.RESET}"
+    except requests.exceptions.Timeout:
+        return f"{Colors.RED}Ошибка тестового запроса: Таймаут подключения.{Colors.RESET}"
     except ValueError:
         return f"{Colors.RED}Ошибка разбора ответа сервера при выполнении тестового запроса.{Colors.RESET}"
     except Exception as e:
