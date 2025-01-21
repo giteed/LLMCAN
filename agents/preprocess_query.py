@@ -156,7 +156,7 @@ def handle_command(command, use_tor):
         print(f"{Colors.GREEN}Сеанс завершен.{Colors.RESET}")
         sys.exit()
 
-    elif command in ["/show", "/view", "/s", ".мшуц",".покажи", ".п", ".покаж"/ ".ырщц"]:
+    elif command in ["/show", "/view", "/s", ".мшуц",".покажи", ".п", ".покаж", ".ырщц"]:
         # Показать дополнительную информацию о системе
         from agents.show_info_cognitive_interface_agent_v2 import show_info
         log_level = logging.getLevelName(logger.level)
