@@ -3,6 +3,7 @@ import socks
 import socket
 import logging
 import subprocess
+import readline
 
 # Настройка логирования
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
