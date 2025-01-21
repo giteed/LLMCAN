@@ -264,7 +264,7 @@ def preprocess_query(user_input):
     if not preprocessed['queries']:
         logger.debug("Сформированный запрос пуст. Проверьте ввод пользователя.")
         print(f"{Colors.RED}Не удалось сформировать поисковые запросы. Проверьте ввод.{Colors.RESET}")
-        return {"queries": [user_input], "instruction": "Обработайте результаты поиска и предоставьте краткий ответ."}
+        return {"queries": [user_input], "instruction": "Обработайте результаты поиска и предоставьте краткий ответ на дату {current_datetime}."}
 
     logger.info(f"Запрос обработан. Сформировано {len(preprocessed['queries'])} поисковых запросов.")
 
