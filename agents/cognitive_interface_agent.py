@@ -14,7 +14,7 @@ import subprocess
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
-from settings import BASE_DIR, LLM_API_URL
+from settings import BASE_DIR, LLM_API_GENERATE
 from cognitive_interface_agent_functions import *
 from agents.install_tor import restart_tor_and_check_ddgr
 
