@@ -35,51 +35,49 @@ def check_tor_ip():
 
 
 def check_llm_api_status():
-    """Проверяет доступность API LLM."""
+    """Проверяет доступность API LLM с детализацией."""
     try:
-        response = subprocess.check_output(
-            ["curl", "-s", f"{LLM_API_URL}"],
-            universal_newlines=True,
-            timeout=5
-        ).strip()
-        if "Ollama is running" in response:
-            return f"{Colors.GREEN}API доступен. Ollama работает корректно.{Colors.RESET}"
-        return f"{Colors.YELLOW}API доступен, но вернул неожиданный ответ: {response}{Colors.RESET}"
-    except subprocess.CalledProcessError as e:
-        return f"{Colors.RED}API недоступен: {e.output.strip()}{Colors.RESET}"
+        base_url = f"{LLM_API_URL}/"
+        response = requests.get(base_url, timeout=5)
+        if response.status_code == 200:
+            return f"{Colors.GREEN}API доступен: {response.text}{Colors.RESET}"
+        elif 400 <= response.status_code < 500:
+            return f"{Colors.YELLOW}API доступен, но вернул ошибку клиента: {response.status_code}, {response.text}{Colors.RESET}"
+        elif 500 <= response.status_code < 600:
+            return f"{Colors.RED}API доступен, но вернул ошибку сервера: {response.status_code}, {response.text}{Colors.RESET}"
+        else:
+            return f"{Colors.YELLOW}API доступен, но вернул неожиданный статус: {response.status_code}, {response.text}{Colors.RESET}"
+    except requests.exceptions.Timeout:
+        return f"{Colors.RED}API недоступен: Таймаут подключения.{Colors.RESET}"
+    except requests.exceptions.ConnectionError as e:
+        return f"{Colors.RED}API недоступен: Ошибка подключения ({str(e)}).{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}API недоступен: {str(e)}{Colors.RESET}"
-
 
 def get_ollama_models():
     """Получает список доступных моделей Ollama."""
     try:
-        response = subprocess.check_output(
-            ["curl", "-s", f"{LLM_API_URL}api/tags"],
-            universal_newlines=True,
-            timeout=5
-        )
-        models_data = json.loads(response)
-        models = [model.get("name", "Неизвестная модель") for model in models_data.get("models", [])]
-        return ", ".join(models) if models else f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
-    except json.JSONDecodeError:
+        response = requests.get(f"{LLM_API_URL}/api/tags", timeout=5)
+        if response.status_code == 200:
+            models = response.json().get("models", [])
+            if models:
+                return "\n".join([model["name"] for model in models])
+            return f"{Colors.YELLOW}Нет доступных моделей.{Colors.RESET}"
+        return f"{Colors.RED}Ошибка получения моделей: {response.status_code}, {response.text}{Colors.RESET}"
+    except ValueError:
         return f"{Colors.RED}Ошибка разбора ответа сервера при получении моделей.{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
 
-
 def test_ollama_query():
     """Выполняет тестовый запрос к API LLM."""
     try:
-        payload = json.dumps({"model": "test-model", "prompt": "Hello, world!"})
-        response = subprocess.check_output(
-            ["curl", "-s", "-X", "POST", "-H", "Content-Type: application/json", "-d", payload, f"{LLM_API_URL}api/generate"],
-            universal_newlines=True,
-            timeout=5
-        )
-        response_json = json.loads(response)
-        return f"{Colors.GREEN}Ответ: {response_json.get('response', 'Нет ответа')}{Colors.RESET}"
-    except json.JSONDecodeError:
+        payload = {"model": "qwen2:7b", "prompt": "Hello, world!"}
+        response = requests.post(f"{LLM_API_URL}/api/generate", json=payload, timeout=5)
+        if response.status_code == 200:
+            return f"{Colors.GREEN}Ответ: {response.json().get('response', 'Нет ответа')}{Colors.RESET}"
+        return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}, {response.text}{Colors.RESET}"
+    except ValueError:
         return f"{Colors.RED}Ошибка разбора ответа сервера при выполнении тестового запроса.{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Ошибка тестового запроса: {str(e)}{Colors.RESET}"
