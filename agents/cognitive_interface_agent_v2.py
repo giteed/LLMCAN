@@ -92,6 +92,7 @@ def perform_search(queries, use_tor, max_retries=3):
                     if isinstance(json_results, list) and json_results:
                         results.extend(json_results)
                         logger.info(f"Успешно выполнен поиск по запросу: {query}")
+                        print(f"Успешно выполнен поиск по запросу: {query}{Colors.RESET}")
                         break
                     else:
                         logger.warning(f"Некорректный формат или пустой результат для запроса: {query}")
@@ -99,6 +100,7 @@ def perform_search(queries, use_tor, max_retries=3):
                     logger.warning(f"Пустой результат для запроса: {query}")
             except subprocess.CalledProcessError as e:
                 logger.error(f"Ошибка выполнения команды: {e}. Попытка {retries + 1}/{max_retries}")
+                print(f"Ошибка выполнения команды: {e}. Попытка {retries + 1}/{max_retries}{Colors.RESET}")
                 retries += 1
             except json.JSONDecodeError as e:
                 logger.error(f"Ошибка декодирования JSON: {e}. Попытка {retries + 1}/{max_retries}")
