@@ -18,7 +18,7 @@ import socket
 import socks
 import readline
 
-from settings import BASE_DIR, LLM_API_URL
+from settings import BASE_DIR, LLM_API_GENERATE
 from agents.install_tor import restart_tor_and_check_ddgr
 
 # === Настройки ===
