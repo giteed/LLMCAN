@@ -21,6 +21,3 @@ logger.info("Тестовое сообщение: Логирование раб�
 logger.error("Тестовое сообщение: Ошибка!")
 
 
-print("Project root:", project_root)
-print("sys.path:", sys.path)
-
