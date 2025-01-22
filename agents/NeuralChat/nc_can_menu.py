@@ -9,6 +9,7 @@
 import os
 import sys
 import logging
+import readline
 
 # Добавляем путь к корневой папке проекта для корректного импорта
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
