@@ -57,7 +57,7 @@ def get_ollama_version():
         response = requests.get(f"{LLM_API_BASE}/api/version", timeout=5)
         if response.status_code == 200:
             version_info = response.json()
-            return f"{Colors.GREEN}- {Colors.RESET}{version_info.get('version', 'Не указано')}"
+            return f"{Colors.GREEN} {Colors.RESET}{version_info.get('version', 'Не указано')}"
         return f"{Colors.RED}Ошибка получения версии Ollama: {response.status_code}{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Ошибка получения версии Ollama: {str(e)}{Colors.RESET}"
