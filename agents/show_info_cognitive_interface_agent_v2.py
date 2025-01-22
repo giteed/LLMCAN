@@ -108,7 +108,7 @@ def get_ollama_models():
                 f" sudo apt update\n"
                 f" sudo apt install -y curl\n"
                 f" curl -sSL https://ollama.com/download.sh | sh\n\n"
-                f" {Colors.UNDERLINE}Шаг 2: Скачивание моделей{Colors.RESET}\n"
+                f" {Colors.UNDERLINE}Шаг 2: Скачивание сразу нескольких моделей (пример){Colors.RESET}\n"
                 f" ollama pull deepseek-r1:1.5b & \\\n"
                 f" ollama pull deepseek-r1:8b & \\\n"
                 f" ollama pull deepseek-r1:14b & \\\n"
