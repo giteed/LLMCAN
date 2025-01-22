@@ -2,7 +2,8 @@
 # LLMCAN/agents/NeuralChat/menu.py
 # ==================================================
 # Подменю NeuralChat (CAN) для проекта LLMCAN
-# Версия: 1.0.0
+# Версия: 1.0.1
+# - Исправлен путь для возврата в главное меню.
 # ==================================================
 
 import os
@@ -73,7 +74,9 @@ if __name__ == "__main__":
                 sys.exit(0)
             elif choice == "b":
                 print(f"{Colors.GREEN}\n[INFO] Возврат в главное меню.{Colors.RESET}")
-                os.system("python3 ../../menu.py")
+                # Получаем абсолютный путь к menu.py
+                main_menu_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../menu.py"))
+                os.system(f"python3 {main_menu_path}")
                 sys.exit(0)
             else:
                 execute_script(choice)
