@@ -82,6 +82,7 @@ LLMCAN/
 │       │   └── settings.py           # Настройки чата
 │       ├── tests/                    # Тесты
 │       │   ├── __init__.py
+│       │   ├── test_logging.py       # Тест логирования
 │       │   ├── test_mqtt.py
 │       │   ├── test_websocket.py
 │       │   └── test_llama.py
