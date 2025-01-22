@@ -43,7 +43,7 @@ def check_llm_api_status():
     try:
         response = requests.get(LLM_API_HEALTH, timeout=5)
         if response.status_code == 200:
-            return f"{Colors.GREEN}API доступен. Ollama работает.{Colors.RESET}"
+            return f"{Colors.WHITE}API доступен.\n Ollama работает.{Colors.RESET}"
         return (
             f"{Colors.YELLOW}Базовый URL доступен, но эндпоинт вернул код "
             f"{response.status_code}{Colors.RESET}"
