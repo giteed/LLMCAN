@@ -8,6 +8,10 @@
 import os
 import sys
 import logging
+
+# Добавляем путь к корневой папке проекта для корректного импорта
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
+
 from agents.colors import Colors
 
 # Настройка логирования для меню
@@ -19,7 +23,7 @@ SCRIPTS = {
     "1": "agents/NeuralChat/server/main.py",  # Запуск сервера
     "2": "agents/NeuralChat/client/main.py",  # Запуск клиента
     "3": "agents/NeuralChat/tests/test_logging.py",  # Тестирование логирования
-    "b": "agents/menu.py",  # Возврат в главное меню
+    "b": "menu.py",  # Возврат в главное меню
 }
 
 def show_menu():
@@ -69,7 +73,7 @@ if __name__ == "__main__":
                 sys.exit(0)
             elif choice == "b":
                 print(f"{Colors.GREEN}\n[INFO] Возврат в главное меню.{Colors.RESET}")
-                os.system("python3 agents/menu.py")
+                os.system("python3 ../../menu.py")
                 sys.exit(0)
             else:
                 execute_script(choice)
