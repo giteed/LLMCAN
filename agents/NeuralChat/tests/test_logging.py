@@ -9,8 +9,6 @@
 import sys
 import os
 
-print("Project root:", project_root)
-print("sys.path:", sys.path)
 
 # Добавляем корневую директорию проекта в sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..'))
