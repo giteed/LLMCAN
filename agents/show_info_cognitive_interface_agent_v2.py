@@ -71,7 +71,7 @@ def get_ollama_models():
             models_list = data.get("models", [])
 
             if not models_list:
-                return f"{Colors.YELLOW}Список моделей пуст.{Colors.RESET}"
+                return f" {Colors.YELLOW}Список моделей пуст.{Colors.RESET}"
 
             lines = []
             for model_info in models_list:
@@ -85,57 +85,50 @@ def get_ollama_models():
                 quant_level = details.get("quantization_level", "—")
 
                 lines.append(
-                    f"Модель: {Colors.BOLD}{name}{Colors.RESET}\n"
-                    f"  - Семейство: {family}\n"
-                    f"  - Параметры: {param_size}\n"
-                    f"  - Квант.: {quant_level}\n"
-                    f"  - Размер: {size}\n"
-                    f"  - Изменено: {modified}\n"
+                    f" Модель: {Colors.BOLD}{name}{Colors.RESET}\n"
+                    f"   - Семейство: {family}\n"
+                    f"   - Параметры: {param_size}\n"
+                    f"   - Квант.: {quant_level}\n"
+                    f"   - Размер: {size}\n"
+                    f"   - Изменено: {modified}\n"
                 )
 
             pretty_output = "\n".join(lines)
             return (
-                f"{Colors.GREEN}Список моделей Ollama:{Colors.RESET}\n{pretty_output}\n"
-                f"{Colors.BLUE + Colors.BOLD}\n"
-                f"╔═══════════════════════════════════════════════╗\n"
-                f"║       Как скачать новые модели?              ║\n"
-                f"╚═══════════════════════════════════════════════╝\n"
-                f"{Colors.RESET}1. Перейдите на {Colors.UNDERLINE}https://ollama.ai/models{Colors.RESET}.\n"
-                f"2. Загрузите модели в формате GGUF.\n"
-                f"3. Скопируйте их в директорию Ollama.\n"
-                
-                f"{Colors.BOLD}Инструкция по установке и использованию Ollama:{Colors.RESET}\n"
-                
-                f"{Colors.UNDERLINE}Шаг 1: Установка Ollama{Colors.RESET}\n"
-                f"sudo apt update\n"
-                f"sudo apt install -y curl\n"
-                f"curl -sSL https://ollama.com/download.sh | sh\n\n"
-                
-                f"{Colors.UNDERLINE}Шаг 2: Скачивание моделей{Colors.RESET}\n"
-                f"ollama pull deepseek-r1:1.5b & \\\n"
-                f"ollama pull deepseek-r1:8b & \\\n"
-                f"ollama pull deepseek-r1:14b & \\\n"
-                f"ollama pull deepseek-r1:70b &\n\n"
-                
-                f"{Colors.UNDERLINE}Шаг 3: Проверка доступных моделей{Colors.RESET}\n"
-                f"ollama list\n\n"
-                
-                f"{Colors.UNDERLINE}Примечание:{Colors.RESET} Для получения дополнительной информации о командах\n"
-                f"ollama help\n\n"
-                
-                f"{Colors.UNDERLINE}Дополнительные шаги:{Colors.RESET}\n"
-                f"{Colors.RESET}1. Перейдите на {Colors.UNDERLINE}https://ollama.ai/models{Colors.RESET}.\n"
-                f"2. Загрузите модели в формате GGUF.\n"
-                f"3. Скопируйте их в директорию Ollama."
+                f" {Colors.GREEN}Список моделей Ollama:{Colors.RESET}\n{pretty_output}\n"
+                f" {Colors.BLUE + Colors.BOLD}\n"
+                f" ╔═══════════════════════════════════════════════╗\n"
+                f" ║       Как скачать новые модели?              ║\n"
+                f" ╚═══════════════════════════════════════════════╝\n"
+                f" {Colors.RESET}1. Перейдите на {Colors.UNDERLINE}https://ollama.ai/models{Colors.RESET}.\n"
+                f" 2. Загрузите модели в формате GGUF.\n"
+                f" 3. Скопируйте их в директорию Ollama.\n\n"
+                f" {Colors.BOLD}Инструкция по установке и использованию Ollama:{Colors.RESET}\n\n"
+                f" {Colors.UNDERLINE}Шаг 1: Установка Ollama{Colors.RESET}\n"
+                f" sudo apt update\n"
+                f" sudo apt install -y curl\n"
+                f" curl -sSL https://ollama.com/download.sh | sh\n\n"
+                f" {Colors.UNDERLINE}Шаг 2: Скачивание моделей{Colors.RESET}\n"
+                f" ollama pull deepseek-r1:1.5b & \\\n"
+                f" ollama pull deepseek-r1:8b & \\\n"
+                f" ollama pull deepseek-r1:14b & \\\n"
+                f" ollama pull deepseek-r1:70b &\n\n"
+                f" {Colors.UNDERLINE}Шаг 3: Проверка доступных моделей{Colors.RESET}\n"
+                f" ollama list\n\n"
+                f" {Colors.UNDERLINE}Примечание:{Colors.RESET} Для получения дополнительной информации о командах\n"
+                f" ollama help\n\n"
+                f" {Colors.UNDERLINE}Дополнительные шаги:{Colors.RESET}\n"
+                f" {Colors.RESET}1. Перейдите на {Colors.UNDERLINE}https://ollama.ai/models{Colors.RESET}.\n"
+                f" 2. Загрузите модели в формате GGUF.\n"
+                f" 3. Скопируйте их в директорию Ollama."
             )
         else:
             return (
-                f"{Colors.RED}Ошибка получения моделей: "
+                f" {Colors.RED}Ошибка получения моделей: "
                 f"{response.status_code}, {response.text}{Colors.RESET}"
             )
     except Exception as e:
-        return f"{Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
-
+        return f" {Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
 
 def test_ollama_query():
     """Выполняет тестовый запрос к API LLM и красиво выводит результат."""
