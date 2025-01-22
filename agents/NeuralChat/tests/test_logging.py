@@ -17,11 +17,13 @@ print("Project root:", project_root)
 print("sys.path:", sys.path)
 
 # Импортируем BASE_DIR и logger
-from settings import BASE_DIR  # Убедитесь, что settings.py находится в корне проекта
+from LLMCAN.settings import BASE_DIR  # Измените импорт на LLMCAN.settings
 from agents.NeuralChat.modules.logging import logger
+
+logger.info("Тестовое сообщение: Логирование работает!")
+logger.error("Тестовое сообщение: Ошибка!")
+
 
 print("Project root:", project_root)
 print("sys.path:", sys.path)
 
-logger.info("Тестовое сообщение: Логирование работает!")
-logger.error("Тестовое сообщение: Ошибка!")
