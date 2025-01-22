@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
-# LLMCAN/agents/NeuralChat/tests/test_logging.py
+# LLMCAN/agents/NeuralChat/modules/logging.py
 # ==================================================
-# Скрипт для тестирования логирования в NeuralChat.
-# Версия: 1.0.2
-# - Исправлен импорт модуля modules.
+# Модуль для централизованного логирования в NeuralChat.
+# Версия: 1.0.1
+# - Исправлен импорт модуля LLMCAN.
 # ==================================================
 
 import sys
 import os
 
-# Добавляем путь к папке modules для корректного импорта
-sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
+# Добавляем путь к корневой папке проекта для корректного импорта
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
 
-from modules.logging import logger
+import logging
+from LLMCAN.settings import LOGGING_CONFIG
 
-logger.info("Тестовое сообщение: Логирование работает!")
-logger.error("Тестовое сообщение: Ошибка!")
+# Применяем конфигурацию логирования из основного проекта
+logging.config.dictConfig(LOGGING_CONFIG)
+
+# Создаем логгер для NeuralChat
+logger = logging.getLogger("NeuralChat")
