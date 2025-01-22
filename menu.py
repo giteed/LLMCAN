@@ -31,7 +31,7 @@ def show_menu():
     print(Colors.CYAN + """
 ╔══════════════════════════════════════════════════════════╗
 ║                  LLMCAN - ГЛАВНОЕ МЕНЮ                   ║
-║         (Language & Logic Model Cognitive Agent)         ║
+║     (Language & Logic Model Cognitive Agent Network)     ║
 ╚══════════════════════════════════════════════════════════╝
 """ + Colors.RESET)
 
