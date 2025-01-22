@@ -59,33 +59,40 @@
 ```
 LLMCAN/
 ├── agents/
-│   └── NeuralChat/                  # Основная папка чата
-│       ├── __init__.py              # Инициализация модуля
-│       ├── server/                  # Серверная часть чата
+│   └── NeuralChat/
+│       ├── __init__.py
+│       ├── modules/                  # Модули для чата
 │       │   ├── __init__.py
-│       │   ├── mqtt_handler.py      # Обработка MQTT
-│       │   ├── websocket_server.py  # WebSocket сервер
-│       │   ├── auth.py              # Аутентификация и авторизация
-│       │   ├── db.py                # Работа с базой данных (история сообщений)
-│       │   └── llama_integration.py # Интеграция LLaMA-модели
-│       ├── client/                  # Клиентская часть чата
+│       │   ├── mqtt_handler.py       # Обработка MQTT
+│       │   ├── websocket_handler.py  # Обработка WebSocket
+│       │   ├── auth.py               # Аутентификация и авторизация
+│       │   ├── db.py                 # Работа с базой данных
+│       │   ├── llama_integration.py  # Интеграция LLaMA-модели
+│       │   ├── encryption.py         # Шифрование сообщений
+│       │   ├── commands.py           # Обработка команд
+│       │   └── logging.py            # Логирование
+│       ├── server/                   # Серверная часть
 │       │   ├── __init__.py
-│       │   ├── mqtt_client.py       # MQTT клиент
-│       │   ├── websocket_client.py  # WebSocket клиент
-│       │   └── ui.py                # Интерфейс пользователя (если будет)
-│       ├── utils/                   # Вспомогательные утилиты
+│       │   └── main.py               # Основной скрипт сервера
+│       ├── client/                   # Клиентская часть
 │       │   ├── __init__.py
-│       │   ├── encryption.py        # Шифрование сообщений
-│       │   ├── logging.py           # Логирование
-│       │   └── commands.py          # Обработка команд (/help, /clear и т.д.)
-│       ├── config/                  # Конфигурация чата
+│       │   └── main.py               # Основной скрипт клиента
+│       ├── config/                   # Конфигурация
 │       │   ├── __init__.py
-│       │   └── settings.py          # Настройки чата (может импортировать из LLMCAN/settings.py)
-│       └── tests/                   # Тесты
-│           ├── __init__.py
-│           ├── test_mqtt.py
-│           ├── test_websocket.py
-│           └── test_llama.py
+│       │   └── settings.py           # Настройки чата
+│       ├── tests/                    # Тесты
+│       │   ├── __init__.py
+│       │   ├── test_mqtt.py
+│       │   ├── test_websocket.py
+│       │   └── test_llama.py
+│       ├── requirements.txt          # Зависимости
+│       └── DEVELOPMENT_PLAN.md       # План разработки
+├── core/
+├── data/
+├── history/
+├── logs/
+├── settings.py
+└── ...
 ```
 
 ---
