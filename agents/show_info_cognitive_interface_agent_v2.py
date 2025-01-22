@@ -95,7 +95,7 @@ def get_ollama_models():
 
             pretty_output = "\n".join(lines)
             return (
-                f" {Colors.RED} - {Colors.RESET}\n{pretty_output}\n"
+                f" {Colors.RED} ------------------------------------ {Colors.RESET}\n{pretty_output}\n"
                 f" {Colors.BLUE + Colors.BOLD}\n"
                 f" ╔═══════════════════════════════════════════════╗\n"
                 f" ║       Как скачать новые модели?               ║\n"
