@@ -198,39 +198,39 @@ def get_script_versions():
 
 def show_info(use_tor, log_level):
     """Отображает информацию об агенте в разделах."""
-    print(Colors.CYAN + Colors.BOLD)
-    print("╔═══════════════════════════════════════════════╗")
-    print("║                Информация о сервере           ║")
-    print("╚═══════════════════════════════════════════════╝")
+    print(" " + Colors.CYAN + Colors.BOLD)
+    print(" ╔═══════════════════════════════════════════════╗")
+    print(" ║                Информация о сервере           ║")
+    print(" ╚═══════════════════════════════════════════════╝")
     print(Colors.RESET)
 
-    print(f"{Colors.GREEN}Локальный IP-адрес: {Colors.RESET}{get_ip_address()}")
-    print(f"{Colors.GREEN}IP TOR: {Colors.RESET}{check_tor_ip()}")
-    print(f"{Colors.GREEN}Режим TOR: {Colors.RESET}{'Включен' if use_tor else 'Отключен'}")
-    print(f"{Colors.GREEN}Текущий режим логирования: {Colors.RESET}{log_level}")
+    print(f" {Colors.GREEN}Локальный IP-адрес: {Colors.RESET}{get_ip_address()}")
+    print(f" {Colors.GREEN}IP TOR: {Colors.RESET}{check_tor_ip()}")
+    print(f" {Colors.GREEN}Режим TOR: {Colors.RESET}{'Включен' if use_tor else 'Отключен'}")
+    print(f" {Colors.GREEN}Текущий режим логирования: {Colors.RESET}{log_level}")
 
-    print(Colors.BLUE + Colors.BOLD)
-    print("\n╔═══════════════════════════════════════════════╗")
-    print("║              Информация о LLM и API           ║")
-    print("╚═══════════════════════════════════════════════╝")
+    print(" " + Colors.BLUE + Colors.BOLD)
+    print(" ╔═══════════════════════════════════════════════╗")
+    print(" ║              Информация о LLM и API           ║")
+    print(" ╚═══════════════════════════════════════════════╝")
     print(Colors.RESET)
 
-    print(f"{Colors.GREEN}Доступность LLM API: {Colors.RESET}{check_llm_api_status()}")
-    print(f"{Colors.GREEN}Версия Ollama: {Colors.RESET}{get_ollama_version()}")
-    print(f"{Colors.GREEN}Модели Ollama: {Colors.RESET}{get_ollama_models()}")
-    print(test_ollama_query())
+    print(f" {Colors.GREEN}Доступность LLM API: {Colors.RESET}{check_llm_api_status()}")
+    print(f" {Colors.GREEN}Версия Ollama: {Colors.RESET}{get_ollama_version()}")
+    print(f" {Colors.GREEN}Модели Ollama: {Colors.RESET}{get_ollama_models()}")
+    print(" " + test_ollama_query())
 
-    print(Colors.YELLOW + Colors.BOLD)
-    print("\n╔═══════════════════════════════════════════════╗")
-    print("║       Информация о скриптах и настройках      ║")
-    print("╚═══════════════════════════════════════════════╝")
+    print(" " + Colors.YELLOW + Colors.BOLD)
+    print(" ╔═══════════════════════════════════════════════╗")
+    print(" ║       Информация о скриптах и настройках      ║")
+    print(" ╚═══════════════════════════════════════════════╝")
     print(Colors.RESET)
 
-    print(f"{Colors.BOLD}Версии скриптов:{Colors.RESET}")
+    print(f" {Colors.BOLD}Версии скриптов:{Colors.RESET}")
     for script, version in get_script_versions().items():
-        print(f"{Colors.YELLOW}{script}: {Colors.RESET}{version}")
+        print(f" {Colors.YELLOW}{script}: {Colors.RESET}{version}")
 
-    print(Colors.GRAY + Colors.HORIZONTAL_LINE + Colors.RESET)
+    print(" " + Colors.GRAY + Colors.HORIZONTAL_LINE + Colors.RESET)
 
 if __name__ == "__main__":
     USE_TOR = True  # Или False
