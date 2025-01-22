@@ -103,7 +103,7 @@ def get_ollama_models():
                 f" {Colors.RESET}1. Перейдите на {Colors.UNDERLINE}https://ollama.ai/models{Colors.RESET}.\n"
                 f" 2. Загрузите модели в формате GGUF.\n"
                 f" 3. Скопируйте их в директорию Ollama.\n\n"
-                f" {Colors.BOLD}Инструкция по установке и использованию Ollama:{Colors.RESET}\n\n"
+                f" {Colors.BOLD}Инструкция по локальной установке (Ubuntu 22-24)и использованию Ollama:{Colors.RESET}\n\n"
                 f" {Colors.UNDERLINE}Шаг 1: Установка Ollama{Colors.RESET}\n"
                 f" sudo apt update\n"
                 f" sudo apt install -y curl\n"
