@@ -24,7 +24,7 @@ SCRIPTS = {
     "4": "agents/ddgr_agent.py",                # добавлен ddgr_agent
     "5": "agents/test_local_llm_api_and_tor.py",
     "6": "agents/install_tor.py",
-    "7": "agents/NeuralChat/menu.py",           # Подменю NeuralChat
+    "7": "agents/NeuralChat/nc_can_menu.py",           # Подменю NeuralChat
     "s": "settings.py",
 }
 
