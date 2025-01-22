@@ -150,20 +150,21 @@ def test_ollama_query():
             answer_text = data.get("response", "Нет ответа")
 
             output = (
-                f"{Colors.BLUE + Colors.BOLD}\n"
-                f"╔═══════════════════════════════════════════════╗\n"
-                f"║           Тестовый запрос к модели            ║\n"
-                f"╚═══════════════════════════════════════════════╝\n"
-                f"{Colors.RESET}{Colors.GREEN}Модель: {Colors.RESET}{model_name}\n"
-                f"{Colors.MAGENTA}Запрос (prompt):{Colors.RESET} {prompt_text}\n"
-                f"{Colors.CYAN}Ответ (response):{Colors.RESET} {answer_text}\n"
-                f"{Colors.YELLOW}Время выполнения: {elapsed_time:.2f} сек.{Colors.RESET}"
+                f" {Colors.BLUE + Colors.BOLD}\n"
+                f" ╔═══════════════════════════════════════════════╗\n"
+                f" ║           Тестовый запрос к модели            ║\n"
+                f" ╚═══════════════════════════════════════════════╝\n"
+                f" {Colors.RESET}{Colors.GREEN}Модель: {Colors.RESET}{model_name}\n"
+                f" {Colors.MAGENTA}Запрос (prompt):{Colors.RESET} {prompt_text}\n"
+                f" {Colors.CYAN}Ответ (response):{Colors.RESET} {answer_text}\n"
+                f" {Colors.YELLOW}Время выполнения: {elapsed_time:.2f} сек.{Colors.RESET}"
             )
             return output
         else:
-            return f"{Colors.RED}Ошибка тестового запроса: {response.status_code}{Colors.RESET}"
+            return f" {Colors.RED}Ошибка тестового запроса: {response.status_code}{Colors.RESET}"
     except Exception as e:
-        return f"{Colors.RED}Ошибка тестового запроса: {str(e)}{Colors.RESET}"
+        return f" {Colors.RED}Ошибка тестового запроса: {str(e)}{Colors.RESET}"
+
 
 def get_script_versions():
     """Возвращает версии скриптов из их заголовков."""
