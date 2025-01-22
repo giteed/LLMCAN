@@ -13,12 +13,9 @@ import os
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..'))
 sys.path.insert(0, project_root)
 
-print("Project root:", project_root)
-print("sys.path:", sys.path)
-
 # Импортируем BASE_DIR и logger
-from LLMCAN.settings import BASE_DIR  # Измените импорт на LLMCAN.settings
-from agents.NeuralChat.modules.logging import logger
+from settings import BASE_DIR  # Импортируем BASE_DIR из settings.py
+from agents.NeuralChat.modules.logging import logger  # Импортируем logger
 
 logger.info("Тестовое сообщение: Логирование работает!")
 logger.error("Тестовое сообщение: Ошибка!")
