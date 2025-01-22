@@ -57,7 +57,7 @@ def get_ollama_version():
         response = requests.get(f"{LLM_API_BASE}/api/version", timeout=5)
         if response.status_code == 200:
             version_info = response.json()
-            return f"{Colors.GREEN}- {Colors.RESET}{version_info.get('version', 'Не указано')}"
+            return f"{Colors.RED}- {Colors.RESET}{version_info.get('version', 'Не указано')}"
         return f"{Colors.RED}Ошибка получения версии Ollama: {response.status_code}{Colors.RESET}"
     except Exception as e:
         return f"{Colors.RED}Ошибка получения версии Ollama: {str(e)}{Colors.RESET}"
@@ -211,7 +211,7 @@ def show_info(use_tor, log_level):
 
     print(f" {Colors.GREEN}Доступность LLM API: {Colors.RESET}{check_llm_api_status()}")
     print(f" {Colors.GREEN}Версия Ollama: {Colors.RESET}{get_ollama_version()}")
-    print(f" {Colors.GREEN}Модели Ollama:{Colors.RESET}{get_ollama_models()}")
+    print(f" {Colors.GREEN}Модели Ollama: {Colors.RESET}{get_ollama_models()}")
     print(" " + test_ollama_query())
 
     print(" " + Colors.YELLOW + Colors.BOLD)
