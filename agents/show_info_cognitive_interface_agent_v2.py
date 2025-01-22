@@ -209,7 +209,7 @@ def show_info(use_tor, log_level):
     print(" ╚═══════════════════════════════════════════════╝")
     print(Colors.RESET)
 
-    print(f" {Colors.GREEN}Доступность LLM API: {Colors.RESET}{check_llm_api_status()}")
+    print(f" {Colors.GREEN}Доступность LLM API: {Colors.RESET}\n {check_llm_api_status()}")
     print(f" {Colors.GREEN}Версия Ollama: {Colors.RESET}{get_ollama_version()}")
     print(f" {Colors.GREEN}Модели Ollama: {Colors.RESET}{get_ollama_models()}")
     print(" " + test_ollama_query())
