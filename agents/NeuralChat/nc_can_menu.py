@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# LLMCAN/agents/NeuralChat/menu.py
+# LLMCAN/agents/NeuralChat/nc_can_menu.py
 # ==================================================
 # Подменю NeuralChat (CAN) для проекта LLMCAN
-# Версия: 1.0.1
-# - Исправлен путь для возврата в главное меню.
+# Версия: 1.0.2
+# - Исправлены пути к серверу и клиенту.
 # ==================================================
 
 import os
@@ -21,9 +21,9 @@ logging.basicConfig(level=logging.WARNING)
 
 # Словарь «номер -> скрипт»
 SCRIPTS = {
-    "1": "agents/NeuralChat/server/main.py",  # Запуск сервера
-    "2": "agents/NeuralChat/client/main.py",  # Запуск клиента
-    "3": "agents/NeuralChat/tests/test_logging.py",  # Тестирование логирования
+    "1": "agents/NeuralChat/server/nc_can_server.py",  # Запуск сервера
+    "2": "agents/NeuralChat/client/nc_can_client.py",  # Запуск клиента
+    "3": "agents/NeuralChat/tests/test_logging.py",    # Тестирование логирования
     "b": "menu.py",  # Возврат в главное меню
 }
 
@@ -41,7 +41,7 @@ def show_menu():
     # Перебираем скрипты в порядке их ключей (1,2,3,...)
     for key in sorted(SCRIPTS.keys(), key=lambda x: (x.isdigit(), x)):
         script = SCRIPTS[key]
-        # Пример вывода: [1] agents/NeuralChat/server/main.py
+        # Пример вывода: [1] agents/NeuralChat/server/nc_can_server.py
         print(f"{Colors.GREEN}[{key}]{Colors.RESET} - {Colors.YELLOW}{script}{Colors.RESET}")
 
     # Дополнительные опции
