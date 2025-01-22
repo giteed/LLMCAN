@@ -2,7 +2,8 @@
 # LLMCAN/agents/NeuralChat/modules/setup.py
 # ==================================================
 # Модуль для проверки и установки зависимостей для NeuralChat.
-# Версия: 1.0.0
+# Версия: 1.0.1
+# - Исправлена обработка ошибок при отсутствии SQLite.
 # ==================================================
 
 import sys
@@ -16,29 +17,42 @@ sys.path.insert(0, project_root)
 from LLMCAN.agents.NeuralChat.modules.logging import logger
 
 def check_and_install_sqlite():
-    """Проверяет и устанавливает SQLite, если версия ниже 3.37.0."""
+    """Проверяет и устанавливает SQLite, если версия ниже 3.37.0 или SQLite отсутствует."""
     try:
-        # Проверяем версию SQLite
-        result = subprocess.run(["sqlite3", "--version"], capture_output=True, text=True)
-        sqlite_version = result.stdout.strip().split()[0]
-        logger.info(f"Текущая версия SQLite: {sqlite_version}")
+        # Проверяем, установлен ли SQLite
+        try:
+            result = subprocess.run(["sqlite3", "--version"], capture_output=True, text=True)
+            sqlite_version = result.stdout.strip().split()[0]
+            logger.info(f"Текущая версия SQLite: {sqlite_version}")
 
-        # Сравниваем версию
-        required_version = "3.37.0"
-        if sqlite_version < required_version:
-            logger.warning(f"Версия SQLite ниже {required_version}. Начинаем обновление...")
+            # Сравниваем версию
+            required_version = "3.37.0"
+            if sqlite_version < required_version:
+                logger.warning(f"Версия SQLite ниже {required_version}. Начинаем обновление...")
+                
+                # Обновляем SQLite (для CentOS Stream 8)
+                subprocess.run(["sudo", "dnf", "install", "-y", "epel-release"], check=True)
+                subprocess.run(["sudo", "dnf", "install", "-y", "sqlite"], check=True)
+                
+                # Проверяем версию после обновления
+                result = subprocess.run(["sqlite3", "--version"], capture_output=True, text=True)
+                sqlite_version = result.stdout.strip().split()[0]
+                logger.info(f"Обновленная версия SQLite: {sqlite_version}")
+
+            else:
+                logger.info("Версия SQLite соответствует требованиям.")
+
+        except FileNotFoundError:
+            logger.warning("SQLite не установлен. Начинаем установку...")
             
-            # Обновляем SQLite (для CentOS Stream 8)
+            # Устанавливаем SQLite (для CentOS Stream 8)
             subprocess.run(["sudo", "dnf", "install", "-y", "epel-release"], check=True)
             subprocess.run(["sudo", "dnf", "install", "-y", "sqlite"], check=True)
             
-            # Проверяем версию после обновления
+            # Проверяем версию после установки
             result = subprocess.run(["sqlite3", "--version"], capture_output=True, text=True)
             sqlite_version = result.stdout.strip().split()[0]
-            logger.info(f"Обновленная версия SQLite: {sqlite_version}")
-
-        else:
-            logger.info("Версия SQLite соответствует требованиям.")
+            logger.info(f"Установленная версия SQLite: {sqlite_version}")
 
     except Exception as e:
         logger.error(f"Ошибка при проверке или установке SQLite: {e}")
