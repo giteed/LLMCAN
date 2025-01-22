@@ -103,6 +103,36 @@ def get_ollama_models():
                 f"{Colors.RESET}1. Перейдите на {Colors.UNDERLINE}https://ollama.ai/models{Colors.RESET}.\n"
                 f"2. Загрузите модели в формате GGUF.\n"
                 f"3. Скопируйте их в директорию Ollama."
+
+                # Вывод хелпа в консоль
+                print(f"{Colors.BOLD}Инструкция по установке и использованию Ollama:{Colors.RESET}\n")
+                
+                # Шаг 1: Установка Ollama
+                print(f"{Colors.UNDERLINE}Шаг 1: Установка Ollama{Colors.RESET}")
+                print(f"sudo apt update")
+                print(f"sudo apt install -y curl")
+                print(f"curl -sSL https://ollama.com/download.sh | sh\n")
+                
+                # Шаг 2: Скачивание моделей
+                print(f"{Colors.UNDERLINE}Шаг 2: Скачивание моделей{Colors.RESET}")
+                print(f"ollama pull deepseek-r1:1.5b & \\")
+                print(f"ollama pull deepseek-r1:8b & \\")
+                print(f"ollama pull deepseek-r1:14b & \\")
+                print(f"ollama pull deepseek-r1:70b &\n")
+                
+                # Шаг 3: Проверка доступных моделей
+                print(f"{Colors.UNDERLINE}Шаг 3: Проверка доступных моделей{Colors.RESET}")
+                print(f"ollama list\n")
+                
+                # Примечание: Для получения дополнительной информации о командах
+                print(f"{Colors.UNDERLINE}Примечание:{Colors.RESET} Для получения дополнительной информации о командах")
+                print(f"ollama help\n")
+                
+                # Дополнительные шаги
+                print(f"{Colors.UNDERLINE}Дополнительные шаги:{Colors.RESET}")
+                print(f"{Colors.RESET}1. Перейдите на {Colors.UNDERLINE}https://ollama.ai/models{Colors.RESET}.")
+                print(f"2. Загрузите модели в формате GGUF.")
+                print(f"3. Скопируйте их в директорию Ollama.")
             )
         else:
             return (
