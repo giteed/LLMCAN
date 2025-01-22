@@ -98,7 +98,7 @@ def get_ollama_models():
                 f" {Colors.GREEN}Список моделей Ollama:{Colors.RESET}\n{pretty_output}\n"
                 f" {Colors.BLUE + Colors.BOLD}\n"
                 f" ╔═══════════════════════════════════════════════╗\n"
-                f" ║       Как скачать новые модели?              ║\n"
+                f" ║       Как скачать новые модели?               ║\n"
                 f" ╚═══════════════════════════════════════════════╝\n"
                 f" {Colors.RESET}1. Перейдите на {Colors.UNDERLINE}https://ollama.ai/models{Colors.RESET}.\n"
                 f" 2. Загрузите модели в формате GGUF.\n"
