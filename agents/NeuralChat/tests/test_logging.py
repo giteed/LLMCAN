@@ -2,7 +2,7 @@
 # LLMCAN/agents/NeuralChat/tests/test_logging.py
 # ==================================================
 # Скрипт для тестирования логирования в NeuralChat.
-# Версия: 1.0.5
+# Версия: 1.0.6
 # - Исправлен импорт logger из модуля logging.
 # ==================================================
 
@@ -14,7 +14,7 @@ modules_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../modul
 sys.path.append(modules_path)
 
 # Импортируем logger из вашего модуля logging
-from logging import logger
+from modules.logging import logger
 
 logger.info("Тестовое сообщение: Логирование работает!")
 logger.error("Тестовое сообщение: Ошибка!")
