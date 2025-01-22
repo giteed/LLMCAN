@@ -2,19 +2,19 @@
 # LLMCAN/agents/NeuralChat/tests/test_logging.py
 # ==================================================
 # Скрипт для тестирования логирования в NeuralChat.
-# Версия: 1.0.6
-# - Исправлен импорт logger из модуля logging.
+# Версия: 1.0.7
+# - Использование BASE_DIR из settings.py.
 # ==================================================
 
 import sys
 import os
 
-# Добавляем абсолютный путь к папке modules для корректного импорта
-modules_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../modules"))
-sys.path.append(modules_path)
+# Добавляем путь к корневой папке проекта для корректного импорта
+from LLMCAN.settings import BASE_DIR
+sys.path.append(str(BASE_DIR))
 
 # Импортируем logger из вашего модуля logging
-from modules.logging import logger
+from agents.NeuralChat.modules.logging import logger
 
 logger.info("Тестовое сообщение: Логирование работает!")
 logger.error("Тестовое сообщение: Ошибка!")
