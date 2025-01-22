@@ -13,9 +13,15 @@ import os
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..'))
 sys.path.insert(0, project_root)
 
+print("Project root:", project_root)
+print("sys.path:", sys.path)
+
 # Импортируем BASE_DIR и logger
 from settings import BASE_DIR  # Убедитесь, что settings.py находится в корне проекта
 from agents.NeuralChat.modules.logging import logger
+
+print("Project root:", project_root)
+print("sys.path:", sys.path)
 
 logger.info("Тестовое сообщение: Логирование работает!")
 logger.error("Тестовое сообщение: Ошибка!")
