@@ -1,4 +1,5 @@
 # Основные зависимости NeuralChat
+# pip install -r requirements_neuralchat.txt
 
 # Веб-сокеты
 websockets>=10.4  # Библиотека для работы с WebSocket
