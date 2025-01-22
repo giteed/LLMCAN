@@ -19,4 +19,3 @@ from agents.NeuralChat.modules.logging import logger
 
 logger.info("Тестовое сообщение: Логирование работает!")
 logger.error("Тестовое сообщение: Ошибка!")
-
