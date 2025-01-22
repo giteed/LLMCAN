@@ -115,7 +115,7 @@ def get_ollama_models():
                 f" ollama pull deepseek-r1:70b &\n\n"
                 f" {Colors.UNDERLINE}Шаг 3: Проверка доступных моделей{Colors.RESET}\n"
                 f" ollama list\n\n"
-                f" {Colors.UNDERLINE}Примечание:{Colors.RESET} Для получения дополнительной информации о командах\n"
+                f" {Colors.UNDERLINE}Примечание:\n {Colors.RESET} Для получения дополнительной информации о командах\n"
                 f" ollama help\n\n"
                 f" {Colors.UNDERLINE}Дополнительные шаги:{Colors.RESET}\n"
                 f" {Colors.RESET}1. Перейдите на {Colors.UNDERLINE}https://ollama.ai/models{Colors.RESET}.\n"
