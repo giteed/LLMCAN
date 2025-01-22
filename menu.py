@@ -2,7 +2,8 @@
 # LLMCAN/agents/menu.py
 # ==================================================
 # Главное меню для проекта LLMCAN (улучшенная версия)
-# Версия: 1.1.0
+# Версия: 1.2.0
+# - Добавлено подменю NeuralChat (CAN).
 # ==================================================
 
 import os
@@ -23,6 +24,7 @@ SCRIPTS = {
     "4": "agents/ddgr_agent.py",                # добавлен ddgr_agent
     "5": "agents/test_local_llm_api_and_tor.py",
     "6": "agents/install_tor.py",
+    "7": "agents/NeuralChat/menu.py",           # Подменю NeuralChat
     "s": "settings.py",
 }
 
@@ -64,7 +66,7 @@ if __name__ == "__main__":
         while True:
             show_menu()
             choice = input(
-                Colors.CYAN + "Выберите действие (1-6, s) или q/exit: " + Colors.RESET
+                Colors.CYAN + "Выберите действие (1-7, s) или q/exit: " + Colors.RESET
             ).strip().lower()
 
             if choice in ["q", "exit", ".й", "0"]:
