@@ -1,79 +1,75 @@
 import sys
-
-# ANSI escape codes for colors
-WHITE = "\033[1;37m"  # Жирный белый
-GRAY = "\033[0;37m"   # Серый
-RESET = "\033[0m"     # Сброс цвета
+from agents.colors import Colors  # Импортируем класс Colors
 
 def print_tmux_help():
     help_text = f"""
-{WHITE}Основные команды tmux:{RESET}
+{Colors.WHITE}{Colors.BOLD}Основные команды tmux:{Colors.RESET}
 
-{WHITE}1. Создание новой сессии{RESET}
-   {GRAY}tmux new -s имя_сессии{RESET}
-   {GRAY}Создает новую сессию с указанным именем.{RESET}
+{Colors.WHITE}{Colors.BOLD}1. Создание новой сессии{Colors.RESET}
+   {Colors.GRAY}tmux new -s имя_сессии{Colors.RESET}
+   {Colors.GRAY}Создает новую сессию с указанным именем.{Colors.RESET}
 
-{WHITE}2. Подключение к существующей сессии{RESET}
-   {GRAY}tmux attach -t имя_сессии{RESET}
-   {GRAY}Подключает вас к существующей сессии с указанным именем.{RESET}
+{Colors.WHITE}{Colors.BOLD}2. Подключение к существующей сессии{Colors.RESET}
+   {Colors.GRAY}tmux attach -t имя_сессии{Colors.RESET}
+   {Colors.GRAY}Подключает вас к существующей сессии с указанным именем.{Colors.RESET}
 
-{WHITE}3. Список сессий{RESET}
-   {GRAY}tmux list-sessions{RESET}
-   {GRAY}Показывает список всех активных сессий.{RESET}
+{Colors.WHITE}{Colors.BOLD}3. Список сессий{Colors.RESET}
+   {Colors.GRAY}tmux list-sessions{Colors.RESET}
+   {Colors.GRAY}Показывает список всех активных сессий.{Colors.RESET}
 
-{WHITE}4. Отсоединение от сессии{RESET}
-   {GRAY}Нажмите Ctrl + b, затем d.{RESET}
-   {GRAY}Это отсоединит вас от текущей сессии, но она останется активной.{RESET}
+{Colors.WHITE}{Colors.BOLD}4. Отсоединение от сессии{Colors.RESET}
+   {Colors.GRAY}Нажмите Ctrl + b, затем d.{Colors.RESET}
+   {Colors.GRAY}Это отсоединит вас от текущей сессии, но она останется активной.{Colors.RESET}
 
-{WHITE}5. Закрытие сессии{RESET}
-   {GRAY}exit{RESET}
-   {GRAY}Введите эту команду в командной строке внутри сессии, чтобы закрыть ее.{RESET}
+{Colors.WHITE}{Colors.BOLD}5. Закрытие сессии{Colors.RESET}
+   {Colors.GRAY}exit{Colors.RESET}
+   {Colors.GRAY}Введите эту команду в командной строке внутри сессии, чтобы закрыть ее.{Colors.RESET}
 
-{WHITE}Работа с окнами и панелями:{RESET}
+{Colors.WHITE}{Colors.BOLD}Работа с окнами и панелями:{Colors.RESET}
 
-{WHITE}1. Создание нового окна{RESET}
-   {GRAY}Нажмите Ctrl + b, затем c.{RESET}
-   {GRAY}Это создаст новое окно в текущей сессии.{RESET}
+{Colors.WHITE}{Colors.BOLD}1. Создание нового окна{Colors.RESET}
+   {Colors.GRAY}Нажмите Ctrl + b, затем c.{Colors.RESET}
+   {Colors.GRAY}Это создаст новое окно в текущей сессии.{Colors.RESET}
 
-{WHITE}2. Переключение между окнами{RESET}
-   {GRAY}Нажмите Ctrl + b, затем n (следующее окно) или p (предыдущее окно).{RESET}
+{Colors.WHITE}{Colors.BOLD}2. Переключение между окнами{Colors.RESET}
+   {Colors.GRAY}Нажмите Ctrl + b, затем n (следующее окно) или p (предыдущее окно).{Colors.RESET}
 
-{WHITE}3. Список окон{RESET}
-   {GRAY}Нажмите Ctrl + b, затем w.{RESET}
-   {GRAY}Это покажет список всех окон в текущей сессии.{RESET}
+{Colors.WHITE}{Colors.BOLD}3. Список окон{Colors.RESET}
+   {Colors.GRAY}Нажмите Ctrl + b, затем w.{Colors.RESET}
+   {Colors.GRAY}Это покажет список всех окон в текущей сессии.{Colors.RESET}
 
-{WHITE}4. Закрытие окна{RESET}
-   {GRAY}exit{RESET}
-   {GRAY}Введите эту команду в командной строке окна или нажмите Ctrl + b, затем & и подтвердите.{RESET}
+{Colors.WHITE}{Colors.BOLD}4. Закрытие окна{Colors.RESET}
+   {Colors.GRAY}exit{Colors.RESET}
+   {Colors.GRAY}Введите эту команду в командной строке окна или нажмите Ctrl + b, затем & и подтвердите.{Colors.RESET}
 
-{WHITE}5. Создание панели{RESET}
-   {GRAY}Нажмите Ctrl + b, затем % (вертикальная панель) или " (горизонтальная панель).{RESET}
+{Colors.WHITE}{Colors.BOLD}5. Создание панели{Colors.RESET}
+   {Colors.GRAY}Нажмите Ctrl + b, затем % (вертикальная панель) или " (горизонтальная панель).{Colors.RESET}
 
-{WHITE}6. Переключение между панелями{RESET}
-   {GRAY}Нажмите Ctrl + b, затем используйте стрелки (вверх, вниз, влево, вправо).{RESET}
+{Colors.WHITE}{Colors.BOLD}6. Переключение между панелями{Colors.RESET}
+   {Colors.GRAY}Нажмите Ctrl + b, затем используйте стрелки (вверх, вниз, влево, вправо).{Colors.RESET}
 
-{WHITE}7. Закрытие панели{RESET}
-   {GRAY}exit{RESET}
-   {GRAY}Введите эту команду в командной строке панели или нажмите Ctrl + b, затем x и подтвердите.{RESET}
+{Colors.WHITE}{Colors.BOLD}7. Закрытие панели{Colors.RESET}
+   {Colors.GRAY}exit{Colors.RESET}
+   {Colors.GRAY}Введите эту команду в командной строке панели или нажмите Ctrl + b, затем x и подтвердите.{Colors.RESET}
 
-{WHITE}Настройки и управление:{RESET}
+{Colors.WHITE}{Colors.BOLD}Настройки и управление:{Colors.RESET}
 
-{WHITE}1. Настройка конфигурации{RESET}
-   {GRAY}Файл конфигурации tmux обычно находится по пути ~/.tmux.conf. Вы можете добавлять свои настройки и команды.{RESET}
+{Colors.WHITE}{Colors.BOLD}1. Настройка конфигурации{Colors.RESET}
+   {Colors.GRAY}Файл конфигурации tmux обычно находится по пути ~/.tmux.conf. Вы можете добавлять свои настройки и команды.{Colors.RESET}
 
-{WHITE}2. Перезагрузка конфигурации{RESET}
-   {GRAY}Нажмите Ctrl + b, затем : и введите source-file ~/.tmux.conf, чтобы применить изменения в конфигурации.{RESET}
+{Colors.WHITE}{Colors.BOLD}2. Перезагрузка конфигурации{Colors.RESET}
+   {Colors.GRAY}Нажмите Ctrl + b, затем : и введите source-file ~/.tmux.conf, чтобы применить изменения в конфигурации.{Colors.RESET}
 
-{WHITE}3. Выход из tmux{RESET}
-   {GRAY}Нажмите Ctrl + b, затем : и введите kill-server, чтобы завершить все сессии и выйти из tmux.{RESET}
+{Colors.WHITE}{Colors.BOLD}3. Выход из tmux{Colors.RESET}
+   {Colors.GRAY}Нажмите Ctrl + b, затем : и введите kill-server, чтобы завершить все сессии и выйти из tmux.{Colors.RESET}
 
-{WHITE}Полезные команды:{RESET}
+{Colors.WHITE}{Colors.BOLD}Полезные команды:{Colors.RESET}
 
-{WHITE}- Показать текущую версию tmux{RESET}
-  {GRAY}tmux -V{RESET}
+{Colors.WHITE}- Показать текущую версию tmux{Colors.RESET}
+  {Colors.GRAY}tmux -V{Colors.RESET}
 
-{WHITE}- Получить помощь по командам{RESET}
-  {GRAY}Нажмите Ctrl + b, затем ? для отображения списка доступных команд.{RESET}
+{Colors.WHITE}- Получить помощь по командам{Colors.RESET}
+  {Colors.GRAY}Нажмите Ctrl + b, затем ? для отображения списка доступных команд.{Colors.RESET}
 """
     print(help_text)
 
