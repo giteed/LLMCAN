@@ -212,7 +212,7 @@ def query_llm(prompt, include_history=True):
     try:
         from settings import LLM_API_GENERATE
 
-        response = requests.post(LLM_API_GENERATE, json=payload, timeout=10)
+        response = requests.post(LLM_API_GENERATE, json=payload, timeout=70)
         response.raise_for_status()
 
         # Декодируем JSON и фильтруем данные
