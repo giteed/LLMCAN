@@ -1,3 +1,5 @@
+import sys
+
 def print_tmux_help():
     help_text = """
 Основные команды tmux:
@@ -70,5 +72,8 @@ def print_tmux_help():
 """
     print(help_text)
 
-# Пример вызова функции
-# print_tmux_help()
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "print_tmux_help":
+        print_tmux_help()
+    else:
+        print("Используйте 'print_tmux_help' в качестве параметра
