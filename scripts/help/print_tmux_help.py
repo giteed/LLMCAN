@@ -44,8 +44,8 @@ def ensure_tmux():
             return
 
     # Перезапускаем tmux
-    print("Перезапускаем tmux...")
-    subprocess.run(['tmux'], check=True)
+    #print("Перезапускаем tmux...")
+    #subprocess.run(['tmux'], check=True)
 
 
 
