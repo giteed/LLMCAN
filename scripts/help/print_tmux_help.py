@@ -1,4 +1,17 @@
+import os
 import sys
+import logging
+import readline
+
+# Добавляем путь к корневой папке проекта для корректного импорта
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
+
+from agents.colors import Colors
+
+# Настройка логирования для меню
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.WARNING)
+
 from agents.colors import Colors  # Импортируем класс Colors
 
 def print_tmux_help():
