@@ -12,7 +12,7 @@ from agents.colors import Colors
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.WARNING)
 
-from agents.colors import Colors  # Импортируем класс Colors
+
 
 def print_tmux_help():
     help_text = f"""
