@@ -41,7 +41,7 @@ def check_tor_ip():
 def check_llm_api_status():
     """Проверяет доступность API LLM."""
     try:
-        response = requests.get(LLM_API_HEALTH, timeout=5)
+        response = requests.get(LLM_API_HEALTH, timeout=60)
         if response.status_code == 200:
             return f"{Colors.WHITE}API доступен.\n Ollama работает.{Colors.RESET}"
         return (
@@ -54,7 +54,7 @@ def check_llm_api_status():
 def get_ollama_version():
     """Получает версию Ollama API."""
     try:
-        response = requests.get(f"{LLM_API_BASE}/api/version", timeout=5)
+        response = requests.get(f"{LLM_API_BASE}/api/version", timeout=60)
         if response.status_code == 200:
             version_info = response.json()
             return f"{Colors.GREEN} - {Colors.RESET}{version_info.get('version', 'Не указано')}"
@@ -65,7 +65,7 @@ def get_ollama_version():
 def get_ollama_models():
     """Получает список доступных моделей Ollama и форматирует их."""
     try:
-        response = requests.get(LLM_API_TAGS, timeout=5)
+        response = requests.get(LLM_API_TAGS, timeout=60)
         if response.status_code == 200:
             data = response.json()  # {'models': [ {...}, {...}, ... ] }
             models_list = data.get("models", [])
@@ -142,7 +142,7 @@ def test_ollama_query():
             "stream": False
         }
         start_time = time.time()
-        response = requests.post(LLM_API_GENERATE, json=payload, timeout=5)
+        response = requests.post(LLM_API_GENERATE, json=payload, timeout=60)
         elapsed_time = time.time() - start_time
 
         if response.status_code == 200:
