@@ -34,7 +34,9 @@ logger = logging.getLogger(__name__)
 # === Настройки ===
 # Хорошо понимают поисковые результаты от ggdr
 # MODEL = "llama3:latest"
-MODEL = "gemma:7b"
+# deepseek-r1:14b
+MODEL = "deepseek-r1:14b"
+#MODEL = "gemma:7b"
 # Слабые ответы:
 # MODEL = "qwen2:7b"
 LOG_DIR = BASE_DIR / 'logs'
