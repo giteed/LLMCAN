@@ -14,6 +14,8 @@ logging.basicConfig(level=logging.WARNING)
 
 import subprocess
 
+import subprocess
+
 def ensure_tmux():
     try:
         # Получаем версию tmux
@@ -33,6 +35,14 @@ def ensure_tmux():
         )
         subprocess.run(install_script, shell=True, check=True)
 
+        # Проверяем, установлен ли tmux после установки
+        try:
+            subprocess.check_output(['tmux', '-V'], stderr=subprocess.STDOUT)
+            print("tmux успешно установлен.")
+        except subprocess.CalledProcessError:
+            print("Ошибка: tmux не удалось установить.")
+            return
+
     # Перезапускаем tmux
     print("Перезапускаем tmux...")
     subprocess.run(['tmux'], check=True)
@@ -41,6 +51,10 @@ def ensure_tmux():
 
 
 def print_tmux_help():
+
+    # Вызов функции проверки наличия tmux
+    ensure_tmux()
+
     help_text = f"""
 {Colors.WHITE}{Colors.BOLD}Основные команды tmux:{Colors.RESET}
 
