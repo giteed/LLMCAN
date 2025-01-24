@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.WARNING)
 
 # Словарь «номер -> скрипт»
 SCRIPTS = {
-    "1": "agents/cognitive_interface_agent_v2.py",
+    "1 ": "agents/cognitive_interface_agent_v2.py",
     "2": "agents/cognitive_interface_agent.py",
     "3": "agents/chat_with_ddgr_context.py",
     "4": "agents/ddgr_agent.py",                # добавлен ddgr_agent
