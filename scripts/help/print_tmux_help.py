@@ -76,4 +76,4 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "print_tmux_help":
         print_tmux_help()
     else:
-        print("Используйте 'print_tmux_help' в качестве параметра
+        print("Используйте 'print_tmux_help' в качестве параметра для получения справки по tmux.")
