@@ -37,8 +37,7 @@ def ensure_tmux():
     print("Перезапускаем tmux...")
     subprocess.run(['tmux'], check=True)
 
-# Вызов функции
-ensure_tmux()
+
 
 
 def print_tmux_help():
