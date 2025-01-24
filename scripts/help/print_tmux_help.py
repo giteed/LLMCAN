@@ -12,6 +12,33 @@ from agents.colors import Colors
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.WARNING)
 
+import subprocess
+
+def ensure_tmux():
+    try:
+        # Получаем версию tmux
+        version_output = subprocess.check_output(['tmux', '-V'], stderr=subprocess.STDOUT)
+        print(f"tmux версия: {version_output.decode().strip()}")
+    except subprocess.CalledProcessError:
+        # Если tmux не установлен, выполняем скрипт для установки
+        print("tmux не установлен. Устанавливаем...")
+        install_script = (
+            "hash -r && "
+            "command -v tmux >/dev/null 2>&1 || { "
+            "sudo dnf install -y tmux && echo 'tmux установлен.'; } && "
+            "mkdir -p ~/.tmux && "
+            "touch ~/.tmux.conf && "
+            "grep -qxF 'set-option -g history-limit 10000' ~/.tmux.conf || "
+            "echo 'set-option -g history-limit 10000' >> ~/.tmux.conf"
+        )
+        subprocess.run(install_script, shell=True, check=True)
+
+    # Перезапускаем tmux
+    print("Перезапускаем tmux...")
+    subprocess.run(['tmux'], check=True)
+
+# Вызов функции
+ensure_tmux()
 
 
 def print_tmux_help():
