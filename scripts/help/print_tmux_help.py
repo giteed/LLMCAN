@@ -14,22 +14,18 @@ logging.basicConfig(level=logging.WARNING)
 
 import subprocess
 
-import subprocess
 
 import subprocess
 
 def ensure_tmux():
-    try:
-        # Получаем версию tmux
-        version_output = subprocess.check_output(['tmux', '-V'], stderr=subprocess.STDOUT)
-        print(f"tmux версия: {version_output.decode().strip()}")
-    except subprocess.CalledProcessError:
+    # Проверяем, установлен ли tmux
+    result = subprocess.run(['command', '-v', 'tmux'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result.returncode != 0:
         # Если tmux не установлен, выполняем скрипт для установки
         print("tmux не установлен. Устанавливаем...")
         install_script = (
             "hash -r && "
-            "command -v tmux >/dev/null 2>&1 || { "
-            "sudo dnf install -y tmux && echo 'tmux установлен.'; } && "
+            "sudo dnf install -y tmux && echo 'tmux установлен.'; "
             "mkdir -p ~/.tmux && "
             "touch ~/.tmux.conf && "
             "grep -qxF 'set-option -g history-limit 10000' ~/.tmux.conf || "
@@ -40,16 +36,24 @@ def ensure_tmux():
         subprocess.run(install_script, shell=True, check=True)
 
         # Проверяем, установлен ли tmux после установки
-        try:
-            subprocess.check_output(['tmux', '-V'], stderr=subprocess.STDOUT)
+        result = subprocess.run(['command', '-v', 'tmux'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if result.returncode == 0:
             print("tmux успешно установлен.")
-        except subprocess.CalledProcessError:
+        else:
             print("Ошибка: tmux не удалось установить.")
             return
+
+    # Получаем версию tmux
+    version_output = subprocess.check_output(['tmux', '-V'], stderr=subprocess.STDOUT)
+    print(f"tmux версия: {version_output.decode().strip()}")
 
     # Перезапускаем tmux
     #print("Перезапускаем tmux...")
     #subprocess.run(['tmux'], check=True)
+
+# Вызов функции
+#ensure_tmux()
+
 
 
 
