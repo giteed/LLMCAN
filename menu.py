@@ -28,7 +28,7 @@ SCRIPTS = {
     "6": "agents/install_tor.py",
     "7": "agents/NeuralChat/nc_can_menu.py",           # Подменю NeuralChat
     "s": "settings.py",
-    "ht": "scripts/help/print_tmux_help.py print_tmux_help()"
+    "ht": "scripts/help/print_tmux_help.py print_tmux_help"
 }
 
 def show_menu():
