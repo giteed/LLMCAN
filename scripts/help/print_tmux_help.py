@@ -16,6 +16,8 @@ import subprocess
 
 import subprocess
 
+import subprocess
+
 def ensure_tmux():
     try:
         # Получаем версию tmux
@@ -31,7 +33,9 @@ def ensure_tmux():
             "mkdir -p ~/.tmux && "
             "touch ~/.tmux.conf && "
             "grep -qxF 'set-option -g history-limit 10000' ~/.tmux.conf || "
-            "echo 'set-option -g history-limit 10000' >> ~/.tmux.conf"
+            "echo 'set-option -g history-limit 10000' >> ~/.tmux.conf && "
+            "grep -qxF 'set -g mouse on' ~/.tmux.conf || "
+            "echo 'set -g mouse on' >> ~/.tmux.conf"
         )
         subprocess.run(install_script, shell=True, check=True)
 
