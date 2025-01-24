@@ -108,11 +108,16 @@ def get_ollama_models():
                 f" sudo apt update\n"
                 f" sudo apt install -y curl\n"
                 f" curl -fsSL https://ollama.com/install.sh | sh\n\n"
-                f" {Colors.UNDERLINE}Шаг 2: Скачивание сразу нескольких моделей (пример){Colors.RESET}\n"
+                f" {Colors.UNDERLINE}Шаг 2: Скачивание сразу нескольких моделей (пример для Linux){Colors.RESET}\n"
                 f" ollama pull deepseek-r1:1.5b & \\\n"
                 f" ollama pull deepseek-r1:8b & \\\n"
                 f" ollama pull deepseek-r1:14b & \\\n"
                 f" ollama pull deepseek-r1:70b &\n\n"
+                f" {Colors.UNDERLINE}Шаг 2 (для Windows): Скачивание сразу нескольких моделей (пример){Colors.RESET}\n"
+                f" start ollama pull deepseek-r1:1.5b\n"
+                f" start ollama pull deepseek-r1:8b\n"
+                f" start ollama pull deepseek-r1:14b\n"
+                f" start ollama pull deepseek-r1:70b\n\n"
                 f" {Colors.DARK_GRAY}Запуск модели:{Colors.RESET}\n"
                 f" ollama run deepseek-r1:14b\n\n"
                 f" {Colors.UNDERLINE}Шаг 3: Проверка доступных моделей{Colors.RESET}\n"
@@ -122,7 +127,10 @@ def get_ollama_models():
                 f" {Colors.UNDERLINE}Дополнительные шаги:{Colors.RESET}\n"
                 f" {Colors.RESET}1. Перейдите на {Colors.UNDERLINE}https://ollama.ai/models{Colors.RESET}.\n"
                 f" 2. Загрузите модели в формате GGUF.\n"
-                f" 3. Скопируйте их в директорию Ollama."
+                f" 3. Скопируйте их в директорию Ollama.\n\n"
+                f" {Colors.UNDERLINE}Обратите внимание:{Colors.RESET} \n"
+                f" Убедитесь, что у вас установлены все необходимые зависимости и что Ollama правильно настроен.\n"
+                f" Если у вас возникли проблемы, обратитесь к документации на сайте Ollama или в сообщество поддержки."
             )
         else:
             return (
@@ -131,6 +139,8 @@ def get_ollama_models():
             )
     except Exception as e:
         return f" {Colors.RED}Ошибка получения моделей: {str(e)}{Colors.RESET}"
+
+
 
 def test_ollama_query():
     """Выполняет тестовый запрос к API LLM и красиво выводит результат."""
