@@ -11,6 +11,8 @@ import sys
 import logging
 import readline  # Для истории ввода (если поддерживается в окружении)
 from agents.colors import Colors
+from scripts.help import print_tmux_help
+
 
 # Настройка логирования для меню
 logger = logging.getLogger(__name__)
@@ -26,6 +28,7 @@ SCRIPTS = {
     "6": "agents/install_tor.py",
     "7": "agents/NeuralChat/nc_can_menu.py",           # Подменю NeuralChat
     "s": "settings.py",
+    "ht": "scripts/help/print_tmux_help.py"
 }
 
 def show_menu():
@@ -66,7 +69,7 @@ if __name__ == "__main__":
         while True:
             show_menu()
             choice = input(
-                Colors.CYAN + "Выберите действие (1-7, s) или q/exit: " + Colors.RESET
+                Colors.CYAN + "Выберите действие (1-7, или буквы) или q/exit: " + Colors.RESET
             ).strip().lower()
 
             if choice in ["q", "exit", ".й", "0"]:
