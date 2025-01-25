@@ -32,6 +32,9 @@ memory-profiler>=0.60.0
 # Для установки поиска DuckDuckGo
 ddgr
 
+# 2ip
+2ip
+
 # Для работы с TOR
 stem>=1.8.1
 PySocks>=1.7.1
