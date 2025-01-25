@@ -147,7 +147,7 @@ def test_ollama_query():
     import json
     try:
         payload = {
-            "model": "qwen2:7b",
+            "model": "deepseek-r1:32b",
             "prompt": "Готов к работе?",
             "stream": False
         }
