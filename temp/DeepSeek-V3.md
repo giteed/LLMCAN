@@ -1,4 +1,4 @@
-```markdown
+
 # Обновленные требования к оборудованию для моделей DeepSeek
 
 Спасибо за предоставленную информацию. Я проанализирую ее и обновлю отчет о требованиях к оборудованию для запуска моделей DeepSeek, учитывая последние данные и доступное на рынке оборудование.
@@ -54,4 +54,4 @@ DeepSeek утверждает, что их модели, особенно DeepSe
 9. [Reddit Discussion: Cost-Effective Hardware](https://www.reddit.com/r/LocalLLaMA/comments/1hp6ejz/seeking_advice_on_costeffective_hardware_for/)  
 10. [Reddit Discussion: Running DeepSeek R1](https://www.reddit.com/r/selfhosted/comments/1ibl5wr/how_much_money_would_i_need_to_run_r1_deepseek/)  
 11. [DeepSeek FAQ on Stratechery](https://stratechery.com/2025/deepseek-faq/)
-```
+
