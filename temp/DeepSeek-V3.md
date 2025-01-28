@@ -57,28 +57,27 @@ DeepSeek утверждает, что их модели, особенно DeepSe
 
 
 
-Для расчета стоимости минимальной конфигурации из 6 графических процессоров NVIDIA A100 80GB, давайте рассмотрим доступные данные о ценах:
+Таким образом, минимальная конфигурация из 6 графических процессоров NVIDIA A100 80GB для запуска квантизованной версии модели будет стоить примерно **$105,300**.
 
-1. Средняя стоимость одной карты NVIDIA A100 80GB, основанная на нескольких источниках, составляет около $17,550.
+> Важно отметить, что эта цена является приблизительной и может варьироваться в зависимости от поставщика, региона и текущей рыночной ситуации. Кроме того, следует учитывать, что для полноценной работы системы потребуются дополнительные компоненты, такие как материнская плата, процессор, память и система охлаждения, которые не включены в данный расчет.
 
-2. Цены на отдельные карты NVIDIA A100 80GB варьируются:
-   - $17,200 по данным C3Aero[4]
-   - От $18,000 до $20,000 для модели SXM по данным Modal Blog[1]
+## Citations
 
-Используя среднюю цену $17,550 за одну карту, мы можем рассчитать стоимость минимальной конфигурации:
+1. [Modal Blog: NVIDIA A100 Pricing Analysis][1]  
+2. [GetDeploying GPU Reference][2]  
+3. [Alibaba - NVIDIA A100 Price Range][3]  
+4. [C3Aero Product Page][4]  
+5. [NVIDIA News - A100 80GB Announcement][5]  
+6. [ETB-Tech - NVIDIA A100 Product Listing][6]  
+7. [SMicro NVIDIA A100 Product Details][7]  
+8. [GPU-Mart - Best GPUs for AI Inference 2025][8]
 
-$17,550 * 6 = $105,300
+[1]: https://modal.com/blog/nvidia-a100-price-article  
+[2]: https://getdeploying.com/reference/cloud-gpu  
+[3]: https://www.alibaba.com/showroom/nvidia-a100-80gb-price.html  
+[4]: https://c3aero.com/products/nva100tcgpu80-kit  
+[5]: https://nvidianews.nvidia.com/news/nvidia-doubles-down-announces-a100-80gb-gpu-supercharging-worlds-most-powerful-gpu-for-ai-supercomputing  
+[6]: https://www.etb-tech.com/dell-nvidia-a100-graphics-accelerator-80gb-full-height-bracket-vid00274.html  
+[7]: https://smicro.eu/nvidia-a100-80gb-cowos-hbm2-pcie-w-o-cec-900-21001-0020-100-1  
+[8]: https://www.gpu-mart.com/blog/best-gpus-for-ai-inference-2025  
 
-Таким образом, минимальная конфигурация из 6 графических процессоров NVIDIA A100 80GB для запуска квантизованной версии модели будет стоить примерно $105,300.
-
-Важно отметить, что эта цена является приблизительной и может варьироваться в зависимости от поставщика, региона и текущей рыночной ситуации. Кроме того, следует учитывать, что для полноценной работы системы потребуются дополнительные компоненты, такие как материнская плата, процессор, память и система охлаждения, которые не включены в данный расчет.
-
-Citations:
-[1] https://modal.com/blog/nvidia-a100-price-article
-[2] https://getdeploying.com/reference/cloud-gpu
-[3] https://www.alibaba.com/showroom/nvidia-a100-80gb-price.html
-[4] https://c3aero.com/products/nva100tcgpu80-kit
-[5] https://nvidianews.nvidia.com/news/nvidia-doubles-down-announces-a100-80gb-gpu-supercharging-worlds-most-powerful-gpu-for-ai-supercomputing
-[6] https://www.etb-tech.com/dell-nvidia-a100-graphics-accelerator-80gb-full-height-bracket-vid00274.html
-[7] https://smicro.eu/nvidia-a100-80gb-cowos-hbm2-pcie-w-o-cec-900-21001-0020-100-1
-[8] https://www.gpu-mart.com/blog/best-gpus-for-ai-inference-2025
