@@ -24,6 +24,8 @@
 - **DeepSeek-R1-Distill-Qwen-32B**: ~14.9 ГБ VRAM, NVIDIA RTX 4090 24GB [6]
 - **DeepSeek-R1-Distill-Llama-70B**: ~32.7 ГБ VRAM, 2x NVIDIA RTX 4090 24GB [6]
 
+https://github.com/deepseek-ai/DeepSeek-LLM
+
 ## Общие рекомендации
 
 - **CPU**: Мощный многоядерный процессор, например AMD Ryzen Threadripper или Intel Xeon [10]
