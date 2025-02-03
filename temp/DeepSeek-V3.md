@@ -25,6 +25,7 @@
 - **DeepSeek-R1-Distill-Llama-70B**: ~32.7 ГБ VRAM, 2x NVIDIA RTX 4090 24GB [6]
 
 https://github.com/deepseek-ai/DeepSeek-LLM
+https://ollama.com/library/deepseek-r1:70b
 
 ## Общие рекомендации
 
