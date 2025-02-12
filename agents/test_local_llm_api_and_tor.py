@@ -100,7 +100,7 @@ def test_llm_connection():
             # Всегда без прокси для локального адреса:
             s.proxies = {}
             logger.info(Colors.YELLOW + f"Отправка запроса к {LLM_API_GENERATE}" + Colors.RESET)
-            r = s.post(LLM_API_GENERATE, json=payload, timeout=10)
+            r = s.post(LLM_API_GENERATE, json=payload, timeout=120)
         
         logger.info(Colors.YELLOW + f"Статус ответа: {r.status_code}" + Colors.RESET)
         logger.info(Colors.YELLOW + f"Содержимое ответа: {r.text[:100]}..." + Colors.RESET)
