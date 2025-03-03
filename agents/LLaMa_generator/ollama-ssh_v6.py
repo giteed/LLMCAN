@@ -17,7 +17,7 @@ GRAY = "\033[37m"
 WHITE = "\033[97m"
 
 # 🛠 НАСТРОЙКИ 🛠
-OLLAMA_HOST = "http://10.0.1.31:11434"
+OLLAMA_HOST = "http://"ip_OLLAMA_HOST":11434"
 MODEL_NAME = None  # Выбор модели в меню
 USER_MESSAGE_FILE = None  # Файл с сообщениями
 RESPONSE_FILE = None  # Файл для записи ответов
