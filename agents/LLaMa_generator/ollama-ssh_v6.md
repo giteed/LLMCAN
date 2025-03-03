@@ -63,6 +63,7 @@
 #### Общая диаграмма работы
 
 ![Описание картинки](https://raw.githubusercontent.com/giteed/LLMCAN/main/agents/LLaMa_generator/order_processing_diagram.png)
+
 Эта диаграмма демонстрирует замкнутый цикл обработки:
 - **Список заказов (01_user_message.txt):** Заказы поступают постоянно.
 - **Системный промпт (02_sys_prompt.txt)** и **шаблон ответа (03_response_template.txt):** Формируют структуру запроса.
