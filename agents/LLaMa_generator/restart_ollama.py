@@ -4,11 +4,11 @@ import time
 import os
 
 # 🛠 НАСТРОЙКИ 🛠
-OLLAMA_SSH_HOST = "10.0.1.31"  # IP-адрес сервера с Ollama
-SSH_USER = "uadmin24v"  # Логин для SSH
+OLLAMA_SSH_HOST = "IP-адрес сервера с Ollama"  # IP-адрес сервера с Ollama
+SSH_USER = "Логин для SSH"  # Логин для SSH
 SSH_KEY_PATH = os.path.expanduser("~/.ssh/id_rsa")  # Или ~/.ssh/id_ed25519
 
-OLLAMA_HOST = "http://10.0.1.31:11434"  # API Ollama
+OLLAMA_HOST = "http://"IP-адрес сервера с Ollama":11434"  # API Ollama
 TEST_MODEL = "openchat:latest"  # Модель для теста
 TEST_PROMPT = "Привет, как дела?"  # Сообщение для теста
 
