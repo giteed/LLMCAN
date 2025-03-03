@@ -59,9 +59,10 @@
    - При нажатии `CTRL+C` происходит приостановка работы с сохранением состояния и возврат в главное меню,
    - Предусмотрена опция перезапуска Ollama через отдельный скрипт `restart_ollama.py`.
 
+
 #### Общая диаграмма работы
 
-![Диаграмма обработки заказов]([agents/LLaMa_generator/order_processing_diagram.png](https://github.com/giteed/LLMCAN/blob/main/agents/LLaMa_generator/order_processing_diagram.png))
+[![Диаграмма обработки заказов](agents/LLaMa_generator/order_processing_diagram.png)](https://github.com/giteed/LLMCAN/blob/main/agents/LLaMa_generator/order_processing_diagram.png)
 
 Эта диаграмма демонстрирует замкнутый цикл обработки:
 - **Список заказов (01_user_message.txt):** Заказы поступают постоянно.
