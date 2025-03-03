@@ -61,7 +61,7 @@
 
 #### Общая диаграмма работы
 
-![Диаграмма обработки заказов](agents/LLaMa_generator/order_processing_diagram.png)
+![Диаграмма обработки заказов]([agents/LLaMa_generator/order_processing_diagram.png](https://github.com/giteed/LLMCAN/blob/main/agents/LLaMa_generator/order_processing_diagram.png))
 
 Эта диаграмма демонстрирует замкнутый цикл обработки:
 - **Список заказов (01_user_message.txt):** Заказы поступают постоянно.
